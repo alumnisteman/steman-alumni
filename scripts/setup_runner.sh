@@ -9,7 +9,7 @@
 # ========================
 # Ambil token dari: GitHub → web_forsa → Settings → Actions → Runners → New runner
 GITHUB_TOKEN="PASTE_TOKEN_BAPAK_DISINI"
-REPO_URL="https://github.com/alumnisteman/web_forsa"
+REPO_URL="https://github.com/alumnisteman/steman-alumni"
 RUNNER_NAME="steman-server"
 RUNNER_DIR="/opt/actions-runner"
 

@@ -80,9 +80,8 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/bootstrap/cache
 
 # Build-time Laravel Optimization (Production ready)
-# Note: Use dummy env to avoid DB connection during build
+# Note: route:cache omitted - routes use closures which are incompatible
 RUN php artisan config:cache \
-    && php artisan route:cache \
     && php artisan view:cache
 
 # Environment configuration

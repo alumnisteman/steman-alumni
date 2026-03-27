@@ -52,7 +52,7 @@ if (!(Test-Path .git)) {
     git init
 }
 
-$remoteUrl = "https://github.com/alumnisteman/web_forsa.git"
+$remoteUrl = "https://github.com/alumnisteman/steman-alumni.git"
 $existingOrigin = git remote get-url origin 2>$null
 
 if ($existingOrigin -ne $remoteUrl) {
