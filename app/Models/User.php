@@ -10,7 +10,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role',
+        'name', 'email', 'password', 'role', 'status',
         'nisn', 'tahun_lulus', 'jurusan',
         'pekerjaan_sekarang', 'perusahaan_universitas',
         'nomor_telepon', 'foto_profil',
@@ -93,5 +93,30 @@ class User extends Authenticatable
             'nationalCount' => $nationalCount,
             'internationalCount' => $internationalCount
         ];
+    }
+
+    /**
+     * Award points to user and check for new badges
+     */
+    public function awardPoints(int $amount)
+    {
+        $this->increment('points', $amount);
+        
+        // Refresh to get latest points
+        $this->refresh();
+
+        // Find badges that user qualifies for but doesn't have yet
+        $eligibleBadges = Badge::where('points_required', '<=', $this->points)
+            ->whereDoesntHave('users', function ($query) {
+                $query->where('user_id', $this->id);
+            })
+            ->get();
+
+        if ($eligibleBadges->isNotEmpty()) {
+            $this->badges()->attach($eligibleBadges->pluck('id'));
+            return true; // New badges awarded
+        }
+
+        return false;
     }
 }

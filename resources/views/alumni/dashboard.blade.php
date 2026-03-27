@@ -22,11 +22,19 @@
             
             <div class="card border-0 shadow-sm mt-4 p-4 text-white" style="background: #1a1a1a; border-radius: 15px;">
                 <h6 class="fw-bold mb-3" style="color: #ffcc00;"><i class="bi bi-shield-check me-2"></i>STATUS KEANGGOTAAN</h6>
+                @if($user->status === 'pending')
+                <div class="d-flex align-items-center mb-3">
+                    <div class="h5 mb-0 fw-bold text-warning">Menunggu Verifikasi</div>
+                    <i class="bi bi-hourglass-split ms-2 text-warning"></i>
+                </div>
+                <p class="small opacity-75 mb-0">Akses Anda masih dibatasi. Admin sedang mengecek profil Anda.</p>
+                @else
                 <div class="d-flex align-items-center mb-3">
                     <div class="h5 mb-0 fw-bold">Verified Member</div>
                     <i class="bi bi-check-circle-fill ms-2" style="color: #ffcc00;"></i>
                 </div>
                 <p class="small opacity-75 mb-0">ID: ILUNI-{{ str_pad($user->id, 5, '0', STR_PAD_LEFT) }}</p>
+                @endif
             </div>
 
             <!-- Phase 6: Badges & Gamification -->
@@ -47,6 +55,12 @@
 
         <!-- Main Column -->
         <div class="col-lg-8">
+            @if($user->status === 'pending')
+            <div class="alert alert-warning border-0 shadow-sm mb-4" style="border-radius: 15px; border-left: 5px solid #ffcc00 !important;">
+                <h5 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> Akun Belum Diverifikasi</h5>
+                <p class="mb-0 small">Anda belum bisa menggunakan fitur Forum, Pekerjaan, dan Direktori. Mohon tunggu proses validasi data Anda oleh Administrator.</p>
+            </div>
+            @endif
             <h2 class="section-heading mt-0">DASHBOARD ALUMNI</h2>
             
             <div class="row g-3 mb-5">

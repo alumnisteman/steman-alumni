@@ -17,10 +17,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $this->call(SettingSeeder::class);
-        $this->call(ProgramSeeder::class);
-
-        // Default Admin User
+        $this->call([
+            AdminUserSeeder::class,
+            MajorSeeder::class,
+            BadgeSeeder::class,
+        ]); // Default Admin User
         User::updateOrCreate(
             ['email' => 'admin@steman.ac.id'],
             [

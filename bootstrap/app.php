@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'alumni' => \App\Http\Middleware\AlumniMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'verified_alumni' => \App\Http\Middleware\EnsureUserIsVerified::class,
         ]);
         $middleware->appendToGroup('web', 'throttle:global');
         //

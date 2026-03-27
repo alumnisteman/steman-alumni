@@ -51,6 +51,7 @@
                     <li class="nav-item"><a class="nav-link" href="/gallery">GALERI</a></li>
                     <li class="nav-item"><a class="nav-link" href="/news">BERITA</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('analytics.index') }}">STATISTIK</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('leaderboard') }}">PERINGKAT</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('forums.index') }}">FORUM</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('mentors.index') }}">MENTOR</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kontak">KONTAK</a></li>

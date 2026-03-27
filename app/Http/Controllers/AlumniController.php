@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Major;
 use App\Models\News;
+use App\Services\AIPredictionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,19 +55,13 @@ class AlumniController extends Controller
                 $userBadges = collect();
             }
 
-            // 4. Map Analytics - Safe
+            // 5. AI Personalized Prediction
+            $aiPrediction = null;
             try {
-                $mapAnalytics = User::getMapAnalytics() ?? [
-                    'alumniLocations' => collect(),
-                    'nationalCount' => 0,
-                    'internationalCount' => 0
-                ];
+                $aiService = new AIPredictionService();
+                $aiPrediction = $aiService->getUserPrediction($user);
             } catch (\Exception $e) {
-                $mapAnalytics = [
-                    'alumniLocations' => collect(),
-                    'nationalCount' => 0,
-                    'internationalCount' => 0
-                ];
+                // Skip if error
             }
 
             return view('alumni.dashboard', [
@@ -76,7 +71,8 @@ class AlumniController extends Controller
                 'userBadges' => $userBadges,
                 'alumniLocations' => $mapAnalytics['alumniLocations'],
                 'nationalCount' => $mapAnalytics['nationalCount'],
-                'internationalCount' => $mapAnalytics['internationalCount']
+                'internationalCount' => $mapAnalytics['internationalCount'],
+                'aiPrediction' => $aiPrediction
             ]);
 
         } catch (\Exception $e) {
@@ -88,7 +84,8 @@ class AlumniController extends Controller
                 'userBadges' => collect(),
                 'alumniLocations' => collect(),
                 'nationalCount' => 0,
-                'internationalCount' => 0
+                'internationalCount' => 0,
+                'aiPrediction' => null
             ]);
         }
     }

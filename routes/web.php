@@ -15,11 +15,14 @@ use App\Http\Controllers\MajorController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\LeaderboardController;
+use App\Services\AIPredictionService;
 use Illuminate\Support\Facades\Route;
 
 // Public Home
 Route::get('/', function () {
     $data = \Illuminate\Support\Facades\Cache::remember('welcome_data', 600, function () {
+        $aiService = new AIPredictionService();
         return [
             'latestNews' => \App\Models\News::where('is_published', true)->latest()->take(3)->get(),
             'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
@@ -27,6 +30,7 @@ Route::get('/', function () {
             'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
             'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
             'mapAnalytics' => \App\Models\User::getMapAnalytics(),
+            'aiInsights' => $aiService->getGlobalInsights(),
         ];
     });
     
@@ -34,10 +38,14 @@ Route::get('/', function () {
         'alumniLocations' => $data['mapAnalytics']['alumniLocations'],
         'nationalCount' => $data['mapAnalytics']['nationalCount'],
         'internationalCount' => $data['mapAnalytics']['internationalCount'],
+        'aiInsights' => $data['aiInsights'],
     ]));
 })->name('home');
 
 Route::get('/profil', function () { return view('profil'); })->name('public.profile');
+
+// Leaderboard
+Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 Route::get('/kontak', function () { return view('kontak'); })->name('kontak');
 Route::post('/kontak/pesan', [ContactMessageController::class, 'store'])->name('kontak.pesan');
 
@@ -53,8 +61,15 @@ Route::get('/auth/{provider}/redirect', [App\Http\Controllers\SocialController::
 Route::get('/auth/{provider}/callback', [App\Http\Controllers\SocialController::class, 'callback'])->name('social.callback');
 
 // Authenticated Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified_alumni'])->group(function () {
     
+    Route::get('/pending-notice', function () {
+        if (auth()->check() && auth()->user()->status !== 'pending') {
+            return redirect('/alumni/dashboard');
+        }
+        return view('auth.pending');
+    })->name('pending.notice');
+
     // Alumni Features
     Route::middleware(['alumni'])->group(function () {
         Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
@@ -95,6 +110,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
             Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
             Route::match(['PUT', 'PATCH'], '/admin/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
+            Route::match(['PUT', 'PATCH'], '/admin/users/{user}/status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
             Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
             Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
         });

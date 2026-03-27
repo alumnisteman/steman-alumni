@@ -95,6 +95,73 @@
     />
 </div>
 
+<!-- AI Insights Section -->
+<div class="py-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+    <div class="container py-4">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="pulse-container me-3">
+                        <div class="pulse-ring"></div>
+                        <i class="bi bi-cpu-fill fs-4 text-warning"></i>
+                    </div>
+                    <h6 class="text-warning fw-bold text-uppercase mb-0">Smart Analytics</h6>
+                </div>
+                <h2 class="display-5 fw-black mb-3">AI ALUMNI INSIGHTS</h2>
+                <p class="lead opacity-75">Algoritma cerdas kami menganalisis data besar alumni untuk memprediksi tren kolaborasi dan kegiatan masa depan.</p>
+            </div>
+            <div class="col-lg-5 text-lg-end">
+                <div class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
+                    <i class="bi bi-stars me-1"></i> Powering NextGen Networking
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @foreach($aiInsights as $key => $insight)
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 bg-white bg-opacity-10 backdrop-blur rounded-4 p-4 shadow-lg ai-card">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="ai-icon-box bg-warning bg-opacity-20 text-warning rounded-3 p-3">
+                                <i class="bi {{ $insight['icon'] }} fs-3"></i>
+                            </div>
+                            <div class="text-end">
+                                <small class="d-block opacity-50">Confidence</small>
+                                <span class="fw-bold text-warning">{{ $insight['confidence'] }}</span>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-3">{{ $insight['title'] }}</h4>
+                        <p class="opacity-75 mb-0" style="font-size: 0.95rem; line-height: 1.6;">{{ $insight['description'] }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+<style>
+    .backdrop-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .ai-card { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1) !important; }
+    .ai-card:hover { 
+        transform: translateY(-10px); 
+        background-color: rgba(255,255,255,0.15) !important;
+        border-color: rgba(255,193,7,0.4) !important;
+    }
+    .pulse-container { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    .pulse-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #ffc107;
+        animation: pulse-ring 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+    }
+    @keyframes pulse-ring {
+        0% { transform: scale(.33); opacity: 1; }
+        80%, 100% { transform: scale(1.5); opacity: 0; }
+    }
+</style>
+
 <!-- News Section -->
 <div class="container py-4 py-md-5 mt-2 mt-md-4">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end mb-4 gap-3">

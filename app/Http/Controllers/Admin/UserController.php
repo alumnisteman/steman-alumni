@@ -23,6 +23,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'role' => $request->role,
+                'status' => 'approved',
                 'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             ]);
 
@@ -142,5 +143,29 @@ class UserController extends Controller
         ]);
 
         return back()->with('success', 'User berhasil dihapus.');
+    }
+
+    public function updateStatus(Request $request, User $user)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Anda tidak bisa mengubah status Anda sendiri.');
+        }
+
+        $user->status = $request->status;
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'activity' => 'Update User Status',
+            'description' => 'Updated status for user ' . $user->name . ' to ' . $user->status,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+        ]);
+
+        return back()->with('success', 'Status user berhasil diperbarui.');
     }
 }

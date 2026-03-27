@@ -28,13 +28,16 @@ class ForumController extends Controller
             'deskripsi_masalah' => 'required|string',
         ]);
 
-        Forum::create([
+        $forum = Forum::create([
             'user_id' => Auth::id(),
             'judul_diskusi' => $request->judul_diskusi,
             'deskripsi_masalah' => $request->deskripsi_masalah,
         ]);
 
-        return back()->with('success', 'Diskusi berhasil dibuat.');
+        // Award Points
+        Auth::user()->awardPoints(10);
+
+        return back()->with('success', 'Diskusi berhasil dibuat dan Anda mendapatkan 10 poin!');
     }
 
     public function storeComment(Request $request, Forum $forum)
@@ -51,6 +54,9 @@ class ForumController extends Controller
 
         $forum->increment('jumlah_komentar');
 
-        return back()->with('success', 'Komentar berhasil ditambahkan.');
+        // Award Points
+        Auth::user()->awardPoints(10);
+
+        return back()->with('success', 'Komentar ditambahkan! +10 poin untuk Anda.');
     }
 }

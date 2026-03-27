@@ -31,6 +31,7 @@
                             <th class="ps-4">NAMA</th>
                             <th>EMAIL</th>
                             <th>ROLE</th>
+                            <th>STATUS</th>
                             <th>TANGGAL DAFTAR</th>
                             <th class="text-end pe-4">AKSI</th>
                         </tr>
@@ -51,6 +52,15 @@
                                     <span class="badge bg-danger rounded-pill px-3">ADMIN</span>
                                 @else
                                     <span class="badge bg-primary rounded-pill px-3">ALUMNI</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($user->status == 'approved')
+                                    <span class="badge bg-success rounded-pill px-3">APPROVED</span>
+                                @elseif($user->status == 'rejected')
+                                    <span class="badge bg-danger rounded-pill px-3">REJECTED</span>
+                                @else
+                                    <span class="badge bg-warning text-dark rounded-pill px-3">PENDING</span>
                                 @endif
                             </td>
                             <td>{{ $user->created_at->format('d M Y') }}</td>
@@ -75,6 +85,44 @@
                                         </button>
                                     @endif
                                 </form>
+
+                                @if($user->role !== 'admin')
+                                <div class="btn-group me-1">
+                                    <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-shield-lock"></i> Verifikasi
+                                    </button>
+                                    <ul class="dropdown-menu shadow border-0" style="border-radius: 10px;">
+                                        <li>
+                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="status" value="approved">
+                                                <button type="submit" class="dropdown-item text-success fw-bold {{ $user->status === 'approved' ? 'active' : '' }}">
+                                                    <i class="bi bi-check-circle-fill me-2"></i>Setujui
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="status" value="rejected">
+                                                <button type="submit" class="dropdown-item text-danger fw-bold {{ $user->status === 'rejected' ? 'active' : '' }}">
+                                                    <i class="bi bi-x-circle-fill me-2"></i>Tolak
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="status" value="pending">
+                                                <button type="submit" class="dropdown-item text-warning fw-bold {{ $user->status === 'pending' ? 'active' : '' }}">
+                                                    <i class="bi bi-hourglass-split me-2"></i>Pending
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                                @endif
 
                                 @if(auth()->user()->role === 'admin' && $user->id !== auth()->id())
                                 <button type="button" class="btn btn-sm btn-danger"
