@@ -7,7 +7,7 @@
 # ========================
 # !! ISI NIL DULU Bapak !!
 # ========================
-# Ambil token dari: GitHub → web_forsa → Settings → Actions → Runners → New runner
+# Ambil token dari: GitHub → steman-alumni → Settings → Actions → Runners → New runner
 GITHUB_TOKEN="PASTE_TOKEN_BAPAK_DISINI"
 REPO_URL="https://github.com/alumnisteman/steman-alumni"
 RUNNER_NAME="steman-server"

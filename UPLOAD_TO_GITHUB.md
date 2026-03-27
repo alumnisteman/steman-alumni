@@ -18,7 +18,7 @@ Bapak silakan buka **Git Bash** atau **Terminal** di folder ini, lalu jalankan p
    ```bash
    # Inisialisasi Git kembali (jika tadi belum masuk path)
    git init
-   git remote add origin https://github.com/alumnisteman/web_forsa.git
+   git remote add origin https://github.com/alumnisteman/steman-alumni.git
    ```
 
 3. **Kirim Kode**:
