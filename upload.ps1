@@ -2,81 +2,89 @@
 
 Write-Host "--- Memulai Proses Upload ke GitHub ---" -ForegroundColor Cyan
 
-# --- 🛠️ DETEKSI GIT ---
-$gitPath = "git"
-if (!(Get-Command "git" -ErrorAction SilentlyContinue)) {
-    $commonPaths = @(
-        "C:\Program Files\Git\cmd\git.exe",
-        "C:\Program Files\Git\bin\git.exe",
-        "C:\Program Files (x86)\Git\cmd\git.exe",
-        "$env:LOCALAPPDATA\Programs\Git\cmd\git.exe"
-    )
+# --- 🛠️ LANGKAH 0: Deteksi & Aktifkan Git ---
+Write-Host "[0] Mendeteksi Git..." -ForegroundColor Yellow
 
-    foreach ($path in $commonPaths) {
+$gitExe = ""
+$searchPaths = @(
+    "C:\Program Files\Git\cmd\git.exe",
+    "C:\Program Files\Git\bin\git.exe",
+    "C:\Program Files (x86)\Git\cmd\git.exe",
+    "$env:LOCALAPPDATA\Programs\Git\cmd\git.exe"
+)
+
+# Cek apakah git sudah ada di PATH
+if (Get-Command "git" -ErrorAction SilentlyContinue) {
+    $gitExe = (Get-Command "git").Source
+    Write-Host "    OK Git terdeteksi di PATH: $gitExe" -ForegroundColor Green
+} else {
+    # Cari di lokasi instalasi umum
+    foreach ($path in $searchPaths) {
         if (Test-Path $path) {
-            $gitPath = "& '$path'"
+            $gitExe = $path
+            # Tambahkan folder-nya ke PATH sesi ini
+            $gitFolder = Split-Path $path -Parent
+            $env:PATH = "$gitFolder;$env:PATH"
+            Write-Host "    OK Git ditemukan, diaktifkan dari: $path" -ForegroundColor Green
             break
         }
     }
-
-    if ($gitPath -eq "git") {
-        Write-Host "❌ Git tidak ditemukan! Bapak perlu instal Git dulu." -ForegroundColor Red
-        exit
-    }
 }
 
-# Fungsi untuk menjalankan Git dengan rapi
-function Run-Git {
-    param([string]$arguments)
-    if ($gitPath.StartsWith("&")) {
-        $cmd = "$gitPath $arguments"
-        Invoke-Expression $cmd
-    } else {
-        & git ( [regex]::Matches($arguments, '"[^"]+"|\S+') | ForEach-Object { $_.Value.Trim('"') } )
-    }
+if ([string]::IsNullOrEmpty($gitExe)) {
+    Write-Host "GAGAL: Git tidak ditemukan! Silakan instal dari https://git-scm.com/download/win" -ForegroundColor Red
+    Read-Host; exit 1
 }
 
-# --- ⚙️ KONFIGURASI IDENTITAS ---
-$userName = Run-Git "config user.name"
+# --- LANGKAH 1: Set Identitas (wajib untuk commit) ---
+Write-Host "[1/4] Memastikan identitas Git..." -ForegroundColor Yellow
+$userName = git config user.name
 if ([string]::IsNullOrWhiteSpace($userName)) {
-    Write-Host "[0/4] Set identitas Git otomatis..." -ForegroundColor Yellow
-    Run-Git "config --global user.name 'Admin Alumni'"
-    Run-Git "config --global user.email 'admin@alumnisteman.com'"
+    git config --global user.name "Admin Alumni STEMAN"
+    git config --global user.email "admin@alumnisteman.com"
+    Write-Host "    OK Identitas diset otomatis." -ForegroundColor Green
 }
 
-# 1. Pastikan Git sudah terinisialisasi
+# --- LANGKAH 2: Inisialisasi & Sambungkan ke GitHub ---
+Write-Host "[2/4] Menghubungkan ke GitHub..." -ForegroundColor Yellow
+
 if (!(Test-Path .git)) {
-    Write-Host "[1/4] Inisialisasi Git Lokal..." -ForegroundColor Yellow
-    Run-Git "init"
+    git init
 }
 
-# 2. Atur Remote Origin (Ganti URL jika salah)
 $remoteUrl = "https://github.com/alumnisteman/web_forsa.git"
-$remotes = Run-Git "remote" 
-if ($remotes -notmatch "origin") {
-    Write-Host "[2/4] Menyambungkan ke GitHub..." -ForegroundColor Yellow
-    Run-Git "remote add origin $remoteUrl"
+$existingOrigin = git remote get-url origin 2>$null
+
+if ($existingOrigin -ne $remoteUrl) {
+    git remote remove origin 2>$null
+    git remote add origin $remoteUrl
 }
+Write-Host "    OK Terhubung ke: $remoteUrl" -ForegroundColor Green
 
-# 3. Menambahkan File & Commit
-Write-Host "[3/4] Menyiapkan file & membuat catatan (Commit)..." -ForegroundColor Yellow
-Run-Git "add ."
-# Pastikan ada yang di-commit
-$commitMsg = "Initial Push: Modern Infrastructure and Performance Optimization"
-Run-Git "commit -m `"$commitMsg`""
-Run-Git "branch -M main"
+# --- LANGKAH 3: Commit ---
+Write-Host "[3/4] Menyimpan semua kode (Commit)..." -ForegroundColor Yellow
+git add .
+$commitOutput = git commit -m "Initial Push: Portal Alumni STEMAN - Modern & Optimized" 2>&1
+if ($commitOutput -match "nothing to commit") {
+    Write-Host "    INFO: Tidak ada file baru. Kode sudah sinkron." -ForegroundColor Cyan
+}
+git branch -M main
 
-# 4. Push ke GitHub
-Write-Host "[4/4] Mengirim kode (Push)..." -ForegroundColor Yellow
-Write-Host "Jendela login GitHub mungkin akan muncul..." -ForegroundColor Yellow
-Run-Git "push -u origin main --force"
+# --- LANGKAH 4: Push ke GitHub ---
+Write-Host "[4/4] Mengirim ke GitHub (Push)..." -ForegroundColor Yellow
+Write-Host "    PENTING: Jika muncul jendela login, silakan Bapak login!" -ForegroundColor Yellow
+git push -u origin main --force
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "`n✅ BERHASIL! Kode Bapak sudah mendarat di GitHub." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "BERHASIL! Kode Bapak sudah ada di GitHub!" -ForegroundColor Green
+    Write-Host "Cek di: $remoteUrl" -ForegroundColor Cyan
 } else {
-    Write-Host "`n❌ TERJADI KESALAHAN saat mengirim." -ForegroundColor Red
-    Write-Host "Kemungkinan: Bapak belum login di jendela yang muncul tadi."
+    Write-Host ""
+    Write-Host "GAGAL mengirim ke GitHub." -ForegroundColor Red
+    Write-Host "   Saran: Pastikan Bapak login ke GitHub saat jendela muncul." -ForegroundColor Red
 }
 
-Write-Host "Tekan enter untuk menutup..."
+Write-Host ""
+Write-Host "Tekan Enter untuk menutup..."
 Read-Host
