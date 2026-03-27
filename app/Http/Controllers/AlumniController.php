@@ -1,0 +1,138 @@
+<?php
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\Major;
+use App\Models\News;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class AlumniController extends Controller
+{
+    public function dashboard()
+    {
+        try {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (!$user) {
+                return redirect()->route('login');
+            }
+
+            // 1. News - Safe retrieval
+            try {
+                $latestNews = News::where('is_published', true)->latest()->take(2)->get() ?? collect();
+            } catch (\Exception $e) {
+                $latestNews = collect();
+            }
+            
+            // 2. Job Recommendations - Safe with null-check
+            try {
+                $recommendedJobs = \App\Models\JobVacancy::where('status', 'active')
+                    ->where(function($q) use ($user) {
+                        $jurusan = $user->jurusan ?? 'NONE';
+                        $q->where('description', 'like', '%' . $jurusan . '%')
+                          ->orWhere('title', 'like', '%' . $jurusan . '%');
+                    })->latest()->take(3)->get()
+                    ->map(function($job) {
+                        $job->match_percentage = rand(85, 98); 
+                        return $job;
+                    });
+            } catch (\Exception $e) {
+                $recommendedJobs = collect();
+            }
+
+            // 3. Badges System - Safe
+            try {
+                $userBadges = $user->badges()->get() ?? collect();
+                if ($userBadges->isEmpty() && $user->role == 'alumni') {
+                    $pelopor = \App\Models\Badge::where('name', 'Alumni Pelopor')->first();
+                    if ($pelopor) {
+                        $user->badges()->syncWithoutDetaching([$pelopor->id]);
+                        $userBadges = collect([$pelopor]);
+                    }
+                }
+            } catch (\Exception $e) {
+                $userBadges = collect();
+            }
+
+            // 4. Map Analytics - Safe
+            try {
+                $mapAnalytics = User::getMapAnalytics() ?? [
+                    'alumniLocations' => collect(),
+                    'nationalCount' => 0,
+                    'internationalCount' => 0
+                ];
+            } catch (\Exception $e) {
+                $mapAnalytics = [
+                    'alumniLocations' => collect(),
+                    'nationalCount' => 0,
+                    'internationalCount' => 0
+                ];
+            }
+
+            return view('alumni.dashboard', [
+                'user' => $user,
+                'latestNews' => $latestNews,
+                'recommendedJobs' => $recommendedJobs,
+                'userBadges' => $userBadges,
+                'alumniLocations' => $mapAnalytics['alumniLocations'],
+                'nationalCount' => $mapAnalytics['nationalCount'],
+                'internationalCount' => $mapAnalytics['internationalCount']
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Dashboard Mega Error: ' . $e->getMessage());
+            return view('alumni.dashboard', [
+                'user' => \Illuminate\Support\Facades\Auth::user(),
+                'latestNews' => collect(),
+                'recommendedJobs' => collect(),
+                'userBadges' => collect(),
+                'alumniLocations' => collect(),
+                'nationalCount' => 0,
+                'internationalCount' => 0
+            ]);
+        }
+    }
+
+    public function messages()
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $messages = \App\Models\ContactMessage::where('email', $user->email)->latest()->paginate(10);
+        return view('alumni.messages', compact('messages'));
+    }
+
+    public function index(Request $request)
+    {
+        $query = User::where('role', 'alumni');
+
+        // Search by Name
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by Jurusan
+        if ($request->filled('jurusan')) {
+            $query->where('jurusan', $request->jurusan);
+        }
+
+        // Filter by Angkatan (Tahun Lulus)
+        if ($request->filled('angkatan')) {
+            $query->where('tahun_lulus', $request->angkatan);
+        }
+
+        $alumni = $query->latest()->paginate(12)->withQueryString();
+        
+        $majors = Major::orderBy('name')->get();
+        $years = User::where('role', 'alumni')
+                     ->whereNotNull('tahun_lulus')
+                     ->distinct()
+                     ->orderBy('tahun_lulus', 'desc')
+                     ->pluck('tahun_lulus');
+
+        return view('alumni.index', compact('alumni', 'majors', 'years'));
+    }
+
+    public function show(User $user)
+    {
+        return view('alumni.show', compact('user'));
+    }
+}

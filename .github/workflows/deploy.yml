@@ -1,0 +1,20 @@
+name: Steman Alumni CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    name: Deploy to Local Server
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --build --scale app=3
+          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+          docker compose -f docker-compose.prod.yml exec -T app php artisan optimize

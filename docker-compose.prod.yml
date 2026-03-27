@@ -1,0 +1,101 @@
+# Steman Alumni - PRODUCTION Docker Compose
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    deploy:
+      replicas: 3
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - steman-network
+    depends_on:
+      - db
+      - redis
+
+  queue:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: sh -c "composer install --no-dev --optimize-autoloader && php artisan queue:work --tries=3 --sleep=3 --timeout=60"
+    networks:
+      - steman-network
+    depends_on:
+      - app
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: steman_redis
+    restart: unless-stopped
+    networks:
+      - steman-network
+
+  reverb:
+    build: .
+    container_name: steman_reverb
+    restart: unless-stopped
+    env_file: .env
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    networks:
+      - steman-network
+    depends_on:
+      - app
+
+  webserver:
+    image: nginx:alpine
+    container_name: steman_nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+      - "${SSL_PORT:-8443}:443"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - app
+    networks:
+      - steman-network
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: steman_certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    depends_on:
+      - webserver
+
+  db:
+      image: mariadb:10.6
+      container_name: steman_db
+      restart: unless-stopped
+      env_file: .env
+      volumes:
+        - dbdata:/var/lib/mysql
+      networks:
+        - steman-network
+
+networks:
+  steman-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+  certbot_certs:
+  certbot_www:

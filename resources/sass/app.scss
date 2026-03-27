@@ -1,0 +1,179 @@
+$steman-yellow: #ffcc00; // UI Yellow
+$steman-navy: #000000;   // Deep Black/Navy
+$steman-navy-light: #1a1a1a;
+$font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+:root {
+    --body-bg: #ffffff;
+    --text-main: #212121;
+    --nav-bg: #ffffff;
+    --card-bg: #ffffff;
+    --footer-bg: #000000;
+    --section-bg: #f8f9fa;
+    --border-color: #e9ecef;
+}
+
+[data-bs-theme='dark'] {
+    --body-bg: #0f172a;
+    --text-main: #f8fafc;
+    --nav-bg: #1e293b;
+    --card-bg: #1e293b;
+    --footer-bg: #020617;
+    --section-bg: #1e293b;
+    --border-color: #334155;
+    
+    .navbar { border-bottom-color: $steman-yellow !important; }
+    .bg-light { background-color: #1e293b !important; }
+    .text-dark { color: #f8fafc !important; }
+    .btn-dark { background-color: $steman-yellow; color: $steman-navy; border: none; }
+}
+
+@import 'bootstrap/scss/bootstrap';
+
+// Global Styles
+body {
+    font-family: $font-family;
+    color: var(--text-main);
+    background-color: var(--body-bg);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Navigation (ILUNI Style)
+.navbar {
+    background-color: var(--nav-bg) !important;
+    border-bottom: 4px solid $steman-yellow;
+    padding: 1rem 0;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    
+    &.navbar-scrolled {
+        padding: 0.6rem 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .navbar-brand {
+        color: var(--text-main) !important;
+        font-size: 1.6rem;
+        letter-spacing: -0.5px;
+        span { color: $steman-yellow; }
+    }
+    
+    .nav-link {
+        color: var(--text-main) !important;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        margin: 0 0.5rem;
+        position: relative;
+        padding: 0.5rem 0.75rem;
+        transition: color 0.3s ease;
+        
+        &:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: $steman-yellow;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        &:hover, &.active {
+            color: $steman-yellow !important;
+            &:after {
+                width: 70%;
+            }
+        }
+    }
+
+    .navbar-toggler:focus {
+        box-shadow: none;
+    }
+}
+
+// Hero Section (ILUNI Style)
+.iluni-hero {
+    position: relative;
+    height: 70vh;
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), var(--hero-bg, url('/images/hero_iluni.png'));
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    color: white;
+    text-align: center;
+    
+    h1 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+    }
+    .badge-yellow {
+        background: $steman-yellow;
+        color: $steman-navy;
+        font-weight: 800;
+        padding: 0.5rem 1rem;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+}
+
+// Chairman Section
+.chairman-section {
+    padding: 5rem 0;
+    background: var(--section-bg);
+    .chairman-img {
+        border-radius: 50% 0 50% 50%;
+        border: 8px solid $steman-yellow;
+        box-shadow: 20px 20px 0 rgba(255, 204, 0, 0.1);
+    }
+    .quote-icon {
+        font-size: 3rem;
+        color: $steman-yellow;
+        opacity: 0.3;
+    }
+}
+
+// Cards
+.news-card {
+    border: none;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    .card-img-top { height: 200px; object-fit: cover; }
+    .card-body { padding: 1.5rem 0; }
+    .date-tag {
+        color: $steman-yellow;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    &:hover { opacity: 0.8; }
+}
+
+.section-heading {
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--text-main);
+    margin-bottom: 2rem;
+    position: relative;
+    &:before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 0;
+        width: 40px;
+        height: 4px;
+        background: $steman-yellow;
+    }
+}
+
+// Footer
+footer {
+    background: var(--footer-bg);
+    color: white;
+    .footer-link { color: rgba(255,255,255,0.7); text-decoration: none; &:hover { color: $steman-yellow; } }
+}

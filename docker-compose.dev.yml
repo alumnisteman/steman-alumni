@@ -1,0 +1,81 @@
+# Steman Alumni - DEVELOPMENT Docker Compose
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: steman_app_dev
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    volumes:
+      - ./:/var/www
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    # Custom command requested by user for Dev
+    command: sh -c "composer install && php-fpm"
+    networks:
+      - steman-network
+    depends_on:
+      - db
+      - redis
+
+  queue:
+    build: .
+    container_name: steman_queue_dev
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./:/var/www
+    command: sh -c "composer install && php artisan queue:work --tries=3 --sleep=3 --timeout=60"
+    networks:
+      - steman-network
+    depends_on:
+      - app
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: steman_redis_dev
+    restart: unless-stopped
+    networks:
+      - steman-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: steman_nginx_dev
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - steman-network
+
+  db:
+    image: mariadb:10.6
+    container_name: steman_db_dev
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - dbdata_dev:/var/lib/mysql
+    networks:
+      - steman-network
+
+networks:
+  steman-network:
+    driver: bridge
+
+volumes:
+  dbdata_dev:
