@@ -13,6 +13,12 @@ Write-Host "==============================================" -ForegroundColor Cya
 Write-Host "  STEMAN ALUMNI - AUTOMATED DEPLOY V5" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 
+# 0. Automatic IP Detection and .env sync
+Write-Host "[0/6] Detecting Local IP and updating .env..." -ForegroundColor Yellow
+if (Test-Path "update-ip.ps1") {
+    .\update-ip.ps1
+}
+
 # 1. Cleaning up old files on local
 if (Test-Path $ZIP_FILE) { Remove-Item $ZIP_FILE }
 

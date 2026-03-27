@@ -36,9 +36,10 @@
                         <a href="{{ route('social.redirect', 'google') }}" class="btn btn-outline-danger btn-lg rounded-pill">
                             <i class="bi bi-google me-2"></i> Login with Google
                         </a>
-                        <a href="{{ route('social.redirect', 'linkedin') }}" class="btn btn-outline-primary btn-lg rounded-pill">
+                        {{-- LinkedIn hidden until keys are provided --}}
+                        {{-- <a href="{{ route('social.redirect', 'linkedin') }}" class="btn btn-outline-primary btn-lg rounded-pill">
                             <i class="bi bi-linkedin me-2"></i> Login with LinkedIn
-                        </a>
+                        </a> --}}
                     </div>
 
                     <p class="text-center text-muted mt-4">Belum punya akun? <a href="/register">Daftar disini</a></p>

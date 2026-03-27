@@ -87,40 +87,28 @@
                                 </form>
 
                                 @if($user->role !== 'admin')
-                                <div class="btn-group me-1">
-                                    <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-shield-lock"></i> Verifikasi
-                                    </button>
-                                    <ul class="dropdown-menu shadow border-0" style="border-radius: 10px;">
-                                        <li>
-                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="status" value="approved">
-                                                <button type="submit" class="dropdown-item text-success fw-bold {{ $user->status === 'approved' ? 'active' : '' }}">
-                                                    <i class="bi bi-check-circle-fill me-2"></i>Setujui
-                                                </button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="status" value="rejected">
-                                                <button type="submit" class="dropdown-item text-danger fw-bold {{ $user->status === 'rejected' ? 'active' : '' }}">
-                                                    <i class="bi bi-x-circle-fill me-2"></i>Tolak
-                                                </button>
-                                            </form>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="status" value="pending">
-                                                <button type="submit" class="dropdown-item text-warning fw-bold {{ $user->status === 'pending' ? 'active' : '' }}">
-                                                    <i class="bi bi-hourglass-split me-2"></i>Pending
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
+                                <div class="d-inline-flex gap-1 align-items-center">
+                                    <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST" class="m-0">
+                                        @csrf @method('PATCH')
+                                        <input type="hidden" name="status" value="approved">
+                                        <button type="submit" class="btn btn-sm {{ $user->status === 'approved' ? 'btn-success' : 'btn-outline-success' }}" title="Setujui">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST" class="m-0">
+                                        @csrf @method('PATCH')
+                                        <input type="hidden" name="status" value="rejected">
+                                        <button type="submit" class="btn btn-sm {{ $user->status === 'rejected' ? 'btn-danger' : 'btn-outline-danger' }}" title="Tolak">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST" class="m-0">
+                                        @csrf @method('PATCH')
+                                        <input type="hidden" name="status" value="pending">
+                                        <button type="submit" class="btn btn-sm {{ $user->status === 'pending' ? 'btn-warning text-dark' : 'btn-outline-warning' }}" title="Pending">
+                                            <i class="bi bi-hourglass-split"></i>
+                                        </button>
+                                    </form>
                                 </div>
                                 @endif
 
@@ -141,9 +129,11 @@
         </div>
     </div>
     
+    @if($users->total() > 20)
     <div class="mt-4">
         {{ $users->links() }}
     </div>
+    @endif
 </div>
 
 @foreach($users as $user)

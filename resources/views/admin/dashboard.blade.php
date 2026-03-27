@@ -129,7 +129,7 @@
 
         <!-- Summary Statistics (CountUp) -->
         <div class="row g-4 mb-4">
-            <div class="col-md-4 col-sm-6">
+            <div class="col-md-3 col-sm-6">
                 <div class="glass-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-secondary fw-semibold">Total Alumni</span>
@@ -138,20 +138,28 @@
                     <h2 class="fw-bolder mb-0 count-up" data-value="{{ $totalAlumni }}">0</h2>
                 </div>
             </div>
-            <div class="col-md-4 col-sm-6">
+            <div class="col-md-3 col-sm-6">
                 <div class="glass-card p-4 bg-primary bg-opacity-10 border-primary border-opacity-25">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-primary fw-bold">Alumni Internasional</span>
+                        <span class="text-primary fw-bold">Internasional</span>
                         <div class="icon-glass bg-primary text-white border-0"><i class="bi bi-globe-americas fs-5"></i></div>
                     </div>
                     <h2 class="fw-bolder mb-0 text-primary count-up" data-value="{{ $internationalCount }}">0</h2>
-                    <p class="small text-primary opacity-75 mb-0 mt-2"><i class="bi bi-arrow-up-right me-1"></i>Berada di luar Indonesia</p>
                 </div>
             </div>
-            <div class="col-md-4 col-sm-12">
+            <div class="col-md-3 col-sm-6">
                 <div class="glass-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-secondary fw-semibold">Lowongan Aktif</span>
+                        <span class="text-secondary fw-semibold">Total Jurusan</span>
+                        <div class="icon-glass text-warning"><i class="bi bi-mortarboard-fill fs-5 text-warning"></i></div>
+                    </div>
+                    <h2 class="fw-bolder mb-0 count-up text-warning" data-value="{{ $totalMajors }}">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-secondary fw-semibold">Lowongan</span>
                         <div class="icon-glass text-success"><i class="bi bi-briefcase fs-5"></i></div>
                     </div>
                     <h2 class="fw-bolder mb-0 count-up" data-value="{{ $totalJobs }}">0</h2>

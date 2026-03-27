@@ -24,8 +24,9 @@ class AnalyticsController extends Controller
             ->get();
 
         $employmentStats = User::where('role', 'alumni')
-            ->selectRaw('CASE WHEN pekerjaan_sekarang IS NOT NULL AND pekerjaan_sekarang != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END as status, count(*) as total')
-            ->groupBy('status')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('CASE WHEN pekerjaan_sekarang IS NOT NULL AND pekerjaan_sekarang != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END as status')
+            ->groupByRaw('CASE WHEN pekerjaan_sekarang IS NOT NULL AND pekerjaan_sekarang != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END')
             ->get();
 
         return view('analytics.index', compact('totalAlumni', 'alumniByMajor', 'alumniByYear', 'employmentStats'));

@@ -17,7 +17,9 @@ class SocialController extends Controller
     public function callback($provider)
     {
         try {
-            $socialUser = Socialite::driver($provider)->user();
+            // LinkedIn now uses OpenID Connect
+            $driver = ($provider === 'linkedin') ? 'linkedin-openid' : $provider;
+            $socialUser = Socialite::driver($driver)->user();
             
             $user = User::where('email', $socialUser->getEmail())->first();
 
@@ -27,8 +29,10 @@ class SocialController extends Controller
                     'email' => $socialUser->getEmail(),
                     'social_id' => $socialUser->getId(),
                     'social_type' => $provider,
-                    'password' => null, // Social users might not have a password initially
+                    'password' => null,
                     'role' => 'alumni',
+                    'status' => 'approved', // Auto-approve social logins
+                    'email_verified_at' => now(),
                 ]);
             } else {
                 $user->update([
@@ -39,10 +43,10 @@ class SocialController extends Controller
 
             Auth::login($user);
 
-            return redirect()->route('home');
+            return redirect()->intended('/alumni/dashboard');
             
         } catch (\Exception $e) {
-            return redirect()->route('login')->with('error', 'Gagal login via ' . $provider);
+            return redirect()->route('login')->with('error', 'Gagal login via ' . $provider . ': ' . $e->getMessage());
         }
     }
 }

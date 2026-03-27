@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
-            AdminUserSeeder::class,
-            MajorSeeder::class,
             BadgeSeeder::class,
+            ProgramSeeder::class,
+            SettingSeeder::class,
         ]); // Default Admin User
         User::updateOrCreate(
             ['email' => 'admin@steman.ac.id'],
@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Administrator',
                 'password' => \Illuminate\Support\Facades\Hash::make('Admin@1234'),
                 'role' => 'admin',
+                'status' => 'approved',
                 'email_verified_at' => now(),
             ]
         );
