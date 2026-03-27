@@ -238,33 +238,49 @@
             <h5 class="modal-title fw-bold">Tambah Pengguna Baru</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form action="/admin/users" method="POST">
+          <form action="{{ route('admin.users.store') }}" method="POST">
             @csrf
+            {{-- Penanda form agar modal bisa dibuka ulang jika ada error --}}
+            <input type="hidden" name="_form" value="add_user">
             <div class="modal-body p-4">
+                @if(old('_form') == 'add_user' && $errors->any())
+                    <div class="alert alert-danger border-0 small py-2">
+                        <ul class="mb-0 ps-3">
+                            @foreach($errors->all() as $e)
+                                <li>{{ $e }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Nama Lengkap</label>
-                    <input type="text" name="name" class="form-control" required placeholder="Masukkan nama...">
+                    <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control @if(old('_form')=='add_user') {{ $errors->has('name') ? 'is-invalid' : '' }} @endif"
+                           required placeholder="Masukkan nama..." value="{{ old('_form') == 'add_user' ? old('name') : '' }}">
+                    @if(old('_form') == 'add_user') @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror @endif
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Email</label>
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" required placeholder="email@example.com" value="{{ old('email') }}">
-                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <label class="form-label small fw-bold">Email <span class="text-danger">*</span></label>
+                    <input type="email" name="email" class="form-control @if(old('_form')=='add_user') {{ $errors->has('email') ? 'is-invalid' : '' }} @endif"
+                           required placeholder="email@example.com" value="{{ old('_form') == 'add_user' ? old('email') : '' }}">
+                    @if(old('_form') == 'add_user') @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror @endif
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold">Role</label>
                     <select name="role" class="form-select" required>
-                        <option value="alumni">Alumni</option>
-                        <option value="admin">Admin</option>
+                        <option value="alumni" {{ old('_form')=='add_user' && old('role')=='alumni' ? 'selected' : '' }}>Alumni</option>
+                        <option value="admin" {{ old('_form')=='add_user' && old('role')=='admin' ? 'selected' : '' }}>Admin</option>
                     </select>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Password</label>
-                        <input type="password" name="password" class="form-control" required placeholder="********">
+                        <label class="form-label small fw-bold">Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control @if(old('_form')=='add_user') {{ $errors->has('password') ? 'is-invalid' : '' }} @endif"
+                               required placeholder="Min. 4 karakter">
+                        @if(old('_form') == 'add_user') @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror @endif
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small fw-bold">Konfirmasi Password</label>
-                        <input type="password" name="password_confirmation" class="form-control" required placeholder="********">
+                        <label class="form-label small fw-bold">Konfirmasi Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password_confirmation" class="form-control" required placeholder="Ulangi password">
                     </div>
                 </div>
             </div>
@@ -276,5 +292,17 @@
         </div>
       </div>
     </div>
+
+@push('scripts')
+<script>
+// Auto-buka modal tambah user jika ada error dari form tambah user
+document.addEventListener('DOMContentLoaded', function() {
+    @if(old('_form') == 'add_user' && $errors->any())
+        var myModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+        myModal.show();
+    @endif
+});
+</script>
+@endpush
 
 @endsection
