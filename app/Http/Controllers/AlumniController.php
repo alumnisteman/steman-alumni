@@ -8,8 +8,18 @@ use App\Services\AIPredictionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Services\AlumniService;
+use Illuminate\Http\Request;
+
 class AlumniController extends Controller
 {
+    protected $alumniService;
+
+    public function __construct(AlumniService $alumniService)
+    {
+        $this->alumniService = $alumniService;
+    }
+
     public function dashboard()
     {
         try {
@@ -55,8 +65,8 @@ class AlumniController extends Controller
                 $userBadges = collect();
             }
 
-            // 4. Map Analytics - REQUIRED for Dashboard Map
-            $mapAnalytics = User::getMapAnalytics();
+            // 4. Map Analytics - REQUIRED for Dashboard Map (Cached)
+            $mapAnalytics = $this->alumniService->getCachedMapAnalytics();
 
             // 5. AI Personalized Prediction & Career Snippet
             $aiPrediction = null;
@@ -134,11 +144,7 @@ class AlumniController extends Controller
         $alumni = $query->latest()->paginate(12)->withQueryString();
         
         $majors = Major::orderBy('name')->get();
-        $years = User::where('role', 'alumni')
-                     ->whereNotNull('tahun_lulus')
-                     ->distinct()
-                     ->orderBy('tahun_lulus', 'desc')
-                     ->pluck('tahun_lulus');
+        $years = $this->alumniService->getCachedGraduationYears();
 
         return view('alumni.index', compact('alumni', 'majors', 'years'));
     }
@@ -153,7 +159,7 @@ class AlumniController extends Controller
      */
     public function network()
     {
-        $mapAnalytics = User::getMapAnalytics();
+        $mapAnalytics = $this->alumniService->getCachedMapAnalytics();
         return view('network.index', [
             'locations' => $mapAnalytics['alumniLocations'],
             'nationalCount' => $mapAnalytics['nationalCount'],

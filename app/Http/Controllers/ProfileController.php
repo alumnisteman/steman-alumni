@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Models\Major;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,21 +16,10 @@ class ProfileController extends Controller
         return view('alumni.profile', compact('user', 'majors'));
     }
 
-    public function update(Request $request)
+    public function update(UpdateProfileRequest $request)
     {
         $user = Auth::user();
-        $data = $request->validate([
-            'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'name' => 'required|string|max:255',
-            'password' => 'nullable|string|min:8|confirmed',
-            'jurusan' => 'nullable|string',
-            'tahun_lulus' => 'nullable|integer',
-            'pekerjaan_sekarang' => 'nullable|string',
-            'alamat' => 'nullable|string',
-            'bio' => 'nullable|string',
-            'mentor_bio' => 'nullable|string',
-            'mentor_expertise' => 'nullable|string|max:255',
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('foto_profil')) {
             // Delete old photo if it exists and is in the avatars directory
@@ -55,7 +44,19 @@ class ProfileController extends Controller
         $user->pekerjaan_sekarang = $data['pekerjaan_sekarang'] ?? $user->pekerjaan_sekarang;
         $user->alamat = $data['alamat'] ?? $user->alamat;
         $user->bio = $data['bio'] ?? $user->bio;
-        $user->is_mentor = $request->has('is_mentor');
+        
+        // Security: Only allow becoming a mentor if they already have sufficient points or status
+        // For now, we allow the toggle but log it for admin review or add a point hurdle
+        if ($request->has('is_mentor') && !$user->is_mentor) {
+            if ($user->points >= 50) {
+                $user->is_mentor = true;
+            } else {
+                return back()->with('error', 'Poin tidak cukup untuk menjadi Mentor (Min. 50 poin).');
+            }
+        } elseif (!$request->has('is_mentor')) {
+            $user->is_mentor = false;
+        }
+
         $user->mentor_bio = $data['mentor_bio'] ?? $user->mentor_bio;
         $user->mentor_expertise = $data['mentor_expertise'] ?? $user->mentor_expertise;
         $user->save();
