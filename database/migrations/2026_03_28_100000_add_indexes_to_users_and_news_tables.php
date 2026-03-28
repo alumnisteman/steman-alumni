@@ -12,13 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->index('role');
-            $table->index('jurusan');
-            $table->index('tahun_lulus');
+            if (!Schema::hasIndex('users', 'users_role_index')) {
+                $table->index('role');
+            }
+            if (!Schema::hasIndex('users', 'users_jurusan_index')) {
+                $table->index('jurusan');
+            }
+            if (!Schema::hasIndex('users', 'users_tahun_lulus_index')) {
+                $table->index('tahun_lulus');
+            }
         });
 
         Schema::table('news', function (Blueprint $table) {
-            $table->index('is_published');
+            if (!Schema::hasIndex('news', 'news_is_published_index')) {
+                $table->index('is_published');
+            }
         });
     }
 
@@ -28,13 +36,21 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
-            $table->dropIndex(['jurusan']);
-            $table->dropIndex(['tahun_lulus']);
+            if (Schema::hasIndex('users', 'users_role_index')) {
+                $table->dropIndex(['role']);
+            }
+            if (Schema::hasIndex('users', 'users_jurusan_index')) {
+                $table->dropIndex(['jurusan']);
+            }
+            if (Schema::hasIndex('users', 'users_tahun_lulus_index')) {
+                $table->dropIndex(['tahun_lulus']);
+            }
         });
 
         Schema::table('news', function (Blueprint $table) {
-            $table->dropIndex(['is_published']);
+            if (Schema::hasIndex('news', 'news_is_published_index')) {
+                $table->dropIndex(['is_published']);
+            }
         });
     }
 };
