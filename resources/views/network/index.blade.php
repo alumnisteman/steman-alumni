@@ -90,8 +90,8 @@
     </div>
 </div>
 
-<script src="//unpkg.com/three"></script>
-<script src="//unpkg.com/globe.gl"></script>
+<script src="https://unpkg.com/three"></script>
+<script src="https://unpkg.com/globe.gl"></script>
 <script>
     const alumniData = {!! json_encode($locations) !!};
     
@@ -106,39 +106,44 @@
         color: loc.is_international ? '#4cc9f0' : '#4361ee'
     }));
 
-    const world = Globe()
-        (document.getElementById('globeViz'))
-        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-        .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-        .backgroundImageUrl(null)
-        .backgroundColor('#020617')
-        .showAtmosphere(true)
-        .atmosphereColor('#3f37c9')
-        .atmosphereDaylightAlpha(0.1)
-        .pointsData(gData)
-        .pointAltitude(0.05)
-        .pointColor('color')
-        .pointRadius(0.12)
-        .pointsMerge(true)
-        .pointLabel(d => `
-            <div class="globe-tooltip">
-                <b style="color: #4cc9f0">${d.name}</b><br/>
-                ${d.major} - Angkatan ${d.year}
-            </div>
-        `)
-        .onPointClick(d => {
-            // Auto focus on click
-            world.pointOfView({ lat: d.lat, lng: d.lng, altitude: 2 }, 1000);
+    try {
+        const world = Globe()
+            (document.getElementById('globeViz'))
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+            .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+            .backgroundImageUrl(null)
+            .backgroundColor('#020617')
+            .showAtmosphere(true)
+            .atmosphereColor('#3f37c9')
+            .atmosphereDaylightAlpha(0.1)
+            .pointsData(gData)
+            .pointAltitude(0.05)
+            .pointColor('color')
+            .pointRadius(0.12)
+            .pointsMerge(true)
+            .pointLabel(d => `
+                <div class="globe-tooltip">
+                    <b style="color: #4cc9f0">${d.name}</b><br/>
+                    ${d.major} - Angkatan ${d.year}
+                </div>
+            `)
+            .onPointClick(d => {
+                // Auto focus on click
+                world.pointOfView({ lat: d.lat, lng: d.lng, altitude: 2 }, 1000);
+            });
+
+        // Auto-rotate
+        world.controls().autoRotate = true;
+        world.controls().autoRotateSpeed = 0.5;
+
+        // Responsive resize
+        window.addEventListener('resize', () => {
+            world.width(window.innerWidth);
+            world.height(window.innerHeight * 0.8);
         });
-
-    // Auto-rotate
-    world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.5;
-
-    // Responsive resize
-    window.addEventListener('resize', () => {
-        world.width(window.innerWidth);
-        world.height(window.innerHeight * 0.8);
-    });
+    } catch (error) {
+        console.error("Globe.gl initialization failed:", error);
+        document.getElementById('globeViz').innerHTML = '<div style="color: red; padding: 20px; text-align: center; margin-top: 20vh;"><h3>Failed to load 3D Globe</h3><p>Ensure your browser supports WebGL and you have an active internet connection to load 3D assets.</p></div>';
+    }
 </script>
 @endsection
