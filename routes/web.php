@@ -194,4 +194,5 @@ Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 // Gallery & Alumni Public
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
+Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
 Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');

@@ -62,6 +62,46 @@ class SettingSeeder extends Seeder
                 'label' => 'Label Program Sosial',
                 'group' => 'program'
             ],
+
+            // Chairman Section
+            [
+                'key' => 'chairman_name',
+                'value' => 'H. Ahmad Yusuf, S.T.',
+                'label' => 'Nama Ketua Umum',
+                'group' => 'chairman'
+            ],
+            [
+                'key' => 'chairman_speech',
+                'value' => 'Selamat datang para alumni di portal resmi kita.',
+                'label' => 'Sambutan Ketua Umum',
+                'group' => 'chairman'
+            ],
+            [
+                'key' => 'chairman_photo',
+                'value' => 'https://via.placeholder.com/150',
+                'label' => 'Foto Ketua Umum',
+                'group' => 'chairman'
+            ],
+
+            // Event Chairman Section
+            [
+                'key' => 'event_chairman_name',
+                'value' => 'M. Rizky Ramadhan',
+                'label' => 'Nama Ketua Panitia',
+                'group' => 'event_chairman'
+            ],
+            [
+                'key' => 'event_chairman_speech',
+                'value' => 'Mari sukseskan acara temu kangen alumni tahun ini.',
+                'label' => 'Sambutan Ketua Panitia',
+                'group' => 'event_chairman'
+            ],
+            [
+                'key' => 'event_chairman_photo',
+                'value' => 'https://via.placeholder.com/150',
+                'label' => 'Foto Ketua Panitia',
+                'group' => 'event_chairman'
+            ],
         ];
 
         foreach ($settings as $setting) {

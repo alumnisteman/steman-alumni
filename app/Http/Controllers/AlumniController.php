@@ -132,4 +132,17 @@ class AlumniController extends Controller
     {
         return view('alumni.show', compact('user'));
     }
+
+    /**
+     * Show the 3D Global Network Globe
+     */
+    public function network()
+    {
+        $mapAnalytics = User::getMapAnalytics();
+        return view('network.index', [
+            'locations' => $mapAnalytics['alumniLocations'],
+            'nationalCount' => $mapAnalytics['nationalCount'],
+            'internationalCount' => $mapAnalytics['internationalCount']
+        ]);
+    }
 }
