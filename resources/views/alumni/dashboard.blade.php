@@ -61,13 +61,56 @@
                 <p class="mb-0 small">Anda belum bisa menggunakan fitur Forum, Pekerjaan, dan Direktori. Mohon tunggu proses validasi data Anda oleh Administrator.</p>
             </div>
             @endif
-            <h2 class="section-heading mt-0">DASHBOARD ALUMNI</h2>
+
+            <h2 class="section-heading mt-0 mb-4">DASHBOARD ALUMNI</h2>
+
+            <!-- NEW: Futuristic Features Section -->
+            <div class="row g-3 mb-5">
+                <div class="col-12">
+                    <div class="p-4 rounded-4 position-relative overflow-hidden shadow-sm" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                        <div class="position-relative z-1">
+                            <h5 class="fw-black mb-3 text-uppercase tracking-wider" style="color: #ffcc00; font-size: 0.8rem;">STEMAN NEXT-GEN FEATURES 🛸</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
+                                        <i class="bi bi-person-badge-fill fs-3 text-warning mb-2 d-block"></i>
+                                        <h6 class="fw-bold mb-1 small">3D Digital ID</h6>
+                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Kartu identitas futuristik dengan teknologi Glassmorphism.</p>
+                                        <a href="{{ route('alumni.card') }}" class="btn btn-warning btn-sm w-100 fw-bold rounded-pill">LIHAT KARTU</a>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
+                                        <i class="bi bi-globe-americas fs-3 text-info mb-2 d-block"></i>
+                                        <h6 class="fw-bold mb-1 small">3D Global Mesh</h6>
+                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Visualisasi jaringan alumni Steman di seluruh dunia secara 3D.</p>
+                                        <a href="{{ route('alumni.network') }}" class="btn btn-info btn-sm w-100 fw-bold rounded-pill text-white">BUKA BOLA DUNIA</a>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
+                                        <i class="bi bi-compass-fill fs-3 text-primary mb-2 d-block"></i>
+                                        <h6 class="fw-bold mb-1 small">Career Navigator</h6>
+                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Prediksi cerdas jalur karir berdasarkan data riil alumni.</p>
+                                        <a href="{{ route('analytics.index') }}" class="btn btn-primary btn-sm w-100 fw-bold rounded-pill">CEK ANALISA</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Abstract decoration -->
+                        <div class="position-absolute end-0 top-0 translate-middle pointer-events-none opacity-10" style="width: 300px; height: 300px; background: radial-gradient(circle, #ffcc00 0%, transparent 70%);"></div>
+                    </div>
+                </div>
+            </div>
             
+            <h4 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="bi bi-star-fill text-warning me-2"></i> QUICK STATS
+            </h4>
             <div class="row g-3 mb-5">
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
                         <div class="text-muted small text-uppercase fw-bold mb-2">Pekerjaan</div>
-                        <div class="h6 fw-bold mb-0">{{ $user->pekerjaan_sekarang ?? 'Belum Diatur' }}</div>
+                        <div class="h6 fw-bold mb-0 text-primary">{{ $user->pekerjaan_sekarang ?? 'Belum Diatur' }}</div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -85,7 +128,7 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-end mb-4">
-                <h4 class="fw-bold mb-0">AI CAREER INSIGHTS</h4>
+                <h4 class="fw-bold mb-0">AI PERSONALIZED PREDICTION</h4>
             </div>
 
             <div class="card border-0 shadow-sm mb-4 glass-card p-4" style="background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white; border-radius: 20px;">
@@ -94,8 +137,16 @@
                         <i class="bi bi-lightbulb-fill fs-4"></i>
                     </div>
                     <div>
-                        <h6 class="fw-bold mb-1">Strategi Karir Anda</h6>
-                        <p class="small opacity-75 mb-0">Berdasarkan data profil, Anda memiliki potensi besar di bidang {{ $user->jurusan }}. Rekomendasi: Ambil sertifikasi keahlian tambahan untuk meningkatkan daya tawar di {{ $user->pekerjaan_sekarang ?? 'industri' }}.</p>
+                        <h6 class="fw-bold mb-1">Rekomendasi Karir Anda</h6>
+                        <p class="small opacity-75 mb-0">
+                            {{ $aiPrediction ?? "Berdasarkan data profil, Anda memiliki potensi besar di bidang $user->jurusan. Rekomendasi: Ambil sertifikasi keahlian tambahan untuk meningkatkan daya tawar di " . ($user->pekerjaan_sekarang ?? 'industri') . "." }}
+                        </p>
+                        @if($careerSnippet)
+                        <div class="mt-3 p-2 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
+                            <small class="fw-bold d-block mb-1">DATA INSIGHT:</small>
+                            <small class="opacity-75">Mayoritas alumni {{ $user->jurusan }} kini sukses sebagai <b>{{ $careerSnippet->pekerjaan_sekarang }}</b></small>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

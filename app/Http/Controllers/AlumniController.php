@@ -55,11 +55,25 @@ class AlumniController extends Controller
                 $userBadges = collect();
             }
 
-            // 5. AI Personalized Prediction
+            // 4. Map Analytics - REQUIRED for Dashboard Map
+            $mapAnalytics = User::getMapAnalytics();
+
+            // 5. AI Personalized Prediction & Career Snippet
             $aiPrediction = null;
+            $careerSnippet = null;
             try {
                 $aiService = new AIPredictionService();
                 $aiPrediction = $aiService->getUserPrediction($user);
+                
+                // Fetch career paths snippet
+                $careerSnippet = User::where('role', 'alumni')
+                    ->where('jurusan', $user->jurusan)
+                    ->whereNotNull('pekerjaan_sekarang')
+                    ->where('pekerjaan_sekarang', '!=', '')
+                    ->selectRaw('pekerjaan_sekarang, count(*) as total')
+                    ->groupBy('pekerjaan_sekarang')
+                    ->orderBy('total', 'desc')
+                    ->first();
             } catch (\Exception $e) {
                 // Skip if error
             }
@@ -72,7 +86,8 @@ class AlumniController extends Controller
                 'alumniLocations' => $mapAnalytics['alumniLocations'],
                 'nationalCount' => $mapAnalytics['nationalCount'],
                 'internationalCount' => $mapAnalytics['internationalCount'],
-                'aiPrediction' => $aiPrediction
+                'aiPrediction' => $aiPrediction,
+                'careerSnippet' => $careerSnippet
             ]);
 
         } catch (\Exception $e) {

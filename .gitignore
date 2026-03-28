@@ -23,3 +23,7 @@ Thumbs.db
 .gemini/
 .idea/
 .vscode/
+*.zip
+.phpunit.result.cache
+steman_deploy.zip
+laravel_remote.log
