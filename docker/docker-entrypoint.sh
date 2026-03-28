@@ -37,7 +37,7 @@ php artisan migrate --force
 if [ "$APP_ENV" = "production" ]; then
     echo "Optimizing Laravel for Production..."
     php artisan config:cache
-    php artisan route:cache
+    # php artisan route:cache
     php artisan view:cache
     php artisan event:cache
     # Ensure all storage links are created
