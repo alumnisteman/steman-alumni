@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 use App\Services\AlumniService;
-use Illuminate\Http\Request;
 
 class AlumniController extends Controller
 {
