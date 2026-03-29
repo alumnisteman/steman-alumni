@@ -5,6 +5,9 @@ use App\Models\Setting;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +25,7 @@ class ChairmanController extends Controller
             'chairman_name' => 'nullable|string|max:255',
             'chairman_period' => 'nullable|string|max:255',
             'chairman_message' => 'nullable|string',
+            'alumni_message' => 'nullable|string',
             'chairman_photo' => 'nullable|image|max:5120',
             
             'event_chairman_name' => 'nullable|string|max:255',
@@ -32,7 +36,7 @@ class ChairmanController extends Controller
 
         try {
             // Alumni Chairman Settings
-            $keys = ['chairman_name', 'chairman_period', 'chairman_message'];
+            $keys = ['chairman_name', 'chairman_period', 'chairman_message', 'alumni_message'];
             foreach ($keys as $key) {
                 if ($request->has($key)) {
                     Setting::updateOrCreate(
@@ -48,7 +52,8 @@ class ChairmanController extends Controller
 
             if ($request->hasFile('chairman_photo')) {
                 $path = $request->file('chairman_photo')->store('uploads/chairman', 'public');
-                $url = Storage::url($path);
+                // Use relative path to avoid IP mismatch issues (APP_URL)
+                $url = '/storage/' . $path;
                 Setting::updateOrCreate(
                     ['key' => 'chairman_photo'], 
                     [
@@ -76,7 +81,8 @@ class ChairmanController extends Controller
 
             if ($request->hasFile('event_chairman_photo')) {
                 $path = $request->file('event_chairman_photo')->store('uploads/chairman', 'public');
-                $url = Storage::url($path);
+                // Use relative path to avoid IP mismatch issues (APP_URL)
+                $url = '/storage/' . $path;
                 Setting::updateOrCreate(
                     ['key' => 'event_chairman_photo'], 
                     [

@@ -21,6 +21,7 @@
             <div class="col-lg-4 text-center">
                 <div class="position-relative d-inline-block">
                      <img src="{{ setting('chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400') }}" 
+                          onerror="this.src='https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400'"
                           class="img-fluid rounded-4 shadow-lg border border-5 border-white" 
                           style="max-height: 280px; width: auto; object-fit: cover;" 
                           alt="Ketua Umum">

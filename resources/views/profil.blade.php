@@ -29,10 +29,21 @@
                                 </div>
                             </div>
                             <div class="col-md-7">
-                                <h6 class="text-primary fw-bold text-uppercase mb-2">Sambutan Ketua Umum</h6>
-                                <h2 class="fw-bold mb-4 font-heading">Pesan Untuk Alumni</h2>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h6 class="text-primary fw-bold text-uppercase mb-2">Sambutan Ketua Umum</h6>
+                                        <h2 class="fw-bold mb-0 font-heading">Pesan Untuk Alumni</h2>
+                                    </div>
+                                    @auth
+                                        @if(auth()->user()->role == 'admin')
+                                            <a href="{{ route('admin.chairman.edit') }}" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm fw-bold border-0">
+                                                <i class="bi bi-pencil-square me-1"></i> EDIT
+                                            </a>
+                                        @endif
+                                    @endauth
+                                </div>
                                 <div class="lead text-muted lh-lg" style="font-size: 1.1rem; font-style: italic;">
-                                    "{!! nl2br(e(setting('chairman_message', 'Selamat datang di portal resmi Ikatan Alumni SMKN 2 Ternate. Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan untuk almamater dan bangsa.'))) !!}"
+                                    "{!! nl2br(e(setting('alumni_message', 'Selamat datang di portal resmi Ikatan Alumni SMKN 2 Ternate. Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan untuk almamater dan bangsa.'))) !!}"
                                 </div>
                             </div>
                         </div>

@@ -18,6 +18,7 @@ services:
       - ./:/var/www
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - steman-network
     depends_on:

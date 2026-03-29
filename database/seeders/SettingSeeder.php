@@ -71,14 +71,26 @@ class SettingSeeder extends Seeder
                 'group' => 'chairman'
             ],
             [
-                'key' => 'chairman_speech',
-                'value' => 'Selamat datang para alumni di portal resmi kita.',
-                'label' => 'Sambutan Ketua Umum',
+                'key' => 'chairman_period',
+                'value' => 'Periode 2024 - 2028',
+                'label' => 'Jabatan / Periode Ketua Umum',
+                'group' => 'chairman'
+            ],
+            [
+                'key' => 'chairman_message',
+                'value' => 'Selamat datang di portal resmi Ikatan Alumni SMKN 2 Ternate. Mari kita jalin silaturahmi.',
+                'label' => 'Sambutan Singkat Ketua Umum',
+                'group' => 'chairman'
+            ],
+            [
+                'key' => 'alumni_message',
+                'value' => 'Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan untuk almamater dan bangsa.',
+                'label' => 'Pesan Khusus Untuk Alumni',
                 'group' => 'chairman'
             ],
             [
                 'key' => 'chairman_photo',
-                'value' => 'https://via.placeholder.com/150',
+                'value' => 'https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400',
                 'label' => 'Foto Ketua Umum',
                 'group' => 'chairman'
             ],
@@ -91,16 +103,36 @@ class SettingSeeder extends Seeder
                 'group' => 'event_chairman'
             ],
             [
-                'key' => 'event_chairman_speech',
+                'key' => 'event_chairman_period',
+                'value' => 'Reuni Akbar 2026',
+                'label' => 'Tema / Keterangan Event',
+                'group' => 'event_chairman'
+            ],
+            [
+                'key' => 'event_chairman_message',
                 'value' => 'Mari sukseskan acara temu kangen alumni tahun ini.',
                 'label' => 'Sambutan Ketua Panitia',
                 'group' => 'event_chairman'
             ],
             [
                 'key' => 'event_chairman_photo',
-                'value' => 'https://via.placeholder.com/150',
+                'value' => 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400',
                 'label' => 'Foto Ketua Panitia',
                 'group' => 'event_chairman'
+            ],
+
+            // Hero Section (New)
+            [
+                'key' => 'hero_title',
+                'value' => 'Koneksi Abadi, Kontribusi Tanpa Henti',
+                'label' => 'Judul Banner Utama (Hero)',
+                'group' => 'hero'
+            ],
+            [
+                'key' => 'hero_description',
+                'value' => 'Bergabunglah dengan ribuan alumni lainnya untuk membangun masa depan yang lebih cerah.',
+                'label' => 'Deskripsi Banner Utama',
+                'group' => 'hero'
             ],
         ];
 

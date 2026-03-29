@@ -97,8 +97,53 @@
 @endpush
 
 @section('content')
-<div class="dashboard-bg pt-4">
-    <div class="container">
+<div class="dashboard-bg">
+    <div class="container py-4">
+        <!-- CRITICAL MANAGEMENT SHORTCUTS -->
+        <div class="row g-4 mb-5 animate__animated animate__fadeInDown">
+            <div class="col-12">
+                <div class="alert alert-primary border-0 shadow-sm rounded-4 p-4 d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                        <i class="bi bi-gear-wide-connected fs-3 text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1">Pusat Manajemen Cepat</h5>
+                        <p class="mb-0 text-muted small">Akses langsung fitur yang paling sering digunakan.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none h-100 d-block">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100 hover-scale" style="background: linear-gradient(135deg, #ffcc00 0%, #ffb300 100%);">
+                        <div class="card-body p-4 d-flex align-items-center">
+                            <div class="bg-white bg-opacity-25 p-4 rounded-4 me-4 text-white shadow-sm">
+                                <i class="bi bi-person-badge-fill" style="font-size: 3rem;"></i>
+                            </div>
+                            <div class="text-dark">
+                                <h3 class="fw-black mb-1">KETUA UMUM</h3>
+                                <p class="mb-0 opacity-75 fw-bold">KLIK DI SINI UNTUK GANTI FOTO & PESAN</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none h-100 d-block">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100 hover-scale" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                        <div class="card-body p-4 d-flex align-items-center">
+                            <div class="bg-white bg-opacity-25 p-4 rounded-4 me-4 text-white shadow-sm">
+                                <i class="bi bi-person-fill-gear" style="font-size: 3rem;"></i>
+                            </div>
+                            <div class="text-white">
+                                <h3 class="fw-black mb-1 text-white">KETUA PANITIA</h3>
+                                <p class="mb-0 opacity-75 fw-bold text-white">KLIK DI SINI UNTUK GANTI FOTO & NAMA</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Header Section -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
             <div>
@@ -108,6 +153,38 @@
             <a href="/admin/export" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold border-0" style="background: linear-gradient(45deg, #4361ee, #3f37c9);">
                 <i class="bi bi-cloud-download me-2"></i> Unduh Data Laporan
             </a>
+        </div>
+
+        <!-- NEW: BIG BUTTONS FOR MANAGEMENT (URGENT FIX) -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none">
+                    <div class="glass-card p-4 border-0 shadow-lg bg-warning bg-opacity-10 hover-scale h-100 d-flex align-items-center">
+                        <div class="icon-glass bg-warning text-dark me-4 shadow-sm" style="width: 70px; height: 70px;">
+                            <i class="bi bi-person-badge-fill fs-2"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">KELOLA KETUA UMUM</h4>
+                            <p class="text-muted mb-0">Klik di sini untuk Ganti Foto & Pesan Alumni</p>
+                        </div>
+                        <i class="bi bi-chevron-right ms-auto fs-3 text-warning"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none">
+                    <div class="glass-card p-4 border-0 shadow-lg bg-primary bg-opacity-10 hover-scale h-100 d-flex align-items-center">
+                        <div class="icon-glass bg-primary text-white me-4 shadow-sm" style="width: 70px; height: 70px;">
+                            <i class="bi bi-person-fill-gear fs-2"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">KELOLA KETUA PANITIA</h4>
+                            <p class="text-muted mb-0">Klik di sini untuk Ganti Foto & Nama Panitia</p>
+                        </div>
+                        <i class="bi bi-chevron-right ms-auto fs-3 text-primary"></i>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- AI Insights -->
@@ -167,6 +244,60 @@
             </div>
         </div>
 
+        <!-- Quick Actions / Menu Management -->
+        <div class="glass-card p-4 mb-4 border-0 shadow-lg" style="background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);">
+            <div class="d-flex align-items-center mb-4 px-2">
+                <div class="icon-glass bg-primary text-white me-3 shadow-sm border-0">
+                    <i class="bi bi-grid-fill fs-5"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Kumpulan Menu Manajemen</h5>
+                    <p class="text-muted small mb-0">Pusat kendali untuk seluruh fitur portal alumni.</p>
+                </div>
+                <div class="ms-auto d-none d-md-block">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 small fw-bold">KONTROL UTAMA</span>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                @php
+                    $menus = [
+                        ['url' => '/admin/news', 'icon' => 'newspaper', 'color' => 'primary', 'title' => 'Berita', 'desc' => 'Artikel'],
+                        ['url' => '/admin/programs', 'icon' => 'calendar-event', 'color' => 'success', 'title' => 'Program', 'desc' => 'Beasiswa'],
+                        ['url' => '/admin/gallery', 'icon' => 'image', 'color' => 'warning', 'title' => 'Galeri', 'desc' => 'Foto/Video'],
+                        ['url' => route('admin.chairman.edit'), 'icon' => 'person-badge-fill', 'color' => 'info', 'title' => 'Ketua Umum', 'desc' => 'Branding'],
+                        ['url' => route('admin.chairman.edit'), 'icon' => 'person-fill-gear', 'color' => 'primary', 'title' => 'Ketua Panitia', 'desc' => 'Panitia'],
+                        ['url' => '/admin/contact', 'icon' => 'telephone', 'color' => 'danger', 'title' => 'Kontak', 'desc' => 'Sekolah'],
+                        ['url' => '/admin/messages', 'icon' => 'envelope', 'color' => 'info', 'title' => 'Inbox', 'desc' => 'Pesan'],
+                        ['url' => '/admin/users', 'icon' => 'people', 'color' => 'primary', 'title' => 'Users', 'desc' => 'Alumni'],
+                        ['url' => route('admin.jobs.index'), 'icon' => 'briefcase', 'color' => 'success', 'title' => 'Lowongan', 'desc' => 'Karir'],
+                        ['url' => route('admin.majors.index'), 'icon' => 'mortarboard', 'color' => 'warning', 'title' => 'Jurusan', 'desc' => 'Keahlian'],
+                        ['url' => '/admin/settings', 'icon' => 'gear', 'color' => 'secondary', 'title' => 'Settings', 'desc' => 'Web App']
+                    ];
+                @endphp
+
+                @foreach($menus as $menu)
+                <div class="col-4 col-md-3 col-lg-2">
+                    <a href="{{ $menu['url'] }}" class="text-decoration-none group">
+                        <div class="p-3 h-100 d-flex flex-column align-items-center text-center transition-all hover-scale border border-transparent hover-border-primary rounded-4">
+                            <div class="bg-{{ $menu['color'] }} bg-opacity-10 text-{{ $menu['color'] }} rounded-4 mb-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px;">
+                                <i class="bi bi-{{ $menu['icon'] }} fs-4"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1 small">{{ $menu['title'] }}</h6>
+                            <div class="badge bg-{{ $menu['color'] }} bg-opacity-10 text-{{ $menu['color'] }} rounded-pill px-2 py-1 mt-1 fw-bold" style="font-size: 0.6rem;">EDIT <i class="bi bi-chevron-right ms-1"></i></div>
+                        </div>
+                    </a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        <style>
+            .hover-scale { transition: all 0.2s ease-in-out; }
+            .hover-scale:hover { transform: scale(1.05); background: rgba(255,255,255,0.5); }
+            .hover-border-primary:hover { border-color: rgba(67, 97, 238, 0.3) !important; }
+        </style>
+
         <!-- Geospatial Map Section -->
         <div class="mb-4">
             <x-alumni-map 
@@ -176,70 +307,6 @@
                 :internationalCount="$internationalCount" 
                 height="450px"
             />
-        </div>
-
-
-        <div class="row g-4 mb-4">
-            <!-- ApexCharts Visualizations -->
-            <div class="col-lg-8">
-                <div class="glass-card p-4 h-100">
-                    <h5 class="fw-bold mb-4 text-dark">Tren Kelulusan Angkatan</h5>
-                    <div id="apexYearChart"></div>
-                </div>
-            </div>
-            
-            <!-- Real-time Activity Feed -->
-            <div class="col-lg-4">
-                <div class="glass-card p-4 h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold mb-0 text-dark">Aktivitas Terbaru</h5>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Live</span>
-                    </div>
-                    <div class="timeline" id="activityTimeline">
-                        @forelse($recentActivities as $activity)
-                            <div class="timeline-item">
-                                <h6 class="fw-bold mb-1">{{ $activity->name }}</h6>
-                                <p class="text-muted small mb-0">Bergabung sebagai {{ ucfirst($activity->role) }}</p>
-                                <span class="text-secondary" style="font-size: 0.75rem;">{{ $activity->created_at->diffForHumans() }}</span>
-                            </div>
-                        @empty
-                            <p class="text-muted small">Belum ada aktivitas.</p>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions / Menu Management -->
-        <h5 class="fw-bold mb-3 mt-5 px-2">Kumpulan Menu Manajemen</h5>
-        <div class="row g-3">
-            @php
-                $menus = [
-                    ['url' => '/admin/news', 'icon' => 'newspaper', 'color' => 'primary', 'title' => 'Berita', 'desc' => 'Kelola artikel'],
-                    ['url' => '/admin/programs', 'icon' => 'calendar-event', 'color' => 'success', 'title' => 'Program', 'desc' => 'Beasiswa & Acara'],
-                    ['url' => '/admin/gallery', 'icon' => 'image', 'color' => 'warning', 'title' => 'Galeri', 'desc' => 'Foto & Tiktok'],
-                    ['url' => '/admin/contact', 'icon' => 'telephone', 'color' => 'danger', 'title' => 'Kontak', 'desc' => 'Info sekolah'],
-                    ['url' => '/admin/messages', 'icon' => 'envelope', 'color' => 'info', 'title' => 'Pesan Masuk', 'desc' => 'Kotak masuk web'],
-                    ['url' => '/admin/users', 'icon' => 'people', 'color' => 'primary', 'title' => 'Users', 'desc' => 'Alumni & Admin'],
-                    ['url' => route('admin.jobs.index'), 'icon' => 'briefcase', 'color' => 'success', 'title' => 'Lowongan', 'desc' => 'Daftar karir'],
-                    ['url' => route('admin.majors.index'), 'icon' => 'mortarboard', 'color' => 'warning', 'title' => 'Jurusan', 'desc' => 'Opsi keahlian'],
-                    ['url' => '/admin/settings', 'icon' => 'gear', 'color' => 'secondary', 'title' => 'Pengaturan', 'desc' => 'Konfigurasi web']
-                ];
-            @endphp
-
-            @foreach($menus as $menu)
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="{{ $menu['url'] }}" class="text-decoration-none">
-                    <div class="glass-card p-3 h-100 d-flex flex-column align-items-center text-center">
-                        <div class="bg-{{ $menu['color'] }} bg-opacity-10 text-{{ $menu['color'] }} rounded-circle mb-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                            <i class="bi bi-{{ $menu['icon'] }} fs-4"></i>
-                        </div>
-                        <h6 class="fw-bold text-dark mb-1">{{ $menu['title'] }}</h6>
-                        <span class="text-muted small" style="font-size: 0.75rem;">{{ $menu['desc'] }}</span>
-                    </div>
-                </a>
-            </div>
-            @endforeach
         </div>
     </div>
 </div>

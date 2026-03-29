@@ -33,15 +33,41 @@
                     @foreach($items as $item)
                         <div class="mb-4">
                             <label class="form-label small fw-bold text-dark">{{ $item->label }}</label>
-                            @if(str_contains($item->key, 'program') || $item->key == 'hero_title' || $item->key == 'contact_address')
-                                <textarea name="{{ $item->key }}" class="form-control" rows="3">{{ $item->value }}</textarea>
-                            @elseif($item->key == 'hero_background')
-                                <div class="mb-2">
-                                    <img src="{{ $item->value }}" alt="Hero Background Preview" class="img-thumbnail" style="max-height: 150px;">
+                            @php
+                                $key = (string)$item->key;
+                                $isLongText = (strpos($key, 'message') !== false) || 
+                                              (strpos($key, 'speech') !== false) || 
+                                              (strpos($key, 'description') !== false) || 
+                                              (strpos($key, 'program') !== false) || 
+                                              ($key == 'hero_title') || 
+                                              ($key == 'contact_address');
+                                
+                                $isImage = (strpos($key, 'photo') !== false) || 
+                                           (strpos($key, 'logo') !== false) || 
+                                           (strpos($key, 'background') !== false);
+                            @endphp
+
+                            @if($isLongText)
+                                <textarea name="{{ $item->key }}" class="form-control shadow-sm" rows="4" style="border-radius: 10px;">{{ $item->value }}</textarea>
+                            @elseif($isImage)
+                                <div class="p-3 bg-light border border-light-subtle rounded-3 mb-2">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if($item->value)
+                                            <div class="position-relative">
+                                                <img src="{{ $item->value }}" alt="Preview" class="rounded-3 shadow-sm border border-2 border-white" style="width: 80px; height: 80px; object-fit: cover;">
+                                            </div>
+                                        @endif
+                                        <div class="flex-grow-1">
+                                            <label class="form-label x-small fw-bold text-primary mb-1">GANTI FOTO / UPLOAD :</label>
+                                            <input type="file" name="{{ $item->key }}" class="form-control form-control-sm shadow-sm" style="border-radius: 8px;">
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 x-small text-muted">
+                                        URL Saat Ini: <code class="bg-white px-1">{{ $item->value }}</code>
+                                    </div>
                                 </div>
-                                <input type="file" name="{{ $item->key }}" class="form-control">
                             @else
-                                <input type="text" name="{{ $item->key }}" class="form-control" value="{{ $item->value }}">
+                                <input type="text" name="{{ $item->key }}" class="form-control shadow-sm" value="{{ $item->value }}" style="border-radius: 10px;">
                             @endif
                             <div class="form-text small opacity-50">Kunci: <code>{{ $item->key }}</code></div>
                         </div>
@@ -49,10 +75,11 @@
                     </div>
                 @endforeach
 
-                <button type="submit" class="btn btn-steman w-100 py-3 rounded-pill shadow-sm fw-bold">
-                    <i class="bi bi-save me-2"></i>SIMPAN PERUBAHAN
-                </button>
-            </form>
+                <div class="mt-4">
+            <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill shadow-lg fw-bold overflow-hidden position-relative border-0" style="background: linear-gradient(135deg, #1e293b, #334155);">
+                <span class="position-relative z-1"><i class="bi bi-cloud-upload-fill me-2"></i>SIMPAN & UNGGAH PERUBAHAN</span>
+            </button>
+        </div>    </form>
         </div>
         
         <div class="col-lg-4">

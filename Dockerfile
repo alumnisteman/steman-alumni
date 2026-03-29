@@ -60,6 +60,7 @@ WORKDIR /var/www
 
 # Copy PHP config
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
 # Copy PHP dependencies
 COPY --from=composer-builder /app/vendor /var/www/vendor
