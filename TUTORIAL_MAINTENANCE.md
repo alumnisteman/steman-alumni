@@ -1,86 +1,223 @@
-# 🛠️ Panduan Pemeliharaan & Cadangan STEMAN Alumni v5
+# 🛠️ Panduan Pemeliharaan – STEMAN Alumni Portal v5
 
-Pastikan Portal Alumni Anda tetap berjalan 100% lancar dengan mengikuti panduan rutin ini.
+> Versi terakhir diperbarui: Maret 2026
 
----
-
-## 💾 1. Sistem Cadangan (Backup)
-Jangan biarkan data alumni Anda hilang. Kami menyediakan script backup otomatis.
-
-### Cara Menjalankan Backup:
-Gunakan SSH/Terminal ke server Anda, lalu jalankan:
-```bash
-./scripts/backup.sh
-```
-Script ini akan:
-- Mencadangkan Database (MySQL Dump).
-- Mencadangkan File Upload (Foto Profil & Lampiran).
-- Hasilnya disimpan di folder `./backups/`.
-
-### Otomatisasi (Cron Job):
-Agar backup berjalan otomatis setiap hari jam 2 pagi, tambahkan baris ini ke `crontab -e`:
-```bash
-0 2 * * * /path/ke/proyek/scripts/backup.sh > /dev/null 2>&1
-```
+Ikuti panduan ini secara rutin agar portal tetap **stabil, cepat, dan aman**.
 
 ---
 
-## ⚡ 2. Pemeliharaan Rutin (Maintenance)
-Jalankan script `maintenance.sh` minimal seminggu sekali untuk performa optimal.
+## 📋 Ringkasan Jadwal Maintenance
 
-### Perintah:
-```bash
-./scripts/maintenance.sh
-```
-Script ini akan:
-- Mengosongkan file log yang membengkak.
-- Menghapus image Docker yang tidak terpakai.
-- Memperbarui cache Laravel untuk kecepatan maksimal.
+| Frekuensi | Tugas |
+|---|---|
+| Setiap hari | Backup otomatis database + file |
+| Seminggu sekali | Bersihkan log, optimasi cache |
+| Setiap bulan | Update dependency, cek keamanan |
+| Setiap ada error | Baca log, identifikasi penyebab |
 
 ---
 
-## 🔍 3. Pemantauan (Monitoring)
-Gunakan perintah berikut untuk memeriksa status portal:
+## 1️⃣ Melihat Status Aplikasi
 
-### Cek Kesehatan Container:
+### Cek semua container berjalan:
 ```bash
 docker compose ps
 ```
-Pastikan status `Up (healthy)`.
-
-### Cek Log Error:
+Status semua service harus `Up (healthy)`. Jika ada yang `Exit` atau `Unhealthy`:
 ```bash
-# Log Sistem PHP
-docker compose logs -f app
+docker compose restart
+```
 
-# Log Notifikasi Real-time
+### Cek log error Laravel secara live:
+```bash
+docker exec steman_app tail -f storage/logs/laravel.log
+```
+
+### Cek log Nginx:
+```bash
+docker compose logs -f nginx
+```
+
+### Cek log WebSocket (Reverb):
+```bash
 docker compose logs -f reverb
 ```
 
 ---
 
-## 🚨 4. Pemecahan Masalah (Troubleshooting)
+## 2️⃣ Deploy Update Terbaru (Dari GitHub)
 
-### Q: Aplikasi terasa lambat?
-Jalankan: `bash scripts/maintenance.sh`
+Setiap kali ada update kode dari repositori GitHub, jalankan:
 
-### Q: Peta Heatmap tidak muncul?
-- Pastikan alumni sudah mengisi data kota/provinsi.
-- Cek koneksi internet server untuk memuat Google/Leaflet Maps.
+```powershell
+# Windows PowerShell — One-Click Deploy
+.\deploy.ps1
+```
 
-### Q: Notifikasi tidak masuk?
-Pastikan container `steman_reverb` berjalan dan port 8080 terbuka di Firewall server.
+Script ini otomatis:
+1. Pull kode terbaru dari GitHub
+2. Build ulang image Docker
+3. Jalankan migrasi database
+4. Rebuild cache Laravel (config, view, route)
+5. Restart semua container
 
 ---
 
-## 🔄 5. Pembaruan (Update)
-Jika ada pembaruan kode dari repositori:
+## 3️⃣ Backup Manual
+
+### Backup Database:
 ```bash
-git pull origin main
-docker compose up -d --build
+# Backup MySQL ke file .sql
+docker exec steman_db mysqldump -u root -p steman_alumni > backup_$(date +%Y%m%d).sql
+```
+
+### Backup File Upload (Foto, Dokumen):
+```bash
+# Salin seluruh folder storage ke direktori backup
+cp -r storage/app/public ./backups/storage_$(date +%Y%m%d)
+```
+
+### Restore Database dari Backup:
+```bash
+docker exec -i steman_db mysql -u root -p steman_alumni < backup_TANGGAL.sql
 ```
 
 ---
 
-> _Keamanan data alumni adalah tanggung jawab bersama._
-> **Ikatan Alumni SMKN 2 Ternate — Maintenance Group**
+## 4️⃣ Optimasi & Bersihkan Cache
+
+Jalankan perintah ini minimal seminggu sekali:
+
+```bash
+# Bersihkan aplikasi cache
+docker exec steman_app php artisan cache:clear
+
+# Rebuild config cache (percepat load)
+docker exec steman_app php artisan config:cache
+
+# Rebuild view cache
+docker exec steman_app php artisan view:cache
+
+# Hapus log yang membengkak (hati-hati: ini menghapus log lama)
+docker exec steman_app truncate -s 0 storage/logs/laravel.log
+```
+
+---
+
+## 5️⃣ Troubleshooting Error
+
+### ❌ 502 Bad Gateway
+**Penyebab:** PHP-FPM kehabisan memori atau timeout karena query besar.
+
+**Solusi:**
+```bash
+# Restart PHP-FPM
+docker compose restart app
+
+# Cek log untuk detail error
+docker exec steman_app tail -50 storage/logs/laravel.log
+```
+
+### ❌ 500 Server Error
+**Penyebab:** Variabel PHP undefined, DB error, atau konfigurasi salah.
+
+**Solusi:**
+```bash
+# Aktifkan debug sementara untuk melihat detail error
+# Edit .env: APP_DEBUG=true
+# Akses halaman yang error, lalu kembalikan APP_DEBUG=false
+
+docker exec steman_app php artisan config:clear
+```
+
+### ❌ 404 Not Found
+**Penyebab:** Route tidak ditemukan, view hilang, atau file tidak ada.
+
+**Solusi:**
+```bash
+# Refresh routing cache
+docker exec steman_app php artisan route:clear
+docker exec steman_app php artisan route:cache
+```
+> Catatan: Jika ada route yang menggunakan closure (anonymous function), `route:cache` akan gagal. Ini normal — jalankan hanya `route:clear`.
+
+### ❌ 419 Page Expired (CSRF)
+**Penyebab:** Sesi PHP kadaluarsa atau token CSRF tidak cocok.
+
+**Solusi:** Refresh halaman. Jika terus terjadi:
+```bash
+docker exec steman_app php artisan session:clear
+docker exec steman_app php artisan cache:clear
+```
+
+### ❌ Gambar/Foto Tidak Muncul
+**Penyebab:** Symlink storage belum dibuat atau volume Nginx tidak sinkron.
+
+**Solusi:**
+```bash
+docker exec steman_app php artisan storage:link
+docker exec steman_app chmod -R 775 storage
+docker exec steman_app chown -R www-data:www-data storage
+```
+
+### ❌ Notifikasi Real-time Tidak Masuk
+**Penyebab:** Container Reverb tidak berjalan.
+
+**Solusi:**
+```bash
+docker compose up -d reverb
+# Pastikan port 8080 tidak diblok firewall
+```
+
+---
+
+## 6️⃣ Pembaruan IP Server (Jaringan Berubah)
+
+Setiap kali IP server berubah (DHCP/restart router), jalankan:
+```powershell
+# Windows
+.\update-ip.ps1
+```
+
+---
+
+## 7️⃣ Reset Password Admin
+
+Jika lupa password admin, gunakan Artisan Tinker:
+```bash
+docker exec -it steman_app php artisan tinker
+```
+Lalu di Tinker:
+```php
+$user = \App\Models\User::where('email', 'admin@steman.ac.id')->first();
+$user->password = \Illuminate\Support\Facades\Hash::make('PasswordBaru@123');
+$user->save();
+exit;
+```
+
+---
+
+## 8️⃣ Cek Kesehatan Sistem Lengkap (One-Time Check)
+
+Jalankan perintah ini untuk memverifikasi semua sistem berjalan normal:
+```bash
+# 1. Status container
+docker compose ps
+
+# 2. Koneksi database
+docker exec steman_app php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';"
+
+# 3. Cek storage symlink
+docker exec steman_app ls -la public/storage
+
+# 4. Cek log error terbaru
+docker exec steman_app tail -20 storage/logs/laravel.log
+
+# 5. Cek versi PHP
+docker exec steman_app php -v
+```
+
+---
+
+> _Keamanan dan stabilitas data alumni adalah tanggung jawab bersama._
+> **Ikatan Alumni SMKN 2 Ternate — Maintenance Guide v5.1**

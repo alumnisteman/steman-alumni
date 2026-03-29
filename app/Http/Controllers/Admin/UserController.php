@@ -77,7 +77,7 @@ class UserController extends Controller
             if ($request->hasFile('foto_profil')) {
                 // Disk cleanup removed for simplicity in this hardened version
                 $path = $request->file('foto_profil')->store('avatars', 'public');
-                $user->foto_profil = asset('storage/' . $path);
+                $user->foto_profil = '/storage/' . $path;
             }
 
             if ($request->filled('password')) {

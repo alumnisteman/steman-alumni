@@ -15,6 +15,8 @@ class GalleryController extends Controller
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5); // Prevent 504 Gateway Timeout
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
             curl_exec($ch);
             $url = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
@@ -36,7 +38,8 @@ class GalleryController extends Controller
 
     public function adminIndex()
     {
-        $media = Gallery::latest()->get();
+        // Paginate to avoid 502 OOM: avoid loading all gallery rows with descriptions at once
+        $media = Gallery::latest()->paginate(30);
         return view('admin.gallery', compact('media'));
     }
 
@@ -63,7 +66,7 @@ class GalleryController extends Controller
         if ($request->type == 'photo') {
             if (!$request->hasFile('file')) return back()->with('error', 'Foto wajib diunggah.');
             $path    = $request->file('file')->store('gallery', 'public');
-            $fileUrl = Storage::disk('public')->url($path);
+            $fileUrl = '/storage/' . $path;
         } elseif ($request->type == 'tiktok') {
             if (!$request->tiktok_url) return back()->with('error', 'Wajib menyertakan link TikTok.');
             $tiktokUrl = $this->cleanTiktokUrl($request->tiktok_url);
@@ -105,8 +108,9 @@ class GalleryController extends Controller
     public function destroy(Gallery $gallery)
     {
         if ($gallery->file_path) {
-            $relativePath = str_replace(Storage::disk('public')->url(''), '', $gallery->file_path);
-            Storage::disk('public')->delete(ltrim($relativePath, '/'));
+            // Path stored as '/storage/gallery/file.jpg', strip '/storage/' prefix for disk deletion
+            $relativePath = ltrim(str_replace('/storage/', '', $gallery->file_path), '/');
+            Storage::disk('public')->delete($relativePath);
         }
         $title = $gallery->title;
         $gallery->delete();
@@ -161,11 +165,12 @@ class GalleryController extends Controller
         if ($request->hasFile('file') && $request->type === 'photo') {
             // Delete old file if it exists
             if ($gallery->file_path) {
-                $relativePath = str_replace(Storage::disk('public')->url(''), '', $gallery->file_path);
-                Storage::disk('public')->delete(ltrim($relativePath, '/'));
+                // Path stored as '/storage/gallery/file.jpg', strip '/storage/' prefix for disk deletion
+                $relativePath = ltrim(str_replace('/storage/', '', $gallery->file_path), '/');
+                Storage::disk('public')->delete($relativePath);
             }
             $path              = $request->file('file')->store('gallery', 'public');
-            $data['file_path'] = Storage::disk('public')->url($path);
+            $data['file_path'] = '/storage/' . $path;
         }
 
         $gallery->update($data);

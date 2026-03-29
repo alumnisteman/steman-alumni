@@ -41,7 +41,8 @@ class ProgramController extends Controller
         $data['slug'] = Str::slug($request->title);
 
         if ($request->hasFile('image')) {
-            $data['image'] = Storage::url($request->file('image')->store('uploads/programs', 'public'));
+            $storedPath = $request->file('image')->store('uploads/programs', 'public');
+            $data['image'] = '/storage/' . $storedPath;
         }
 
         $program = Program::create($data);
@@ -81,11 +82,8 @@ class ProgramController extends Controller
 
         if ($request->hasFile('image')) {
             // Delete old image if exists
-            if ($program->image) {
-                $oldPath = str_replace('/storage/', '', $program->image);
-                Storage::disk('public')->delete($oldPath);
-            }
-            $data['image'] = Storage::url($request->file('image')->store('uploads/programs', 'public'));
+            $storedPath = $request->file('image')->store('uploads/programs', 'public');
+            $data['image'] = '/storage/' . $storedPath;
         }
 
         $program->update($data);

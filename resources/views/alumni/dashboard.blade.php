@@ -137,11 +137,15 @@
                         <i class="bi bi-lightbulb-fill fs-4"></i>
                     </div>
                     <div>
-                        <h6 class="fw-bold mb-1">Rekomendasi Karir Anda</h6>
                         <p class="small opacity-75 mb-0">
-                            {{ $aiPrediction ?? "Berdasarkan data profil, Anda memiliki potensi besar di bidang $user->jurusan. Rekomendasi: Ambil sertifikasi keahlian tambahan untuk meningkatkan daya tawar di " . ($user->pekerjaan_sekarang ?? 'industri') . "." }}
+                            @if(is_array($aiPrediction))
+                                {{ $aiPrediction['suggestion'] }}
+                                <br><small class="opacity-75">Target Karir: {{ $aiPrediction['milestone'] }} Tahun Mendatang ({{ $aiPrediction['reunion_year'] }})</small>
+                            @else
+                                {{ $aiPrediction ?? "Berdasarkan data profil, Anda memiliki potensi besar di bidang $user->jurusan. Rekomendasi: Ambil sertifikasi keahlian tambahan untuk meningkatkan daya tawar di " . ($user->pekerjaan_sekarang ?? 'industri') . "." }}
+                            @endif
                         </p>
-                        @if($careerSnippet)
+                        @if(isset($careerSnippet) && $careerSnippet)
                         <div class="mt-3 p-2 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
                             <small class="fw-bold d-block mb-1">DATA INSIGHT:</small>
                             <small class="opacity-75">Mayoritas alumni {{ $user->jurusan }} kini sukses sebagai <b>{{ $careerSnippet->pekerjaan_sekarang }}</b></small>

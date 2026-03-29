@@ -57,7 +57,7 @@ class SettingController extends Controller
             // Only process files if a file was actually uploaded and valid
             if ($request->hasFile($key) && $request->file($key)->isValid()) {
                 $path = $request->file($key)->store('uploads/settings', 'public');
-                $value = Storage::url($path);
+                $value = '/storage/' . $path;
             }
             // Only update if the key exists in the settings table
             Setting::where('key', $key)->update(['value' => $value ?? '']);

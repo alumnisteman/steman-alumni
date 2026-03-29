@@ -63,5 +63,10 @@
             </table>
         </div>
     </div>
+    @if($news->hasPages())
+    <div class="mt-4 d-flex justify-content-center">
+        {{ $news->links() }}
+    </div>
+    @endif
 </div>
 @endsection

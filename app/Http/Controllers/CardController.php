@@ -12,14 +12,20 @@ class CardController extends Controller
     {
         $user = Auth::user();
         
-        // Generate QR Code pointing to the user's public profile
-        $profileUrl = route('alumni.show', $user->id);
-        
-        $qrCode = QrCode::size(200)
-            ->backgroundColor(255, 255, 255)
-            ->color(30, 41, 59)
-            ->margin(1)
-            ->generate($profileUrl);
+        try {
+            // Generate QR Code pointing to the user's public profile
+            $profileUrl = route('alumni.show', $user->id);
+            
+            $qrCode = QrCode::size(200)
+                ->backgroundColor(255, 255, 255)
+                ->color(30, 41, 59)
+                ->margin(1)
+                ->generate($profileUrl);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('QR Code Generation Error: ' . $e->getMessage());
+            // Fallback: Simple placeholder or text if QR generation fails
+            $qrCode = '<div class="text-center p-3 small border rounded bg-light">QR Unavailable</div>';
+        }
 
         return view('alumni.card', compact('user', 'qrCode'));
     }

@@ -112,37 +112,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none h-100 d-block">
-                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100 hover-scale" style="background: linear-gradient(135deg, #ffcc00 0%, #ffb300 100%);">
-                        <div class="card-body p-4 d-flex align-items-center">
-                            <div class="bg-white bg-opacity-25 p-4 rounded-4 me-4 text-white shadow-sm">
-                                <i class="bi bi-person-badge-fill" style="font-size: 3rem;"></i>
-                            </div>
-                            <div class="text-dark">
-                                <h3 class="fw-black mb-1">KETUA UMUM</h3>
-                                <p class="mb-0 opacity-75 fw-bold">KLIK DI SINI UNTUK GANTI FOTO & PESAN</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6">
-                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none h-100 d-block">
-                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100 hover-scale" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
-                        <div class="card-body p-4 d-flex align-items-center">
-                            <div class="bg-white bg-opacity-25 p-4 rounded-4 me-4 text-white shadow-sm">
-                                <i class="bi bi-person-fill-gear" style="font-size: 3rem;"></i>
-                            </div>
-                            <div class="text-white">
-                                <h3 class="fw-black mb-1 text-white">KETUA PANITIA</h3>
-                                <p class="mb-0 opacity-75 fw-bold text-white">KLIK DI SINI UNTUK GANTI FOTO & NAMA</p>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
 
         <!-- Header Section -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
@@ -153,38 +122,6 @@
             <a href="/admin/export" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold border-0" style="background: linear-gradient(45deg, #4361ee, #3f37c9);">
                 <i class="bi bi-cloud-download me-2"></i> Unduh Data Laporan
             </a>
-        </div>
-
-        <!-- NEW: BIG BUTTONS FOR MANAGEMENT (URGENT FIX) -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-6">
-                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none">
-                    <div class="glass-card p-4 border-0 shadow-lg bg-warning bg-opacity-10 hover-scale h-100 d-flex align-items-center">
-                        <div class="icon-glass bg-warning text-dark me-4 shadow-sm" style="width: 70px; height: 70px;">
-                            <i class="bi bi-person-badge-fill fs-2"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold text-dark mb-1">KELOLA KETUA UMUM</h4>
-                            <p class="text-muted mb-0">Klik di sini untuk Ganti Foto & Pesan Alumni</p>
-                        </div>
-                        <i class="bi bi-chevron-right ms-auto fs-3 text-warning"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6">
-                <a href="{{ route('admin.chairman.edit') }}" class="text-decoration-none">
-                    <div class="glass-card p-4 border-0 shadow-lg bg-primary bg-opacity-10 hover-scale h-100 d-flex align-items-center">
-                        <div class="icon-glass bg-primary text-white me-4 shadow-sm" style="width: 70px; height: 70px;">
-                            <i class="bi bi-person-fill-gear fs-2"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold text-dark mb-1">KELOLA KETUA PANITIA</h4>
-                            <p class="text-muted mb-0">Klik di sini untuk Ganti Foto & Nama Panitia</p>
-                        </div>
-                        <i class="bi bi-chevron-right ms-auto fs-3 text-primary"></i>
-                    </div>
-                </a>
-            </div>
         </div>
 
         <!-- AI Insights -->
@@ -265,8 +202,6 @@
                         ['url' => '/admin/news', 'icon' => 'newspaper', 'color' => 'primary', 'title' => 'Berita', 'desc' => 'Artikel'],
                         ['url' => '/admin/programs', 'icon' => 'calendar-event', 'color' => 'success', 'title' => 'Program', 'desc' => 'Beasiswa'],
                         ['url' => '/admin/gallery', 'icon' => 'image', 'color' => 'warning', 'title' => 'Galeri', 'desc' => 'Foto/Video'],
-                        ['url' => route('admin.chairman.edit'), 'icon' => 'person-badge-fill', 'color' => 'info', 'title' => 'Ketua Umum', 'desc' => 'Branding'],
-                        ['url' => route('admin.chairman.edit'), 'icon' => 'person-fill-gear', 'color' => 'primary', 'title' => 'Ketua Panitia', 'desc' => 'Panitia'],
                         ['url' => '/admin/contact', 'icon' => 'telephone', 'color' => 'danger', 'title' => 'Kontak', 'desc' => 'Sekolah'],
                         ['url' => '/admin/messages', 'icon' => 'envelope', 'color' => 'info', 'title' => 'Inbox', 'desc' => 'Pesan'],
                         ['url' => '/admin/users', 'icon' => 'people', 'color' => 'primary', 'title' => 'Users', 'desc' => 'Alumni'],

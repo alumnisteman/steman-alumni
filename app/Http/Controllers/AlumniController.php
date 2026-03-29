@@ -109,7 +109,8 @@ class AlumniController extends Controller
                 'alumniLocations' => collect(),
                 'nationalCount' => 0,
                 'internationalCount' => 0,
-                'aiPrediction' => null
+                'aiPrediction' => null,
+                'careerSnippet' => null
             ]);
         }
     }

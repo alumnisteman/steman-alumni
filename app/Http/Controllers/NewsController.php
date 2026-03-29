@@ -32,7 +32,8 @@ class NewsController extends Controller
     // Admin Views
     public function adminIndex()
     {
-        $news = News::latest()->get();
+        // Select only columns needed for the list; skip 'content' (large rich text) to avoid 502 OOM crash
+        $news = News::latest()->select('id', 'title', 'slug', 'category', 'thumbnail', 'is_published', 'created_at')->paginate(20);
         return view('admin.news.index', compact('news'));
     }
 
@@ -53,7 +54,7 @@ class NewsController extends Controller
         $path = null;
         if ($request->hasFile('thumbnail')) {
             $storedPath = $request->file('thumbnail')->store('news', 'public');
-            $path = Storage::disk('public')->url($storedPath);
+            $path = '/storage/' . $storedPath;
         }
 
         $news = News::create([
@@ -93,12 +94,12 @@ class NewsController extends Controller
         $path = $news->thumbnail;
         if ($request->hasFile('thumbnail')) {
             if ($path) {
-                // Extract relative path from full URL and delete from public disk
-                $relativePath = str_replace(Storage::disk('public')->url(''), '', $path);
+                // Path is stored as '/storage/news/file.jpg', strip '/storage/' prefix for disk delete
+                $relativePath = ltrim(str_replace('/storage/', '', $path), '/');
                 Storage::disk('public')->delete($relativePath);
             }
             $storedPath = $request->file('thumbnail')->store('news', 'public');
-            $path = Storage::disk('public')->url($storedPath);
+            $path = '/storage/' . $storedPath;
         }
 
         $news->update([
@@ -124,7 +125,8 @@ class NewsController extends Controller
     public function destroy(News $news)
     {
         if ($news->thumbnail) {
-            $relativePath = str_replace(Storage::disk('public')->url(''), '', $news->thumbnail);
+            // Path is stored as '/storage/news/file.jpg', strip '/storage/' prefix for disk delete
+            $relativePath = ltrim(str_replace('/storage/', '', $news->thumbnail), '/');
             Storage::disk('public')->delete($relativePath);
         }
         $news_title = $news->title;

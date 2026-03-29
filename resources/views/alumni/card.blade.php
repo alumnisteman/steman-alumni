@@ -280,7 +280,7 @@
             <div class="user-info">
                 <div class="profile-frame">
                     @if($user->foto_profil)
-                        <img src="{{ asset('storage/' . $user->foto_profil) }}" class="profile-img">
+                        <img src="{{ \Illuminate\Support\Str::startsWith($user->foto_profil, '/storage/') ? $user->foto_profil : asset('storage/' . $user->foto_profil) }}" class="profile-img">
                     @else
                         <div class="profile-img bg-slate-800 d-flex align-items-center justify-content-center text-white fw-bold fs-3">
                             {{ substr($user->name, 0, 1) }}

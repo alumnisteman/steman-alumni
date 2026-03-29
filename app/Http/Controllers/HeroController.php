@@ -40,7 +40,7 @@ class HeroController extends Controller
             $path = $request->file('hero_background')->store('uploads/hero', 'public');
             Setting::updateOrCreate(
                 ['key' => 'hero_background'], 
-                ['value' => Storage::url($path), 'label' => 'Hero Background', 'group' => 'hero']
+                ['value' => '/storage/' . $path, 'label' => 'Hero Background', 'group' => 'hero']
             );
         }
 

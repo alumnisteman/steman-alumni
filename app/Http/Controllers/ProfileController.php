@@ -32,7 +32,7 @@ class ProfileController extends Controller
             
             // Store to public disk explicitly
             $path = $request->file('foto_profil')->store('avatars', 'public');
-            $user->foto_profil = Storage::disk('public')->url($path);
+            $user->foto_profil = '/storage/' . $path;
         }
 
         $user->name = $data['name'];

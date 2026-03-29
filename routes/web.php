@@ -198,15 +198,15 @@ Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumn
 Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
 
 // Media Proxy (Fix for Nginx Volume Sync)
-// This allows Laravel to serve storage files when Nginx cannot access the storage volume
-Route::get('/storage/uploads/{folder}/{filename}', function ($folder, $filename) {
-    $path = storage_path('app/public/uploads/' . $folder . '/' . $filename);
-    if (!\Illuminate\Support\Facades\File::exists($path)) {
+// This allows Laravel to serve storage files when Nginx cannot access the storage volume directly
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+    if (!\Illuminate\Support\Facades\File::exists($fullPath)) {
         abort(404);
     }
-    $file = \Illuminate\Support\Facades\File::get($path);
-    $type = \Illuminate\Support\Facades\File::mimeType($path);
+    $file = \Illuminate\Support\Facades\File::get($fullPath);
+    $type = \Illuminate\Support\Facades\File::mimeType($fullPath);
     $response = \Illuminate\Support\Facades\Response::make($file, 200);
     $response->header("Content-Type", $type);
     return $response;
-})->where('folder', '.*');
+})->where('path', '.*');
