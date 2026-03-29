@@ -72,11 +72,12 @@
 
     <div class="network-stats">
         <div class="stat-card">
-            <span class="stat-value text-primary">{{ $nationalCount }}</span>
+            {{-- Rendered from JS after globe loads for full sync --}}
+            <span class="stat-value text-primary" id="stat-national">{{ $nationalCount }}</span>
             <span class="stat-label">National Presence</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value" style="color: #4cc9f0;">{{ $internationalCount }}</span>
+            <span class="stat-value" style="color: #4cc9f0;" id="stat-international">{{ $internationalCount }}</span>
             <span class="stat-label">International Reach</span>
         </div>
         <a href="{{ route('alumni.index') }}" class="btn btn-outline-light rounded-pill px-4 mt-3" style="pointer-events: auto;">
@@ -93,19 +94,38 @@
 <script src="https://unpkg.com/three"></script>
 <script src="https://unpkg.com/globe.gl"></script>
 <script>
-    const alumniData = {!! json_encode($locations) !!};
-    
-    // Process data for globe
-    const gData = alumniData.map(loc => ({
-        lat: loc.latitude,
-        lng: loc.longitude,
-        name: loc.name,
-        major: loc.jurusan,
-        year: loc.tahun_lulus,
-        size: 0.5,
-        color: loc.is_international ? '#4cc9f0' : '#4361ee'
-    }));
+    // Indonesia bounding box (same as PHP User::getMapAnalytics)
+    const ID_LAT = [-11, 6];
+    const ID_LNG = [95, 141];
 
+    const alumniData = {!! json_encode($locations) !!};
+
+    // ─── Classify each point using the SAME logic as PHP ─────────────────────
+    const gData = alumniData.map(loc => {
+        const lat = parseFloat(loc.latitude);
+        const lng = parseFloat(loc.longitude);
+        const isNational = (lat >= ID_LAT[0] && lat <= ID_LAT[1]) &&
+                           (lng >= ID_LNG[0] && lng <= ID_LNG[1]);
+        return {
+            lat,
+            lng,
+            name: loc.name,
+            major: loc.jurusan,
+            year: loc.tahun_lulus,
+            size: 0.5,
+            isNational,          // computed — identical to PHP logic
+            color: isNational ? '#4361ee' : '#4cc9f0'
+        };
+    });
+
+    // ─── Update stat counters from actual globe data ──────────────────────────
+    const nationalCount     = gData.filter(d => d.isNational).length;
+    const internationalCount = gData.filter(d => !d.isNational).length;
+
+    document.getElementById('stat-national').textContent      = nationalCount;
+    document.getElementById('stat-international').textContent = internationalCount;
+
+    // ─── Render Globe ─────────────────────────────────────────────────────────
     try {
         const world = Globe()
             (document.getElementById('globeViz'))
@@ -124,11 +144,11 @@
             .pointLabel(d => `
                 <div class="globe-tooltip">
                     <b style="color: #4cc9f0">${d.name}</b><br/>
-                    ${d.major} - Angkatan ${d.year}
+                    ${d.major} - Angkatan ${d.year}<br/>
+                    <small style="color:${d.isNational ? '#4361ee' : '#4cc9f0'}">${d.isNational ? '🇮🇩 Dalam Negeri' : '✈️ Luar Negeri'}</small>
                 </div>
             `)
             .onPointClick(d => {
-                // Auto focus on click
                 world.pointOfView({ lat: d.lat, lng: d.lng, altitude: 2 }, 1000);
             });
 
