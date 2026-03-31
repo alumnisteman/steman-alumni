@@ -15,39 +15,33 @@ jobs:
 
       - name: Pre-deployment Cleanup
         run: |
-          # Ensure old build artifacts don't interfere
           rm -rf public/assets/build || true
 
       - name: Deploy with Docker Compose (Rolling Update)
         run: |
-          # Build and start new containers
+          # Use --wait to ensure the services with healthchecks are healthy before finishing
           docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
           
-      - name: Health Check Verification
+      - name: Final Health Check Verification
         run: |
-          echo "Starting Health Check Verification..."
-          # Give a small buffer for FPM/Nginx to sync even with --wait
-          sleep 10
+          echo "Starting Comprehensive Health Check..."
+          # Give a small buffer for Nginx proxy pass to stabilize
+          sleep 5
           
-          # Check health endpoint directly via curl (port 8000 on host or internal)
-          # We use the port defined in docker-compose, default 8000
+          # Ping the /health endpoint through the webserver port (8000)
           HEALTH_STATUS=$(curl --silent --fail http://localhost:8000/health)
           
           if [ $? -eq 0 ]; then
-                echo "Deployment Healthy! JSON Status: $HEALTH_STATUS"
-                # Success - Cleanup old images
+                echo "Deployment Success! JSON Status: $HEALTH_STATUS"
                 docker image prune -f
           else
-                echo "CRITICAL: Health Check Failed! Initiating Rollback..."
-                # Rollback - Stop the failing containers and attempt to revert to last image
-                # In a more advanced setup, we'd use tags, for now we just try to revert
-                # and alert the team.
+                echo "CRITICAL: Health Check Failed! Reverting or alerting team..."
+                # Since we use --wait, if it reaches here, something is fundamentally wrong with Nginx or the cluster
                 exit 1
           fi
 
-      - name: Production Post-Deployment Optimization
+      - name: Production Optimization & Migrations
         run: |
-          # These are also in entrypoint, but double check in CI/CD 
           docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
           docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
           docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
