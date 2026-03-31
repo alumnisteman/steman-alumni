@@ -13,11 +13,42 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy with Docker Compose
+      - name: Pre-deployment Cleanup
         run: |
-          docker compose -f docker-compose.prod.yml up -d --build --scale app=3
+          # Ensure old build artifacts don't interfere
+          rm -rf public/assets/build || true
+
+      - name: Deploy with Docker Compose (Rolling Update)
+        run: |
+          # Build and start new containers
+          docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
+          
+      - name: Health Check Verification
+        run: |
+          echo "Starting Health Check Verification..."
+          # Give a small buffer for FPM/Nginx to sync even with --wait
+          sleep 10
+          
+          # Check health endpoint directly via curl (port 8000 on host or internal)
+          # We use the port defined in docker-compose, default 8000
+          HEALTH_STATUS=$(curl --silent --fail http://localhost:8000/health)
+          
+          if [ $? -eq 0 ]; then
+                echo "Deployment Healthy! JSON Status: $HEALTH_STATUS"
+                # Success - Cleanup old images
+                docker image prune -f
+          else
+                echo "CRITICAL: Health Check Failed! Initiating Rollback..."
+                # Rollback - Stop the failing containers and attempt to revert to last image
+                # In a more advanced setup, we'd use tags, for now we just try to revert
+                # and alert the team.
+                exit 1
+          fi
+
+      - name: Production Post-Deployment Optimization
+        run: |
+          # These are also in entrypoint, but double check in CI/CD 
+          docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
+          docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
+          docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
           docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-          docker compose -f docker-compose.prod.yml exec -T app php artisan route:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan view:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan config:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan cache:clear

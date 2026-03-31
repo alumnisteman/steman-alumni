@@ -8,10 +8,10 @@
     <link rel="canonical" href="{{ url()->current() }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/assets/manifest.json">
     <meta name="theme-color" content="#ffcc00">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    <link rel="stylesheet" href="/css/modern-v5.css">
+    <link rel="stylesheet" href="/assets/css/modern-v5.css">
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -184,7 +184,7 @@
         // Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
+                navigator.serviceWorker.register('/assets/sw.js');
             });
         }
 

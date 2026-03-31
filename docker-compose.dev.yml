@@ -1,6 +1,7 @@
 # Steman Alumni - DEVELOPMENT Docker Compose
 services:
   app:
+    image: steman-alumni-app-dev:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,7 +21,6 @@ services:
       - ./:/var/www
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
-    # Custom command requested by user for Dev
     command: sh -c "composer install && php-fpm"
     networks:
       - steman-network
@@ -29,7 +29,7 @@ services:
       - redis
 
   queue:
-    build: .
+    image: steman-alumni-app-dev:latest
     container_name: steman_queue_dev
     restart: unless-stopped
     env_file: .env
@@ -49,12 +49,28 @@ services:
     networks:
       - steman-network
 
+  # Reverb
+  reverb:
+    image: steman-alumni-app-dev:latest
+    container_name: steman_reverb_dev
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file: .env
+    volumes:
+      - ./:/var/www
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    networks:
+      - steman-network
+    depends_on:
+      - app
+
   webserver:
     image: nginx:alpine
     container_name: steman_nginx_dev
     restart: unless-stopped
     ports:
       - "8000:80"
+      - "8080:8080" # Exposed for reverb if client connects directly
     volumes:
       - ./:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d

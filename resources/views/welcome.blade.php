@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- Hero Section -->
-<div class="hero-section text-center text-white d-flex align-items-center" style="background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('{{ setting('hero_background', asset('/images/hero_iluni.png')) }}'); background-size: cover; background-position: center; min-height: 85vh; padding: 60px 0;">
+<div class="hero-section text-center text-white d-flex align-items-center" style="background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}'); background-size: cover; background-position: center; min-height: 85vh; padding: 60px 0;">
     <div class="container py-4 py-md-5">
         <div class="badge-hero mb-4">Official Portal</div>
         <h1 class="display-4 display-md-2 fw-black mb-4 hero-title">{!! nl2br(e(setting('hero_title', "PENGURUS PUSAT\nIKATAN ALUMNI SMKN 2"))) !!}</h1>

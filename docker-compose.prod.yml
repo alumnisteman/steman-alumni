@@ -1,14 +1,20 @@
 # Steman Alumni - PRODUCTION Docker Compose
 services:
   app:
+    image: steman-alumni-app:latest
     build:
       context: .
       dockerfile: Dockerfile
-    restart: unless-stopped
+    restart: always
     working_dir: /var/www
     env_file: .env
     healthcheck:
-      test: ["CMD", "php", "-v"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      # Note: PHP-FPM doesn't speak HTTP directly on 9000, 
+      # but in this setup, Nginx is in another container.
+      # We should use a script or check if PHP-FPM is responsive.
+      # Better: use a PHP script to check internal health.
+      test: ["CMD", "php", "artisan", "about"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -20,55 +26,72 @@ services:
     volumes:
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
+      - app_public:/var/www/public
     networks:
       - steman-network
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   queue:
-    build: .
-    restart: unless-stopped
+    image: steman-alumni-app:latest
+    restart: always
     env_file: .env
-    command: sh -c "composer install --no-dev --optimize-autoloader && php artisan queue:work --tries=3 --sleep=3 --timeout=60"
+    command: php artisan queue:work --tries=3 --sleep=3 --timeout=60
     networks:
       - steman-network
     depends_on:
-      - app
-      - redis
+      app:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   redis:
     image: redis:alpine
     container_name: steman_redis
-    restart: unless-stopped
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - steman-network
 
   reverb:
-    build: .
+    image: steman-alumni-app:latest
     container_name: steman_reverb
-    restart: unless-stopped
+    restart: always
     env_file: .env
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     networks:
       - steman-network
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 
   webserver:
     image: nginx:alpine
     container_name: steman_nginx
-    restart: unless-stopped
+    restart: always
     ports:
       - "${APP_PORT:-8000}:80"
       - "${SSL_PORT:-8443}:443"
     volumes:
-      - ./:/var/www
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - app_public:/var/www/public
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
       - certbot_certs:/etc/letsencrypt
       - certbot_www:/var/www/certbot
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     networks:
       - steman-network
 
@@ -85,8 +108,18 @@ services:
   db:
       image: mariadb:10.6
       container_name: steman_db
-      restart: unless-stopped
+      restart: always
       env_file: .env
+      environment:
+        MARIADB_DATABASE: ${DB_DATABASE}
+        MARIADB_USER: ${DB_USERNAME}
+        MARIADB_PASSWORD: ${DB_PASSWORD}
+        MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      healthcheck:
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${DB_USERNAME}", "-p${DB_PASSWORD}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
       volumes:
         - dbdata:/var/lib/mysql
       networks:
@@ -100,3 +133,4 @@ volumes:
   dbdata:
   certbot_certs:
   certbot_www:
+  app_public:

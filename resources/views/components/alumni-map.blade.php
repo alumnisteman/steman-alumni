@@ -26,7 +26,7 @@
 </div>
 
 @push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     .custom-div-icon div {
         transition: all 0.3s ease;
@@ -39,7 +39,7 @@
 @endpush
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const mapId = 'alumni-map-{{ $attributes->get('id', 'main') }}';
@@ -68,8 +68,7 @@
         
         alumniData.forEach(function(alumni) {
             if (alumni.latitude && alumni.longitude) {
-                const isInt = !(alumni.latitude >= idBounds.lat[0] && alumni.latitude <= idBounds.lat[1] &&
-                              alumni.longitude >= idBounds.lng[0] && alumni.longitude <= idBounds.lng[1]);
+                const isInt = alumni.is_international;
                 
                 L.marker([alumni.latitude, alumni.longitude], { icon: getMarkerIcon(isInt) })
                  .addTo(map)

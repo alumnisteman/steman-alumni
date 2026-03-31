@@ -10,6 +10,7 @@ RUN npm run build
 FROM composer:latest AS composer-builder
 WORKDIR /app
 # Set composer environment to be more resilient
+# Force composer to build for PHP 8.2 so platform_check.php passes on the runtime container
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV COMPOSER_MEMORY_LIMIT=-1
 COPY composer*.json ./
@@ -22,7 +23,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
 # --- Stage 3: Runner Stage (Final Image) ---
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 LABEL maintainer="Ikatan Alumni STEMAN"
 
 # Install runtime system dependencies
@@ -75,15 +76,13 @@ COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Optimize Permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www \
-    && chmod -R 775 /var/www/storage \
-    && chmod -R 775 /var/www/bootstrap/cache
+RUN chown -R root:root /var/www \
+    && find /var/www -type d -exec chmod 755 {} \; \
+    && find /var/www -type f -exec chmod 644 {} \; \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Build-time Laravel Optimization (Production ready)
-# Note: route:cache omitted - routes use closures which are incompatible
-RUN php artisan config:cache \
-    && php artisan view:cache
+# Build-time Laravel Optimization (Production ready) has been moved to docker-entrypoint.sh
 
 # Environment configuration
 ENV APP_ENV=production

@@ -48,7 +48,8 @@ mkdir -p $REMOTE_PATH
 rm -rf $REMOTE_PATH/docker/nginx/conf.d/*
 unzip -o /tmp/$ZIP_FILE -d $REMOTE_PATH
 cd $REMOTE_PATH
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml build app
+docker compose -f docker-compose.prod.yml up -d
 "@
 
 ssh "${REMOTE_USER}@${REMOTE_HOST}" $REMOTE_CMD

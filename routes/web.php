@@ -19,49 +19,75 @@ use App\Http\Controllers\LeaderboardController;
 use App\Services\AIPredictionService;
 use Illuminate\Support\Facades\Route;
 
-// Public Home
-Route::get('/', function () {
-    $data = \Illuminate\Support\Facades\Cache::remember('welcome_data', 600, function () {
-        $aiService = new AIPredictionService();
-        return [
-            'latestNews' => \App\Models\News::where('is_published', true)->latest()->take(3)->get(),
-            'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
-            'latestVideos' => \App\Models\Gallery::where('type', 'video')->latest()->take(2)->get(),
-            'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
-            'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
-            'mapAnalytics' => \App\Models\User::getMapAnalytics(),
-            'aiInsights' => $aiService->getGlobalInsights(),
-        ];
-    });
+// --- 1. Global Public Routes (Rate Limited) ---
+Route::middleware(['throttle:global'])->group(function () {
     
-    return view('welcome', array_merge($data, [
-        'alumniLocations' => $data['mapAnalytics']['alumniLocations'],
-        'nationalCount' => $data['mapAnalytics']['nationalCount'],
-        'internationalCount' => $data['mapAnalytics']['internationalCount'],
-        'aiInsights' => $data['aiInsights'],
-    ]));
-})->name('home');
+    // Public Home
+    Route::get('/', function () {
+        $data = \Illuminate\Support\Facades\Cache::remember('welcome_data', 600, function () {
+            $aiService = new AIPredictionService();
+            return [
+                'latestNews' => \App\Models\News::where('is_published', true)->latest()->take(3)->get(),
+                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
+                'latestVideos' => \App\Models\Gallery::where('type', 'video')->latest()->take(2)->get(),
+                'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
+                'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
+                'mapAnalytics' => \App\Models\User::getMapAnalytics(),
+                'aiInsights' => $aiService->getGlobalInsights(),
+            ];
+        });
+        
+        return view('welcome', array_merge($data, [
+            'alumniLocations' => $data['mapAnalytics']['alumniLocations'],
+            'nationalCount' => $data['mapAnalytics']['nationalCount'],
+            'internationalCount' => $data['mapAnalytics']['internationalCount'],
+            'aiInsights' => $data['aiInsights'],
+        ]));
+    })->name('home');
 
-Route::get('/profil', function () { return view('profil'); })->name('public.profile');
+    Route::get('/profil', function () { return view('profil'); })->name('public.profile');
 
-// Leaderboard
-Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
-Route::get('/kontak', function () { return view('kontak'); })->name('kontak');
-Route::post('/kontak/pesan', [ContactMessageController::class, 'store'])->name('kontak.pesan');
+    // Leaderboard
+    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+    Route::get('/kontak', function () { return view('kontak'); })->name('kontak');
+    Route::post('/kontak/pesan', [ContactMessageController::class, 'store'])->name('kontak.pesan');
 
-// Authentication Routes
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Programs Public
+    Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
+    Route::get('/programs/{slug}', [ProgramController::class, 'show'])->name('programs.show');
+
+    // Jobs Public
+    Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+    Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');
+
+    // News Public
+    Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+    Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
+
+    // Gallery & Alumni Public
+    Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
+    Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
+    Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
+    Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
+});
+
+// --- 2. Authentication Routes (Stricter Rate Limiting) ---
+Route::middleware(['throttle:login'])->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Social Login
 Route::get('/auth/{provider}/redirect', [App\Http\Controllers\SocialController::class, 'redirect'])->name('social.redirect');
 Route::get('/auth/{provider}/callback', [App\Http\Controllers\SocialController::class, 'callback'])->name('social.callback');
 
-// Authenticated Routes
-Route::middleware(['auth', 'verified_alumni'])->group(function () {
+// --- 3. Authenticated Routes ---
+Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(function () {
     
     Route::get('/pending-notice', function () {
         if (auth()->check() && auth()->user()->status !== 'pending') {
@@ -86,11 +112,6 @@ Route::middleware(['auth', 'verified_alumni'])->group(function () {
     // Shared Profile
     Route::get('/alumni/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/alumni/profile', [ProfileController::class, 'update'])->name('profile.update');
-    
-    // Directory & Resources (Publicly authenticated)
-    
-    // News & Gallery (Publicly authenticated)
-    
     
     // Forums
     Route::get('/forums', [\App\Http\Controllers\ForumController::class, 'index'])->name('forums.index');
@@ -171,34 +192,10 @@ Route::middleware(['auth', 'verified_alumni'])->group(function () {
         Route::delete('/admin/majors/{major}', [MajorController::class, 'destroy'])->name('admin.majors.destroy');
 
         Route::get('/admin/export', [\App\Http\Controllers\Admin\AlumniExportController::class, 'export'])->name('admin.export');
-
-
     });
 });
 
-// Programs Public
-Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
-Route::get('/programs/{slug}', [ProgramController::class, 'show'])->name('programs.show');
-
-// Jobs Public
-Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
-Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');
-
-
-// News Public
-Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
-Route::get('/news', [NewsController::class, 'index'])->name('news.index');
-Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
-
-
-// Gallery & Alumni Public
-Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
-Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
-Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
-Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
-
 // Media Proxy (Fix for Nginx Volume Sync)
-// This allows Laravel to serve storage files when Nginx cannot access the storage volume directly
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
     if (!\Illuminate\Support\Facades\File::exists($fullPath)) {
@@ -210,3 +207,34 @@ Route::get('/storage/{path}', function ($path) {
     $response->header("Content-Type", $type);
     return $response;
 })->where('path', '.*');
+
+// Health Check Endpoint
+Route::get('/health', function () {
+    $status = [
+        'status' => 'healthy',
+        'timestamp' => now()->toIso8601String(),
+        'services' => [
+            'database' => 'down',
+            'redis' => 'down',
+        ],
+    ];
+
+    try {
+        \DB::connection()->getPdo();
+        $status['services']['database'] = 'up';
+    } catch (\Exception $e) {
+        $status['status'] = 'unhealthy';
+    }
+
+    try {
+        \Illuminate\Support\Facades\Redis::connection()->ping();
+        $status['services']['redis'] = 'up';
+    } catch (\Exception $e) {
+        $status['services']['redis'] = 'down';
+        if (config('database.redis.default.host') !== '127.0.0.1') {
+             $status['status'] = 'unhealthy';
+        }
+    }
+
+    return response()->json($status, $status['status'] === 'healthy' ? 200 : 503);
+});

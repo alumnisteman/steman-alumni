@@ -50,15 +50,15 @@ class User extends Authenticatable
         // Demo data with International presence if empty
         if ($alumniLocations->isEmpty()) {
             $cities = [
-                ['name' => 'Jakarta', 'lat' => -6.2088, 'lng' => 106.8456, 'is_int' => false],
-                ['name' => 'Surabaya', 'lat' => -7.2575, 'lng' => 112.7521, 'is_int' => false],
-                ['name' => 'Makassar', 'lat' => -5.1476, 'lng' => 119.4327, 'is_int' => false],
-                ['name' => 'Ternate', 'lat' => 0.7901, 'lng' => 127.3820, 'is_int' => false],
-                ['name' => 'Medan', 'lat' => 3.5952, 'lng' => 98.6722, 'is_int' => false],
-                ['name' => 'Tokyo', 'lat' => 35.6762, 'lng' => 139.6503, 'is_int' => true],
-                ['name' => 'Singapore', 'lat' => 1.3521, 'lng' => 103.8198, 'is_int' => true],
+                ['name' => 'Jakarta',   'lat' => -6.2088,  'lng' => 106.8456, 'is_int' => false],
+                ['name' => 'Surabaya',  'lat' => -7.2575,  'lng' => 112.7521, 'is_int' => false],
+                ['name' => 'Makassar',  'lat' => -5.1476,  'lng' => 119.4327, 'is_int' => false],
+                ['name' => 'Ternate',   'lat' =>  0.7901,  'lng' => 127.3820, 'is_int' => false],
+                ['name' => 'Medan',     'lat' =>  3.5952,  'lng' =>  98.6722, 'is_int' => false],
+                ['name' => 'Tokyo',     'lat' => 35.6762,  'lng' => 139.6503, 'is_int' => true],
+                ['name' => 'Singapore', 'lat' =>  1.3521,  'lng' => 103.8198, 'is_int' => true],
                 ['name' => 'Melbourne', 'lat' => -37.8136, 'lng' => 144.9631, 'is_int' => true],
-                ['name' => 'London', 'lat' => 51.5074, 'lng' => -0.1278, 'is_int' => true],
+                ['name' => 'London',    'lat' => 51.5074,  'lng' =>  -0.1278, 'is_int' => true],
             ];
             $alumniLocations = collect($cities)->map(function($city, $index) {
                 return (object) [
@@ -72,7 +72,7 @@ class User extends Authenticatable
             });
         }
 
-        // Categorize for Statistics
+        // Indonesia bounding box — easternmost point Merauke ~141.0°
         $idBounds = ['lat' => [-11, 6], 'lng' => [95, 141]];
         $nationalCount = 0;
         $internationalCount = 0;
@@ -81,6 +81,9 @@ class User extends Authenticatable
             $isID = ($loc->latitude >= $idBounds['lat'][0] && $loc->latitude <= $idBounds['lat'][1]) &&
                     ($loc->longitude >= $idBounds['lng'][0] && $loc->longitude <= $idBounds['lng'][1]);
             
+            // Attach is_international so the frontend doesn't need to recalculate
+            $loc->is_international = !$isID;
+
             if ($isID) {
                 $nationalCount++;
             } else {

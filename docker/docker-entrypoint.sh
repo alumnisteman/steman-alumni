@@ -8,15 +8,12 @@ if [ ! -f .env ]; then
 fi
 
 # --- 2. Security: Key Generation ---
-# Check if APP_KEY is set in .env
 if ! grep -q "^APP_KEY=base64:" .env; then
     echo "Generating Application Key..."
     php artisan key:generate --force
 fi
 
-# --- 3. Database: Migration & Seeding ---
-# Wait for DB to be ready (Retry loop)
-# Note: Use internal docker service name 'db'
+# --- 3. Database: Migration ---
 MAX_TRIES=30
 TRIES=0
 until nc -z db 3306 || [ $TRIES -eq $MAX_TRIES ]; do
@@ -37,7 +34,7 @@ php artisan migrate --force
 if [ "$APP_ENV" = "production" ]; then
     echo "Optimizing Laravel for Production..."
     php artisan config:cache
-    # php artisan route:cache
+    php artisan route:cache
     php artisan view:cache
     php artisan event:cache
     # Ensure all storage links are created
