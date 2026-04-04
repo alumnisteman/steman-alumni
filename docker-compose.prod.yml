@@ -94,11 +94,13 @@ services:
     container_name: steman_nginx
     restart: always
     ports:
-      - "${APP_PORT:-8000}:80"
-      - "${SSL_PORT:-8443}:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - app_public:/var/www/public
+      - ./storage:/var/www/storage:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
       - certbot_certs:/etc/letsencrypt
       - certbot_www:/var/www/certbot
     healthcheck:

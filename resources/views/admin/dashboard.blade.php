@@ -149,7 +149,7 @@
                         <span class="text-secondary fw-semibold">Total Alumni</span>
                         <div class="icon-glass text-primary"><i class="bi bi-mortarboard fs-5"></i></div>
                     </div>
-                    <h2 class="fw-bolder mb-0 count-up" data-value="{{ $totalAlumni }}">0</h2>
+                    <h2 class="fw-bolder mb-0 count-up" data-value="{{ $totalAlumni }}">{{ $totalAlumni }}</h2>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -158,7 +158,7 @@
                         <span class="text-primary fw-bold">Internasional</span>
                         <div class="icon-glass bg-primary text-white border-0"><i class="bi bi-globe-americas fs-5"></i></div>
                     </div>
-                    <h2 class="fw-bolder mb-0 text-primary count-up" data-value="{{ $internationalCount }}">0</h2>
+                    <h2 class="fw-bolder mb-0 text-primary count-up" data-value="{{ $internationalCount }}">{{ $internationalCount }}</h2>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -167,7 +167,7 @@
                         <span class="text-secondary fw-semibold">Total Jurusan</span>
                         <div class="icon-glass text-warning"><i class="bi bi-mortarboard-fill fs-5 text-warning"></i></div>
                     </div>
-                    <h2 class="fw-bolder mb-0 count-up text-warning" data-value="{{ $totalMajors }}">0</h2>
+                    <h2 class="fw-bolder mb-0 count-up text-warning" data-value="{{ $totalMajors }}">{{ $totalMajors }}</h2>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -176,7 +176,7 @@
                         <span class="text-secondary fw-semibold">Lowongan</span>
                         <div class="icon-glass text-success"><i class="bi bi-briefcase fs-5"></i></div>
                     </div>
-                    <h2 class="fw-bolder mb-0 count-up" data-value="{{ $totalJobs }}">0</h2>
+                    <h2 class="fw-bolder mb-0 count-up" data-value="{{ $totalJobs }}">{{ $totalJobs }}</h2>
                 </div>
             </div>
         </div>
@@ -255,15 +255,15 @@
     document.addEventListener('DOMContentLoaded', function() {
         // --- CountUp Statistics ---
         const countElements = document.querySelectorAll('.count-up');
-        countElements.forEach(el => {
-            const val = el.getAttribute('data-value');
-            var countUp = new countUp.CountUp(el, val, { duration: 2.5, separator: '.' });
-            if (countUp && !countUp.error) {
-                countUp.start();
-            } else {
-                el.innerHTML = val;
-            }
-        });
+        if (typeof countUp !== 'undefined' && countUp.CountUp) {
+            countElements.forEach(el => {
+                const val = parseFloat(el.getAttribute('data-value')) || 0;
+                var countUpAnim = new countUp.CountUp(el, val, { duration: 2.5, separator: '.' });
+                if (countUpAnim && !countUpAnim.error) {
+                    countUpAnim.start();
+                }
+            });
+        }
 
         var optionsYear = {
             series: [{

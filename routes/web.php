@@ -69,7 +69,6 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
     Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
-    Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
 });
 
 // --- 2. Authentication Routes (Stricter Rate Limiting) ---
@@ -112,6 +111,9 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // Shared Profile
     Route::get('/alumni/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/alumni/profile', [ProfileController::class, 'update'])->name('profile.update');
+    
+    // Public wildcard alumni profile (moved here to prevent 404 on specific alumni paths above)
+    Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
     
     // Forums
     Route::get('/forums', [\App\Http\Controllers\ForumController::class, 'index'])->name('forums.index');
