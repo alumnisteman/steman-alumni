@@ -27,20 +27,6 @@
                         @error('captcha') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Login Sekarang</button>
-                    
-                    <div class="divider d-flex align-items-center my-4">
-                        <p class="text-center fw-bold mx-3 mb-0 text-muted">ATAU</p>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('social.redirect', 'google') }}" class="btn btn-outline-danger btn-lg rounded-pill">
-                            <i class="bi bi-google me-2"></i> Login with Google
-                        </a>
-                        {{-- LinkedIn hidden until keys are provided --}}
-                        {{-- <a href="{{ route('social.redirect', 'linkedin') }}" class="btn btn-outline-primary btn-lg rounded-pill">
-                            <i class="bi bi-linkedin me-2"></i> Login with LinkedIn
-                        </a> --}}
-                    </div>
 
                     <p class="text-center text-muted mt-4">Belum punya akun? <a href="/register">Daftar disini</a></p>
                 </form>
