@@ -134,6 +134,25 @@ class SettingSeeder extends Seeder
                 'label' => 'Deskripsi Banner Utama',
                 'group' => 'hero'
             ],
+            // General / Identity
+            [
+                'key' => 'hero_background',
+                'value' => '/assets/images/hero_iluni.png',
+                'label' => 'Gambar Latar Banner Utama (Hero Background)',
+                'group' => 'hero'
+            ],
+            [
+                'key' => 'vision',
+                'value' => 'Menjadi wadah alumni yang solid, inovatif, dan berkontribusi nyata bagi almamater serta masyarakat luas.',
+                'label' => 'Visi Organisasi',
+                'group' => 'general'
+            ],
+            [
+                'key' => 'mission',
+                'value' => "1. Menjalin komunikasi antar alumni di seluruh penjuru dunia.\n2. Memberikan beasiswa dan dukungan karir bagi lulusan baru.\n3. Berkontribusi dalam pengembangan sarana dan prasarana sekolah.",
+                'label' => 'Misi Utama',
+                'group' => 'general'
+            ],
         ];
 
         foreach ($settings as $setting) {

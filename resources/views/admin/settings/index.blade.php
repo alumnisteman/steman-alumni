@@ -39,6 +39,8 @@
                                               (strpos($key, 'speech') !== false) || 
                                               (strpos($key, 'description') !== false) || 
                                               (strpos($key, 'program') !== false) || 
+                                              (strpos($key, 'vision') !== false) || 
+                                              (strpos($key, 'mission') !== false) || 
                                               ($key == 'hero_title') || 
                                               ($key == 'contact_address');
                                 

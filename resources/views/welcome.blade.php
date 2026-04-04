@@ -43,6 +43,40 @@
     </div>
 </div>
 
+<!-- Visi & Misi Section -->
+<div class="py-5 bg-white">
+    <div class="container py-4 px-4 px-md-2">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-6">
+                <div class="h-100 p-4 p-md-5 rounded-4 shadow-sm border border-light bg-light">
+                    <div class="d-flex align-items-center mb-4 text-primary">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-4 me-3">
+                            <i class="bi bi-eye-fill fs-2"></i>
+                        </div>
+                        <h2 class="fw-black mb-0">VISI KAMI</h2>
+                    </div>
+                    <div class="lead text-dark opacity-75" style="line-height: 1.8; font-size: 1.1rem;">
+                        {!! nl2br(e(setting('vision', 'Menjadi wadah alumni yang solid, inovatif, dan berkontribusi nyata bagi almamater serta masyarakat luas.'))) !!}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="h-100 p-4 p-md-5 rounded-4 shadow-sm border border-light" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);">
+                    <div class="d-flex align-items-center mb-4 text-warning">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-4 me-3">
+                            <i class="bi bi-bullseye fs-2"></i>
+                        </div>
+                        <h2 class="fw-black mb-0">MISI UTAMA</h2>
+                    </div>
+                    <div class="text-dark opacity-75" style="line-height: 1.8; font-size: 1rem;">
+                        {!! nl2br(e(setting('mission', "1. Menjalin komunikasi antar alumni di seluruh penjuru dunia.\n2. Memberikan beasiswa dan dukungan karir bagi lulusan baru.\n3. Berkontribusi dalam pengembangan sarana dan prasarana sekolah."))) !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Event Chairman Section -->
 <div class="bg-light py-4 py-md-5">
