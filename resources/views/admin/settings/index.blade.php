@@ -22,6 +22,7 @@
                     <div id="group-{{ $group }}" class="mb-5 p-4 bg-white border border-light rounded-4 shadow-sm scroll-margin-top">
                         <h4 class="fw-bold mb-4 text-dark d-flex align-items-center">
                             @if($group == 'general') <span class="bg-primary text-white p-2 rounded-3 me-3"><i class="bi bi-gear-fill"></i></span>Identitas & Branding
+                            @elseif($group == 'profile') <span class="bg-dark text-white p-2 rounded-3 me-3"><i class="bi bi-eye-fill"></i></span>Profil & Visi Misi Organisasi
                             @elseif($group == 'hero') <span class="bg-warning text-dark p-2 rounded-3 me-3"><i class="bi bi-image"></i></span>Banner Utama (Hero)
                             @elseif($group == 'contact') <span class="bg-success text-white p-2 rounded-3 me-3"><i class="bi bi-telephone-fill"></i></span>Informasi Kontak & Sekretariat
                             @elseif($group == 'chairman') <span class="bg-info text-white p-2 rounded-3 me-3"><i class="bi bi-person-workspace"></i></span>Sambutan Ketua Umum

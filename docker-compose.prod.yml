@@ -26,6 +26,11 @@ services:
           cpus: '0.25'
           memory: 256M
     volumes:
+      - ./app:/var/www/app:ro
+      - ./resources:/var/www/resources:ro
+      - ./routes:/var/www/routes:ro
+      - ./config:/var/www/config:ro
+      - ./database:/var/www/database:ro
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
       - app_public:/var/www/public
