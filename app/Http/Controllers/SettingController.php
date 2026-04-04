@@ -15,11 +15,12 @@ class SettingController extends Controller
         $settings = Setting::all()->groupBy('group')->sortBy(function($items, $key) {
             $priority = [
                 'general' => 1,
-                'hero' => 2,
-                'contact' => 3,
-                'chairman' => 4,
-                'event_chairman' => 5,
-                'program' => 6
+                'profile' => 2,
+                'hero' => 3,
+                'contact' => 4,
+                'chairman' => 5,
+                'event_chairman' => 6,
+                'program' => 7
             ];
             return $priority[$key] ?? 100;
         });
