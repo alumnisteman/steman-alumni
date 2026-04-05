@@ -47,19 +47,30 @@
         100% { transform: translate(100px, 50px) scale(1.2); }
     }
 
-    /* The Card Wrapper */
     .card-3d {
         width: var(--card-width);
         height: var(--card-height);
         position: relative;
         transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
         transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        -webkit-transition: -webkit-transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         cursor: pointer;
         z-index: 10;
     }
 
-    .card-3d:hover {
+    /* Hover on desktop */
+    @media (hover: hover) {
+        .card-3d:hover {
+            transform: rotateY(180deg) scale(1.05);
+            -webkit-transform: rotateY(180deg) scale(1.05);
+        }
+    }
+
+    /* Click/tap toggle class for mobile and desktop */
+    .card-3d.is-flipped {
         transform: rotateY(180deg) scale(1.05);
+        -webkit-transform: rotateY(180deg) scale(1.05);
     }
 
     .card-side {
@@ -326,9 +337,34 @@
         </a>
     </div>
 
-    <p class="mt-4 text-slate-500 small animate-pulse">
-        <i class="bi bi-phone-flip me-2"></i> Hover card to flip
+    <p class="mt-4 text-slate-500 small animate-pulse" id="flipHint">
+        <i class="bi bi-phone-flip me-2"></i> <span id="hintText">Klik atau hover untuk membalik kartu</span>
     </p>
 </div>
+
+<script>
+    const card = document.getElementById('alumniCard');
+    const hintText = document.getElementById('hintText');
+
+    // Toggle flip on click/tap (works on mobile & desktop)
+    card.addEventListener('click', function () {
+        this.classList.toggle('is-flipped');
+        if (this.classList.contains('is-flipped')) {
+            hintText.textContent = 'Klik lagi untuk kembali ke depan';
+        } else {
+            hintText.textContent = 'Klik atau hover untuk membalik kartu';
+        }
+    });
+
+    // On desktop with hover: also sync hint text
+    card.addEventListener('mouseenter', function () {
+        hintText.textContent = 'Lepas kursor atau klik untuk kembali';
+    });
+    card.addEventListener('mouseleave', function () {
+        if (!this.classList.contains('is-flipped')) {
+            hintText.textContent = 'Klik atau hover untuk membalik kartu';
+        }
+    });
+</script>
 
 @endsection
