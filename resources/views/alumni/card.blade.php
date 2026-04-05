@@ -431,7 +431,7 @@
     </div>
 
     <div class="btn-group-id mt-5 d-flex gap-3">
-        <button onclick="window.print()" class="btn btn-outline-light rounded-pill px-4">
+        <button onclick="printCard()" class="btn btn-outline-light rounded-pill px-4">
             <i class="bi bi-download me-2"></i>Download ID
         </button>
         <a href="{{ route('alumni.dashboard') }}" class="btn btn-primary rounded-pill px-4 shadow-lg">
@@ -468,6 +468,134 @@
             hintText.textContent = 'Klik atau hover untuk membalik kartu';
         }
     });
+
+    // ── PRINT / DOWNLOAD: Render both sides in a new window ──
+    function printCard() {
+        // Grab the two card sides HTML
+        const frontHTML = document.querySelector('.card-front').innerHTML;
+        const backHTML  = document.querySelector('.card-back').innerHTML;
+
+        const cardWidth  = '{{ $cardWidth ?? "450px" }}'  || '450px';
+        const cardHeight = '{{ $cardHeight ?? "280px" }}' || '280px';
+
+        const printWindow = window.open('', '_blank', 'width=600,height=800');
+        printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Kartu Alumni STEMAN</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        .print-label {
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        /* FRONT CARD */
+        .print-front {
+            width: 450px;
+            height: 280px;
+            padding: 30px;
+            border-radius: 20px;
+            background: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .print-front::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+        }
+        /* BACK CARD */
+        .print-back {
+            width: 450px;
+            height: 280px;
+            padding: 30px;
+            border-radius: 20px;
+            background: white;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        /* Front inner styles */
+        .card-header { display:flex; justify-content:space-between; align-items:center; }
+        .logo-text { font-weight:900; font-size:1.5rem; letter-spacing:-1px; background:linear-gradient(to right,#fff,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .chip-icon { width:45px; height:35px; background:linear-gradient(135deg,#d4af37,#f9e29c,#b8860b); border-radius:6px; position:relative; }
+        .chip-line { position:absolute; background:rgba(0,0,0,0.2); width:100%; height:1px; top:50%; }
+        .user-info { display:flex; align-items:center; gap:20px; }
+        .profile-frame { width:85px; height:85px; border-radius:50%; padding:4px; background:linear-gradient(45deg,#3f37c9,#4cc9f0); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        .profile-img { width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #0f172a; }
+        .info-content h2 { font-size:1.4rem; font-weight:700; margin-bottom:2px; }
+        .info-content p { font-size:0.85rem; opacity:0.8; margin:0; color:#94a3b8; }
+        .card-footer { display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; }
+        .meta-item span { display:block; font-size:0.6rem; text-transform:uppercase; color:#64748b; letter-spacing:1px; }
+        .meta-item b { font-size:0.9rem; }
+        .status-badge { background:rgba(34,197,94,0.2); color:#4ade80; padding:4px 12px; border-radius:100px; font-size:0.65rem; font-weight:800; border:1px solid rgba(74,222,128,0.3); }
+        /* Back inner styles */
+        .scanning-text { font-size:0.75rem; font-weight:700; letter-spacing:3px; color:#64748b; margin-bottom:10px; }
+        .qr-container { padding:10px; background:#f8fafc; border-radius:15px; margin-bottom:15px; }
+        .qr-container svg, .qr-container img { display:block; }
+        .terms-text { font-size:0.6rem; opacity:0.6; line-height:1.4; max-width:80%; text-align:center; }
+        .shine-effect { display: none; }
+        @media print {
+            body { padding: 10px; }
+            .print-front, .print-back { break-inside: avoid; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card-wrapper">
+        <div class="print-front">${frontHTML}</div>
+        <div class="print-label">Sisi Depan &mdash; Kartu Alumni STEMAN</div>
+    </div>
+    <div class="card-wrapper">
+        <div class="print-back">${backHTML}</div>
+        <div class="print-label">Sisi Belakang &mdash; QR Code Verifikasi</div>
+    </div>
+    <script>
+        // Auto print after fonts load
+        window.onload = function() {
+            setTimeout(function() { window.print(); }, 800);
+        };
+    <\/script>
+</body>
+</html>`);
+        printWindow.document.close();
+    }
 </script>
 
 @endsection
