@@ -1,6 +1,6 @@
 # 🛠️ Panduan Pemeliharaan – STEMAN Alumni Portal v5
 
-> Versi terakhir diperbarui: Maret 2026
+> Versi terakhir diperbarui: April 2026
 
 Ikuti panduan ini secara rutin agar portal tetap **stabil, cepat, dan aman**.
 
@@ -12,7 +12,7 @@ Ikuti panduan ini secara rutin agar portal tetap **stabil, cepat, dan aman**.
 |---|---|
 | Setiap hari | Backup otomatis database + file |
 | Seminggu sekali | Bersihkan log, optimasi cache |
-| Setiap bulan | Update dependency, cek keamanan |
+| Setiap bulan | Update dependency, cek keamanan & Hapus gambar usang |
 | Setiap ada error | Baca log, identifikasi penyebab |
 
 ---
@@ -100,6 +100,10 @@ docker exec steman_app php artisan view:cache
 
 # Hapus log yang membengkak (hati-hati: ini menghapus log lama)
 docker exec steman_app truncate -s 0 storage/logs/laravel.log
+
+# (Opsional) Bersihkan file cache WebP jika direktori storage/news membengkak
+# Sistem otomatis memutus gambar WebP tapi rutin dicek
+docker exec steman_app chmod -R 775 storage/app/public/news
 ```
 
 ---

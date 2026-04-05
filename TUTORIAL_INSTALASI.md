@@ -1,7 +1,7 @@
 # 🚀 Panduan Instalasi – STEMAN Alumni Portal v5
 
-> Versi terakhir diperbarui: Maret 2026
-> Arsitektur: Laravel 12 + Docker (PHP 8.2 FPM Alpine + MySQL 8 + Nginx)
+> Versi terakhir diperbarui: April 2026
+> Arsitektur: Laravel 12 Modular (Service/Repository) + API v1 Sanctum + Docker
 
 ---
 
@@ -118,7 +118,11 @@ Login sebagai Admin → buka **Admin → Settings** untuk mengatur:
 ### C. Tambah Data Jurusan
 Admin → **Jurusan** → Tambah jurusan yang tersedia (TKJ, RPL, Multimedia, dll.)
 
-### D. Aktifkan Notifikasi Real-time
+### D. Penggunaan API v1 (Opsional)
+Aplikasi ini sekarang memiliki API Layer di endpoint `/api/v1/auth/login` yang diotentikasi menggunakan **Laravel Sanctum**. Jika berencana menghubungkan Mobile App, token akan secara otomatis digenerate ketika sukses login.
+Tidak memerlukan perintah khusus karena instalasi Sanctum sudah terintegrasi.
+
+### E. Aktifkan Notifikasi Real-time
 Pastikan `steman_reverb` berjalan. Jika tidak:
 ```bash
 docker compose up -d reverb

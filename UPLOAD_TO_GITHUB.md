@@ -24,7 +24,7 @@ Bapak silakan buka **Git Bash** atau **Terminal** di folder ini, lalu jalankan p
 3. **Kirim Kode**:
    ```bash
    git add .
-   git commit -m "feat: Integrasi GitHub, Scaling (3 Replicas), and OPcache Turbo"
+   git commit -m "feat: Integrasi GitHub, Scaling (3 Replicas), API v1, & Image Compression"
    git branch -M main
    git push -u origin main
    ```
@@ -51,7 +51,7 @@ Setiap kali Bapak melakukan `git push`, maka server Bapak akan:
 1. Menarik kode terbaru secara otomatis.
 2. Menjalankan **3 replika aplikasi** (Scaling).
 3. Mengaktifkan **OPcache** (Optimization).
-4. Melakukan optimasi Laravel secara mandiri.
+4. Menjalankan migrasi API & mengkompresi aset (WebP) secara mandiri.
 
 > [!TIP]
 > **Scaling**: Jika Bapak ingin menambah lebih dari 3 replika (misal 5 atau 10), Bapak cukup ganti angka `replicas: 3` di file `docker-compose.prod.yml` lalu push lagi!

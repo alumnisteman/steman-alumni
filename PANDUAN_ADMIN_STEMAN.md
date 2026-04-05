@@ -1,6 +1,6 @@
 # 📘 BUKU PANDUAN ADMINISTRATOR
 ## Portal Ikatan Alumni SMKN 2 Ternate (STEMAN)
-**Versi 4.1 | Dokumen Resmi**
+**Versi 6.0 (Modular API-Ready) | Dokumen Resmi**
 
 ---
 
@@ -36,6 +36,7 @@ Portal Alumni STEMAN adalah sistem informasi berbasis web yang dirancang untuk m
 - ✅ Peta sebaran alumni global
 - ✅ Pengaturan tampilan situs secara dinamis
 - ✅ Kotak pesan dari alumni/publik
+- ✅ Akses API via Laravel Sanctum untuk Integrasi Mobile App
 
 ### Peran Pengguna
 
@@ -186,7 +187,7 @@ Ubah status jurusan menjadi `inactive` agar tidak muncul di formulir pendaftaran
    - **Judul**: Judul artikel
    - **Kategori**: Pilih kategori berita
    - **Konten**: Isi artikel (mendukung format teks panjang)
-   - **Thumbnail**: Unggah gambar sampul (maks. 2MB, format JPG/PNG)
+   - **Thumbnail**: Unggah gambar sampul (sistem otomatis melakukan kompresi 30% dan konversi ke WebP untuk performa maksimal)
    - **Status**: Pilih `Draft` (belum tayang) atau `Published` (langsung tayang)
 3. Klik **"Simpan & Terbitkan"**.
 
@@ -580,6 +581,11 @@ Ini berarti sistem mendeteksi terlalu banyak percobaan login. Tunggu **1-2 menit
 ```bash
 docker compose -f docker-compose.prod.yml exec app php artisan cache:clear
 ```
+
+### ❓ Mengakses Data API (Untuk Developer)
+
+Aplikasi memiliki Endpoint API versi 1 di `/api/v1/auth/login` (Untuk otentikasi) dan `/api/v1/alumni` untuk pengambilan data massal.
+Fitur API sepenuhnya dilindungi oleh Laravel Sanctum Token.
 
 ---
 

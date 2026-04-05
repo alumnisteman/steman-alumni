@@ -1,4 +1,4 @@
-# Panduan Deployment Otomatis ke VPS / Cloud Hosting
+# Panduan Deployment Otomatis ke VPS / Cloud Hosting (v6 API-Ready)
 
 Dokumen ini menjelaskan langkah-langkah untuk mengubah sistem **CI/CD Localhost** (menggunakan *self-hosted runner*) menjadi **Full Auto-Deploy ke VPS Production**.
 
@@ -88,4 +88,4 @@ cd steman-alumni
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Setelah `git clone` pertama kali ini berhasil dan Docker berjalan, setiap kali ada **Commit ke Cabang Main**, GitHub Action otomatis akan melakukan `git pull` dan me-*restart* *container* produksi secara aman.
+Setelah `git clone` pertama kali ini berhasil dan Docker berjalan, setiap kali ada **Commit ke Cabang Main**, GitHub Action otomatis akan melakukan `git pull` dan me-*restart* *container* produksi secara aman. Migrasi database dan optimasi API akan berjalan otomatis.
