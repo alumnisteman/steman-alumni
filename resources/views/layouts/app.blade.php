@@ -72,7 +72,6 @@
     </style>
 </head>
 <body>
-    @if(setting('running_text'))
     <div class="running-text-wrapper">
         <div class="running-text-label">
             <i class="bi bi-megaphone-fill me-2"></i> INFO
@@ -81,7 +80,6 @@
             {{ setting('running_text') }} &nbsp; &bull; &nbsp; {{ setting('running_text') }} &nbsp; &bull; &nbsp; {{ setting('running_text') }}
         </div>
     </div>
-    @endif
     <div class="top-bar bg-dark py-2 text-white small d-none d-lg-block">
         <div class="container d-flex justify-content-between">
             <div><i class="bi bi-geo-alt-fill me-2"></i> {{ setting('contact_address', 'Jl. Ki Hajar Dewantoro, Ternate') }}</div>
