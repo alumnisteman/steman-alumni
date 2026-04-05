@@ -275,7 +275,7 @@
         @forelse($latestNews as $item)
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden shadow-hover">
-                    <img src="{{ $item->thumbnail ?? 'https://via.placeholder.com/400x250' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $item->title }}">
+                    <img src="{{ $item->thumbnail ?? 'https://via.placeholder.com/400x250' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $item->title }}" loading="lazy">
                     <div class="card-body p-4">
                         <small class="text-primary fw-bold d-block mb-2">{{ $item->created_at->format('d M Y') }}</small>
                         <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none">{{ $item->title }}</a></h5>
@@ -340,7 +340,7 @@
         @foreach($latestPhotos as $photo)
             <div class="col-6 col-md-3">
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                    <img src="{{ $photo->file_path }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $photo->title }}">
+                    <img src="{{ $photo->file_path }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $photo->title }}" loading="lazy">
                 </div>
             </div>
         @endforeach

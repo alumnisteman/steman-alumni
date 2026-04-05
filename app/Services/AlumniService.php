@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\Cache;
 
 class AlumniService
 {
+    protected $alumniRepository;
+
+    public function __construct(\App\Repositories\Contracts\AlumniRepositoryInterface $alumniRepository)
+    {
+        $this->alumniRepository = $alumniRepository;
+    }
+
     /**
      * Get Cached Map Analytics
      */
@@ -22,13 +29,7 @@ class AlumniService
      */
     public function getCachedGraduationYears()
     {
-        return Cache::remember('alumni_graduation_years', 3600, function () {
-            return User::where('role', 'alumni')
-                ->whereNotNull('tahun_lulus')
-                ->distinct()
-                ->orderBy('tahun_lulus', 'desc')
-                ->pluck('tahun_lulus');
-        });
+        return $this->alumniRepository->getGraduationYears();
     }
 
     /**

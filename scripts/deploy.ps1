@@ -5,7 +5,7 @@
 # =============================================================================
 
 $REMOTE_USER = "root"
-$REMOTE_HOST = "192.168.1.15"
+$REMOTE_HOST = "103.175.219.57"
 $REMOTE_PATH = "/var/www/steman-alumni"
 $ZIP_FILE = "steman_deploy.zip"
 

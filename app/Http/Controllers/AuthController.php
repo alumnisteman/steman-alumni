@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
+    protected $authService;
+
+    public function __construct(\App\Services\AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function showLogin() {
         try {
             $num1 = rand(1, 10);
@@ -43,7 +50,7 @@ class AuthController extends Controller
         ]);
         unset($credentials['captcha']);
 
-        if (Auth::attempt($credentials)) {
+        if ($this->authService->login($credentials)) {
             Log::info('Login success for: ' . $request->email);
             
             ActivityLog::create([
@@ -112,10 +119,10 @@ class AuthController extends Controller
             ]);
             Log::info('Validation passed for: ' . $request->email);
 
-            $user = User::create([
+            $user = $this->authService->register([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'password' => Hash::make($data['password']),
+                'password' => $data['password'],
                 'role' => 'alumni',
                 'nisn' => $data['nisn'] ?? null,
                 'tahun_lulus' => $data['tahun_lulus'] ?? null,

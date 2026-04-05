@@ -23,7 +23,7 @@
             <div class="col-md-4">
                 <div class="news-card card h-100">
                     @if($item->thumbnail)
-                        <img src="{{ $item->thumbnail }}" class="card-img-top" alt="{{ $item->title }}">
+                        <img src="{{ $item->thumbnail }}" class="card-img-top" alt="{{ $item->title }}" loading="lazy">
                     @else
                         <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 200px;">
                             <i class="bi bi-image display-4"></i>

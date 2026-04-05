@@ -13,10 +13,12 @@ use App\Services\AlumniService;
 class AlumniController extends Controller
 {
     protected $alumniService;
+    protected $alumniRepository;
 
-    public function __construct(AlumniService $alumniService)
+    public function __construct(AlumniService $alumniService, \App\Repositories\Contracts\AlumniRepositoryInterface $alumniRepository)
     {
         $this->alumniService = $alumniService;
+        $this->alumniRepository = $alumniRepository;
     }
 
     public function dashboard()
@@ -124,24 +126,7 @@ class AlumniController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::where('role', 'alumni');
-
-        // Search by Name
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        // Filter by Jurusan
-        if ($request->filled('jurusan')) {
-            $query->where('jurusan', $request->jurusan);
-        }
-
-        // Filter by Angkatan (Tahun Lulus)
-        if ($request->filled('angkatan')) {
-            $query->where('tahun_lulus', $request->angkatan);
-        }
-
-        $alumni = $query->latest()->paginate(12)->withQueryString();
+        $alumni = $this->alumniRepository->getPaginatedAlumni($request->all(), 12)->withQueryString();
         
         $majors = Major::orderBy('name')->get();
         $years = $this->alumniService->getCachedGraduationYears();
@@ -149,8 +134,10 @@ class AlumniController extends Controller
         return view('alumni.index', compact('alumni', 'majors', 'years'));
     }
 
-    public function show(User $user)
+    public function show($identifier)
     {
+        $user = $this->alumniRepository->findByIdentifier($identifier);
+        abort_if(!$user, 404);
         return view('alumni.show', compact('user'));
     }
 

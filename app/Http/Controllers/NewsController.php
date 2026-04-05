@@ -53,8 +53,19 @@ class NewsController extends Controller
 
         $path = null;
         if ($request->hasFile('thumbnail')) {
-            $storedPath = $request->file('thumbnail')->store('news', 'public');
-            $path = '/storage/' . $storedPath;
+            $file = $request->file('thumbnail');
+            $imageName = Str::random(40) . '.webp';
+            
+            if (class_exists(\Intervention\Image\ImageManager::class)) {
+                $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                $image = $manager->read($file->getRealPath());
+                $encoded = $image->toWebp(70); // 70% quality compresses it < 200kb usually
+                Storage::disk('public')->put('news/' . $imageName, (string) $encoded);
+            } else {
+                $imageName = $file->hashName();
+                $file->storeAs('news', $imageName, 'public');
+            }
+            $path = '/storage/news/' . $imageName;
         }
 
         $news = News::create([
@@ -94,12 +105,23 @@ class NewsController extends Controller
         $path = $news->thumbnail;
         if ($request->hasFile('thumbnail')) {
             if ($path) {
-                // Path is stored as '/storage/news/file.jpg', strip '/storage/' prefix for disk delete
                 $relativePath = ltrim(str_replace('/storage/', '', $path), '/');
                 Storage::disk('public')->delete($relativePath);
             }
-            $storedPath = $request->file('thumbnail')->store('news', 'public');
-            $path = '/storage/' . $storedPath;
+            
+            $file = $request->file('thumbnail');
+            $imageName = Str::random(40) . '.webp';
+            
+            if (class_exists(\Intervention\Image\ImageManager::class)) {
+                $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                $image = $manager->read($file->getRealPath());
+                $encoded = $image->toWebp(70);
+                Storage::disk('public')->put('news/' . $imageName, (string) $encoded);
+            } else {
+                $imageName = $file->hashName();
+                $file->storeAs('news', $imageName, 'public');
+            }
+            $path = '/storage/news/' . $imageName;
         }
 
         $news->update([
