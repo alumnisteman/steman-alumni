@@ -75,9 +75,7 @@ COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Optimize Permissions
-RUN chown -R root:root /var/www \
-    && find /var/www -type d -exec chmod 755 {} \; \
-    && find /var/www -type f -exec chmod 644 {} \; \
+RUN chmod -R 755 /var/www \
     && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
