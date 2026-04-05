@@ -1,4 +1,4 @@
-# 🚀 Panduan Upload & CI/CD - Alumni STEMAN
+# 🚀 Panduan Upload & CI/CD – v6.0 Hardened
 
 Dokumen ini berisi langkah-langkah untuk Bapak mengupload kode ke GitHub dan mengaktifkan fitur **Auto-Deploy**.
 
@@ -24,7 +24,7 @@ Bapak silakan buka **Git Bash** atau **Terminal** di folder ini, lalu jalankan p
 3. **Kirim Kode**:
    ```bash
    git add .
-   git commit -m "feat: Integrasi GitHub, Scaling (3 Replicas), API v1, & Image Compression"
+   git commit -m "feat: Upgrade to v6.0 (Hardened Security, SoftDeletes, & API v1)"
    git branch -M main
    git push -u origin main
    ```
@@ -54,9 +54,14 @@ Setiap kali Bapak melakukan `git push`, maka server Bapak akan:
 4. Menjalankan migrasi API & mengkompresi aset (WebP) secara mandiri.
 
 > [!TIP]
-> **Scaling**: Jika Bapak ingin menambah lebih dari 3 replika (misal 5 atau 10), Bapak cukup ganti angka `replicas: 3` di file `docker-compose.prod.yml` lalu push lagi!
+> **Scaling**: Jika Bapak ingin menambah lebih dari 3 replika (misal 5 atau 10), Bapak cukup ganti angka `replicas: 3` di file `docker-compose.prod.yml` lalu push lagi! Sistem akan otomatis melakukan *rolling update* tanpa *downtime*.
 
 ---
+
+### 🛡️ Catatan Keamanan Penting
+1. **GitHub Secrets**: Pastikan Bapak sudah mengatur IP Server, SSH User, dan SSH Key di menu *Settings > Secrets* repositori GitHub.
+2. **Nginx Hardening**: Dokumentasi `.env`, `.git`, dan folder `vendor` kini secara otomatis dilindungi oleh Nginx di server produksi. Percobaan akses langsung akan menghasilkan error 403.
+
 
 ### Sertifikat & Keamanan
 Pastikan Bapak sudah mengisi file `.env` di server. File `.env` **TIDAK AKAN** ikut terupload ke GitHub demi keamanan database Bapak.

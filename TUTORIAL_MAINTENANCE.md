@@ -1,6 +1,7 @@
-# 🛠️ Panduan Pemeliharaan – STEMAN Alumni Portal v5
+# 🛠️ Panduan Pemeliharaan (Maintenance) – v6.0 Hardened
 
 > Versi terakhir diperbarui: April 2026
+> Status: Production Stable (API Ready)
 
 Ikuti panduan ini secara rutin agar portal tetap **stabil, cepat, dan aman**.
 
@@ -139,9 +140,10 @@ docker exec steman_app php artisan config:clear
 
 **Solusi:**
 ```bash
-# Refresh routing cache
-docker exec steman_app php artisan route:clear
+docker exec steman_app php artisan config:cache
 docker exec steman_app php artisan route:cache
+docker exec steman_app php artisan view:cache
+docker exec steman_app php artisan event:cache
 ```
 > Catatan: Jika ada route yang menggunakan closure (anonymous function), `route:cache` akan gagal. Ini normal — jalankan hanya `route:clear`.
 
@@ -215,7 +217,7 @@ exit;
 
 ---
 
-## 8️⃣ Cek Kesehatan Sistem Lengkap (One-Time Check)
+## 9️⃣ Cek Kesehatan Sistem Lengkap (One-Time Check)
 
 Jalankan perintah ini untuk memverifikasi semua sistem berjalan normal:
 ```bash
@@ -237,5 +239,14 @@ docker exec steman_app php -v
 
 ---
 
-> *Keamanan dan stabilitas data alumni adalah tanggung jawab bersama.*
-> **Ikatan Alumni SMKN 2 Ternate — Maintenance Guide v6.0 (Modular API-Ready)**
+## 10. 🛡️ Monitoring Keamanan (Nginx Logs)
+Cek apakah ada percobaan akses ilegal ke file sensitif (.env/vendor):
+```bash
+# Melihat 50 percobaan akses terakhir yang diblokir
+docker exec steman_nginx tail -n 50 /var/log/nginx/access.log | grep "403"
+```
+
+---
+
+> _"Satu tetes pemeliharaan mencegah seember perbaikan."_
+> **Ikatan Alumni STEMAN — Arsitektur v6.0 (Hardened)**

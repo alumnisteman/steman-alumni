@@ -1,7 +1,7 @@
-# 🚀 Panduan Instalasi – STEMAN Alumni Portal v5
+# 🚀 Panduan Instalasi – STEMAN Alumni Portal v6.0 (Hardened)
 
 > Versi terakhir diperbarui: April 2026
-> Arsitektur: Laravel 12 Modular (Service/Repository) + API v1 Sanctum + Docker
+> Arsitektur: Laravel 12 Modular + API v1 Sanctum + Docker + Security Hardening
 
 ---
 
@@ -56,15 +56,16 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ### Langkah 4 — Inisialisasi Pertama Kali (Wajib)
 ```bash
-# Jalankan migrasi database
+# Jalankan migrasi database (termasuk skema sekuritas baru)
 docker exec steman_app php artisan migrate --force
 
 # Buat storage symlink (wajib agar upload foto tampil)
 docker exec steman_app php artisan storage:link
 
-# Set permissions
-docker exec steman_app chmod -R 775 storage bootstrap/cache
+# Sinkronisasi Izin File (Otomatis ditangani Docker, tapi bisa dijalankan manual jika perlu)
+docker exec steman_app chmod -R 755 /var/www
 docker exec steman_app chown -R www-data:www-data storage bootstrap/cache
+docker exec steman_app chmod -R 775 storage bootstrap/cache
 
 # Seed data awal (jurusan, badge, dll)
 docker exec steman_app php artisan db:seed --force
@@ -137,6 +138,12 @@ docker compose up -d reverb
 - Gunakan HTTPS (SSL) jika diakses via domain publik
 - Backup rutin setiap hari (lihat `TUTORIAL_MAINTENANCE.md`)
 
+### 🛡️ Proteksi Berkas Sensitif
+Sistem ini menggunakan konfigurasi Nginx yang sangat ketat:
+- Akses langsung ke file `.env` dan `.git` akan diblokir (**403 Forbidden**).
+- Akses ke folder `/vendor` diblokir total secara struktural.
+- File PHP didalam folder `/storage` tidak dapat dieksekusi oleh webserver.
+
 ---
 
 ## 🛠️ Troubleshooting Instalasi
@@ -152,4 +159,4 @@ docker compose up -d reverb
 ---
 
 > _"Menghubungkan masa lalu, membangun masa depan."_
-> **Ikatan Alumni SMKN 2 Ternate — Arsitektur v5.1**
+> **Ikatan Alumni SMKN 2 Ternate — Arsitektur v6.0 (Hardened)**

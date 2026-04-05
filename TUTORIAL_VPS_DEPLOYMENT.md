@@ -1,4 +1,4 @@
-# Panduan Deployment Otomatis ke VPS / Cloud Hosting (v6 API-Ready)
+# 🌐 Panduan Deployment VPS (Production) – v6.0 Hardened
 
 Dokumen ini menjelaskan langkah-langkah untuk mengubah sistem **CI/CD Localhost** (menggunakan *self-hosted runner*) menjadi **Full Auto-Deploy ke VPS Production**.
 
@@ -57,11 +57,16 @@ jobs:
             docker compose -f docker-compose.prod.yml build
             docker compose -f docker-compose.prod.yml up -d --scale app=3
             
-            # Eksekusi Command Utama Laravel
+            # Eksekusi Command Utama Laravel (Hardened)
             docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
             docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan route:clear
+            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
             docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+            docker compose -f docker-compose.prod.yml exec -T app php artisan event:cache
+            
+            # Sinkronisasi Izin File Terakhir
+            docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www
+            docker compose -f docker-compose.prod.yml exec -T app chmod -R 775 storage bootstrap/cache
 ```
 
 > **Catatan Path Server (`cd /opt/steman-alumni`)**:
