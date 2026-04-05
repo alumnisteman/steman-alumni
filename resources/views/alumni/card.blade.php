@@ -104,15 +104,15 @@
         overflow: hidden;
     }
 
-    /* FRONT SIDE */
     .card-front {
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(15px);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 30px;
+        padding: 35px; /* Web-friendly safe area */
         color: white;
+        box-sizing: border-box;
     }
 
     .card-front::before {
@@ -157,8 +157,13 @@
 
     .user-info {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 20px;
+        text-align: center;
+        justify-content: center;
+        width: 100%;
+        gap: 12px;
+        margin-top: -10px; /* Center adjustment */
     }
 
     .profile-frame {
@@ -175,14 +180,15 @@
         height: 100%;
         border-radius: 50%;
         object-fit: cover;
+        object-position: top;
         border: 2px solid #0f172a;
     }
 
     .info-content h2 {
-        font-size: 1.4rem;
-        font-weight: 700;
+        font-size: 1.35rem;
+        font-weight: 800;
         margin-bottom: 2px;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
     }
 
     .info-content p {
@@ -230,17 +236,18 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        padding: 30px;
+        justify-content: flex-start; /* Naikkan elemen ke atas */
+        padding: 40px 35px 25px 35px; /* Safe area dan dorongan dari atas */
         color: #1e293b;
+        box-sizing: border-box;
     }
 
     .qr-container {
-        padding: 10px;
+        padding: 8px;
         background: #f8fafc;
         border-radius: 15px;
         box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     .scanning-text {
@@ -252,10 +259,12 @@
     }
 
     .terms-text {
-        font-size: 0.6rem;
-        opacity: 0.6;
-        line-height: 1.4;
-        max-width: 80%;
+        font-size: 0.55rem;
+        opacity: 0.7;
+        line-height: 1.5;
+        max-width: 85%;
+        text-align: center;
+        margin-top: 5px;
     }
 
     .shine-effect {
@@ -423,8 +432,13 @@
             <div class="qr-container">
                 {!! $qrCode !!}
             </div>
+            
+            <div class="fw-bold mb-2 text-center" style="font-size: 0.65rem; color: #475569; letter-spacing: 1.5px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; width: 80%;">
+                DITERBITKAN: {{ now()->translatedFormat('d M Y') }}
+            </div>
+            
             <p class="terms-text">This digital identity card is a valid verification tool for the SMK N 2 Ternate Alumni Network. Scan the code to view live verification status.</p>
-            <div class="mt-4 border-top w-100 pt-3 opacity-50 text-center" style="font-size: 0.5rem; letter-spacing: 2px;">
+            <div class="mt-auto border-top w-100 pt-3 opacity-50 text-center" style="font-size: 0.5rem; letter-spacing: 2px;">
                 POWERED BY STEMAN PORTAL V5.0
             </div>
         </div>
@@ -515,7 +529,7 @@
         .print-front {
             width: 450px;
             height: 280px;
-            padding: 30px;
+            padding: 35px; /* Safe area web friendly */
             border-radius: 20px;
             background: #0f172a;
             color: white;
@@ -525,6 +539,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             position: relative;
             overflow: hidden;
+            box-sizing: border-box;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -538,16 +553,17 @@
         .print-back {
             width: 450px;
             height: 280px;
-            padding: 30px;
+            padding: 40px 35px 25px 35px; /* Safe area web friendly */
             border-radius: 20px;
             background: white;
             color: #1e293b;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             border: 1px solid #e2e8f0;
+            box-sizing: border-box;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -556,20 +572,20 @@
         .logo-text { font-weight:900; font-size:1.5rem; letter-spacing:-1px; background:linear-gradient(to right,#fff,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .chip-icon { width:45px; height:35px; background:linear-gradient(135deg,#d4af37,#f9e29c,#b8860b); border-radius:6px; position:relative; }
         .chip-line { position:absolute; background:rgba(0,0,0,0.2); width:100%; height:1px; top:50%; }
-        .user-info { display:flex; align-items:center; gap:20px; }
+        .user-info { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:12px; width:100%; margin-top:-10px; }
         .profile-frame { width:85px; height:85px; border-radius:50%; padding:4px; background:linear-gradient(45deg,#3f37c9,#4cc9f0); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-        .profile-img { width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #0f172a; }
-        .info-content h2 { font-size:1.4rem; font-weight:700; margin-bottom:2px; }
+        .profile-img { width:100%; height:100%; border-radius:50%; object-fit:cover; object-position:top; border:2px solid #0f172a; }
+        .info-content h2 { font-size:1.35rem; font-weight:800; margin-bottom:2px; letter-spacing:1px; }
         .info-content p { font-size:0.85rem; opacity:0.8; margin:0; color:#94a3b8; }
         .card-footer { display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; }
         .meta-item span { display:block; font-size:0.6rem; text-transform:uppercase; color:#64748b; letter-spacing:1px; }
         .meta-item b { font-size:0.9rem; }
         .status-badge { background:rgba(34,197,94,0.2); color:#4ade80; padding:4px 12px; border-radius:100px; font-size:0.65rem; font-weight:800; border:1px solid rgba(74,222,128,0.3); }
         /* Back inner styles */
-        .scanning-text { font-size:0.75rem; font-weight:700; letter-spacing:3px; color:#64748b; margin-bottom:10px; }
-        .qr-container { padding:10px; background:#f8fafc; border-radius:15px; margin-bottom:15px; }
+        .scanning-text { font-size:0.75rem; font-weight:700; letter-spacing:3px; color:#64748b; margin-bottom:5px; }
+        .qr-container { padding:8px; background:#f8fafc; border-radius:15px; margin-bottom:10px; }
         .qr-container svg, .qr-container img { display:block; }
-        .terms-text { font-size:0.6rem; opacity:0.6; line-height:1.4; max-width:80%; text-align:center; }
+        .terms-text { font-size:0.55rem; opacity:0.7; line-height:1.5; max-width:85%; text-align:center; margin-top:5px; margin-bottom:0; }
         .shine-effect { display: none; }
         @media print {
             body { padding: 10px; }

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-dark text-white py-5 mb-5" style="background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1517245318773-5025d5123c73?auto=format&fit=crop&q=80&w=2070') center/cover;">
+<div class="bg-dark text-white py-5 mb-5" style="background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1517245318773-5025d5123c73?auto=format&fit=crop&q=80&w=2070'); background-size: cover; background-position: center; background-repeat: no-repeat;">
     <div class="container py-5 text-center">
         <h1 class="display-4 fw-bold mb-3">PROGRAM KAMI</h1>
         <p class="lead opacity-75 mx-auto" style="max-width: 700px;">Wadah kolaborasi dan pengembangan bagi seluruh keluarga besar Alumni Pusat Keunggulan {{ setting('school_name', 'SMKN 2 Ternate') }}.</p>

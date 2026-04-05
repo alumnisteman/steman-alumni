@@ -1,15 +1,80 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    /* Metode Letterbox Presisi: Terpusat & Utuh 100% */
+    .hero-section.hero-banner-bg {
+        position: relative;
+        width: 100%;
+        min-height: 450px;
+        overflow: hidden;
+        background-color: #000;
+        display: flex; /* Gunakan Flexbox untuk centering */
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    /* Penjaga Rasio 1280x670 */
+    @media (min-width: 992px) {
+        .hero-section.hero-banner-bg {
+            aspect-ratio: 1280 / 670 !important;
+            min-height: auto;
+        }
+    }
+
+    .hero-main-img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain !important;
+        object-position: center center !important; /* KUNCI: Selalu di tengah */
+        position: relative;
+        z-index: 2;
+        display: block;
+    }
+
+    .hero-blur-bg {
+        position: absolute;
+        inset: -50px;
+        width: calc(100% + 100px);
+        height: calc(100% + 100px);
+        object-fit: cover;
+        filter: blur(50px) brightness(0.3);
+        z-index: 1;
+        opacity: 0.6;
+    }
+
+    .hero-content-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
+    }
+</style>
+
 <!-- Hero Section -->
-<div class="hero-section text-center text-white d-flex align-items-center" style="background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}'); background-size: cover; background-position: center; min-height: 85vh; padding: 60px 0;">
-    <div class="container py-4 py-md-5">
-        <div class="badge-hero mb-4">Official Portal</div>
-        <h1 class="display-4 display-md-2 fw-black mb-4 hero-title">{!! nl2br(e(setting('hero_title', "PENGURUS PUSAT\nIKATAN ALUMNI SMKN 2"))) !!}</h1>
-        <p class="lead fw-bold mb-5 opacity-90 hero-subtitle mx-auto px-3" style="max-width: 700px;">{{ setting('hero_subtitle', 'MENJALIN JEJARING, MEMBANGUN KONTRIBUSI.') }}</p>
-        <div class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mt-2 px-4 px-md-0">
-            <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-0 shadow-lg btn-hero">JOIN NOW <i class="bi bi-arrow-right ms-2"></i></a>
-            <a href="/alumni" class="btn btn-outline-light fw-bold px-5 py-3 rounded-0 btn-hero-outline">DIRECTORY</a>
+<div class="hero-section text-center text-white hero-banner-bg">
+    <!-- Layer 1: Blur Background -->
+    <img src="{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}" class="hero-blur-bg" alt="Blur Background">
+    
+    <!-- Layer 2: Main Image (Flyer) - Mengatur Tinggi Kontainer secara Otomatis -->
+    <img src="{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}" class="hero-main-img" alt="Hero Banner">
+
+    <!-- Layer 3: Konten Text Overlay -->
+    <div class="hero-content-overlay">
+        <div class="container py-4">
+            <div class="badge-hero mb-4">Official Portal</div>
+            <h1 class="display-4 display-md-2 fw-black mb-4 hero-title">{!! nl2br(e(setting('hero_title', "PENGURUS PUSAT\nIKATAN ALUMNI SMKN 2"))) !!}</h1>
+            <p class="lead fw-bold mb-5 opacity-90 hero-subtitle mx-auto px-3" style="max-width: 700px;">{{ setting('hero_subtitle', 'MENJALIN JEJARING, MEMBANGUN KONTRIBUSI.') }}</p>
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mt-2 px-4 px-md-0">
+                <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-0 shadow-lg btn-hero">JOIN NOW <i class="bi bi-arrow-right ms-2"></i></a>
+                <a href="/alumni" class="btn btn-outline-light fw-bold px-5 py-3 rounded-0 btn-hero-outline">DIRECTORY</a>
+            </div>
         </div>
     </div>
 </div>
@@ -23,7 +88,7 @@
                      <img src="{{ setting('chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400') }}" 
                           onerror="this.src='https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400'"
                           class="img-fluid rounded-4 shadow-lg border border-5 border-white" 
-                          style="max-height: 280px; width: auto; object-fit: cover;" 
+                          style="aspect-ratio: 3/4; height: 280px; width: 100%; max-width: 210px; object-fit: cover; object-position: top;" 
                           alt="Ketua Umum">
                     <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3">
                         <span class="badge bg-warning text-dark px-4 py-2 rounded-pill shadow-sm fw-bold">KETUA UMUM</span>
@@ -87,7 +152,7 @@
                     <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
                          class="img-fluid rounded-4 shadow-lg border border-4 border-white" 
                          alt="Ketua Panitia"
-                         style="max-height: 280px; width: auto; object-fit: cover;">
+                         style="aspect-ratio: 3/4; height: 280px; width: 100%; max-width: 210px; object-fit: cover; object-position: top;">
                     <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3">
                         <span class="badge bg-primary text-white px-4 py-2 rounded-pill shadow-sm fw-bold">KETUA PANITIA</span>
                     </div>

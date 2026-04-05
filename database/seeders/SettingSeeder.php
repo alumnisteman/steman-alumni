@@ -23,6 +23,12 @@ class SettingSeeder extends Seeder
                 'group' => 'general'
             ],
             [
+                'key' => 'running_text',
+                'value' => 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate - Jalin Silaturahmi, Bangun Kontribusi!',
+                'label' => 'Teks Berjalan (Running Text)',
+                'group' => 'general'
+            ],
+            [
                 'key' => 'contact_address',
                 'value' => 'Jl. Ki Hajar Dewantoro, Ternate',
                 'label' => 'Alamat Kontak',

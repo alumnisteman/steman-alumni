@@ -240,3 +240,16 @@ Route::get('/health', function () {
 
     return response()->json($status, $status['status'] === 'healthy' ? 200 : 503);
 });
+
+// Temporary Route to Initialize Running Text (Delete after use)
+Route::get('/init-settings-running', function() {
+    \App\Models\Setting::updateOrCreate(
+        ['key' => 'running_text'],
+        [
+            'value' => 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate! Jalin Silaturahmi, Bangun Kontribusi.',
+            'label' => 'Teks Berjalan (Running Text)',
+            'group' => 'general'
+        ]
+    );
+    return "Running Text Initialized! Please visit home page.";
+});

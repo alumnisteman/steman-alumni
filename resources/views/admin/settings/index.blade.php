@@ -42,6 +42,7 @@
                                               (strpos($key, 'program') !== false) || 
                                               (strpos($key, 'vision') !== false) || 
                                               (strpos($key, 'mission') !== false) || 
+                                              (strpos($key, 'running_text') !== false) || 
                                               ($key == 'hero_title') || 
                                               ($key == 'contact_address');
                                 
@@ -57,7 +58,8 @@
                                     <div class="d-flex align-items-center gap-3">
                                         @if($item->value)
                                             <div class="position-relative">
-                                                <img src="{{ $item->value }}" alt="Preview" class="rounded-3 shadow-sm border border-2 border-white" style="width: 80px; height: 80px; object-fit: cover;">
+                                                <img src="{{ $item->value }}" alt="Preview" class="rounded-3 shadow-sm border border-2 border-white" 
+                                                    style="height: 80px; object-fit: cover; {{ strpos($item->key, 'background') !== false ? 'width: 160px;' : 'width: 80px;' }}">
                                             </div>
                                         @endif
                                         <div class="flex-grow-1">
@@ -67,6 +69,11 @@
                                     </div>
                                     <div class="mt-2 x-small text-muted">
                                         URL Saat Ini: <code class="bg-white px-1">{{ $item->value }}</code>
+                                        @if(strpos($item->key, 'background') !== false)
+                                            <div class="mt-1 text-success"><i class="bi bi-check-circle-fill me-1"></i> Rekomendasi resolusi: <b>1920 &times; 800 px</b> (sweet spot paling pas)</div>
+                                        @elseif(strpos($item->key, 'photo') !== false)
+                                            <div class="mt-1"><i class="bi bi-info-circle me-1"></i> Rekomendasi: Gunakan rasio pas foto / portrait.</div>
+                                        @endif
                                     </div>
                                 </div>
                             @else

@@ -21,9 +21,67 @@
             document.documentElement.setAttribute('data-bs-theme', 'light');
         }
     </script>
-    @stack('styles')
+@stack('styles')
+    <style>
+        /* Running Text / Marquee Styles */
+        .running-text-wrapper {
+            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            color: #ffcc00;
+            padding: 8px 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 9999;
+            border-bottom: 1px solid rgba(255,204,0,0.2);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 30s linear infinite;
+            padding-left: 100%;
+        }
+
+        .marquee-content:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .running-text-label {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: #ffcc00;
+            color: #1e293b;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
+    @if(setting('running_text'))
+    <div class="running-text-wrapper">
+        <div class="running-text-label">
+            <i class="bi bi-megaphone-fill me-2"></i> INFO
+        </div>
+        <div class="marquee-content">
+            {{ setting('running_text') }} &nbsp; &bull; &nbsp; {{ setting('running_text') }} &nbsp; &bull; &nbsp; {{ setting('running_text') }}
+        </div>
+    </div>
+    @endif
     <div class="top-bar bg-dark py-2 text-white small d-none d-lg-block">
         <div class="container d-flex justify-content-between">
             <div><i class="bi bi-geo-alt-fill me-2"></i> {{ setting('contact_address', 'Jl. Ki Hajar Dewantoro, Ternate') }}</div>

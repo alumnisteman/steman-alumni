@@ -56,7 +56,7 @@
                     <span class="badge bg-warning text-dark px-3 rounded-pill">LIVE PREVIEW</span>
                 </div>
                 <div class="hero-preview-container d-flex align-items-center justify-content-center text-center p-5" 
-                     style="height: 400px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ $hero_background }}'); background-size: cover; background-position: center;">
+                     style="height: 400px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ $hero_background }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                     <div class="text-white">
                         <div class="badge-yellow mb-3" style="background: #ffcc00; color: #000; font-weight: 800; padding: 5px 15px; display: inline-block; text-transform: uppercase; font-size: 0.7rem;">Official Portal</div>
                         <h2 class="fw-bold text-uppercase mb-2" style="font-size: 1.8rem; letter-spacing: -1px; line-height: 1.2;">{!! nl2br(e($hero_title)) !!}</h2>
