@@ -587,6 +587,10 @@ docker compose -f docker-compose.prod.yml exec app php artisan cache:clear
 Aplikasi memiliki Endpoint API versi 1 di `/api/v1/auth/login` (Untuk otentikasi) dan `/api/v1/alumni` untuk pengambilan data massal.
 Fitur API sepenuhnya dilindungi oleh Laravel Sanctum Token.
 
+### ❓ Apakah Data yang Dihapus Benar-benar Hilang? (Soft Deletes)
+
+Tidak. Sistem v6 ini dilengkapi dengan fitur *Soft Deletes*. Jika Anda secara tidak sengaja menghapus Alumni, Berita, Acara, Loker, maupun Pesan, maka data tersebut hanya **"disembunyikan"** dari tampilan dan pindah ke dalam ruang arsip (Sampah) di server (tidak hilang permanen). Hubungi tim developer teknis bila Ingin melakukan pemulihan *(Restore Data).*
+
 ---
 
 ## 📞 KONTAK DUKUNGAN TEKNIS

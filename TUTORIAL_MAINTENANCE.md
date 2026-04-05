@@ -201,6 +201,20 @@ exit;
 
 ---
 
+## 8️⃣ Pembersihan Data Sampah (Soft Deletes / Force Delete)
+Sejak v6, aplikasi menggunakan _SoftDeletes_. Data yang dihapus tidak benar-benar lenyap dari *Database*. Jika penyimpanan penuh dan Anda ingin memusnahkan data yang telah "dihapus" secara permanen, gunakan *Tinker*:
+```bash
+docker exec -it steman_app php artisan tinker
+```
+Lalu eksekusi perintah Force Delete (contoh pada tabel Berita):
+```php
+\App\Models\News::onlyTrashed()->forceDelete();
+\App\Models\JobVacancy::onlyTrashed()->forceDelete();
+exit;
+```
+
+---
+
 ## 8️⃣ Cek Kesehatan Sistem Lengkap (One-Time Check)
 
 Jalankan perintah ini untuk memverifikasi semua sistem berjalan normal:
@@ -223,5 +237,5 @@ docker exec steman_app php -v
 
 ---
 
-> _Keamanan dan stabilitas data alumni adalah tanggung jawab bersama._
-> **Ikatan Alumni SMKN 2 Ternate — Maintenance Guide v5.1**
+> *Keamanan dan stabilitas data alumni adalah tanggung jawab bersama.*
+> **Ikatan Alumni SMKN 2 Ternate — Maintenance Guide v6.0 (Modular API-Ready)**
