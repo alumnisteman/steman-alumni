@@ -2,10 +2,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class News extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['user_id', 'title', 'slug', 'content', 'thumbnail', 'category', 'is_published'];
 
     protected static function boot()

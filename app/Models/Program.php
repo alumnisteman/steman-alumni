@@ -3,11 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Program extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
+        'user_id',
         'title',
         'slug',
         'description',
@@ -30,5 +34,10 @@ class Program extends Model
                 $program->slug = Str::slug($program->title);
             }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

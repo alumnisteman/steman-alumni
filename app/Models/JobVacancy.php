@@ -3,13 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class JobVacancy extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'job_vacancies';
 
     protected $fillable = [
+        'user_id',
         'title',
         'slug',
         'company',
@@ -34,5 +38,10 @@ class JobVacancy extends Model
                 $job->slug = Str::slug($job->title) . '-' . Str::random(5);
             }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
