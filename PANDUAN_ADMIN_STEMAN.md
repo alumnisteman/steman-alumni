@@ -18,8 +18,9 @@
 10. [Manajemen Pesan Masuk (Inbox)](#10-manajemen-pesan-masuk-inbox)
 11. [Pengaturan Situs (Settings)](#11-pengaturan-situs-settings)
 12. [Ekspor Data Alumni](#12-ekspor-data-alumni)
-13. [Keamanan & Pemeliharaan](#13-keamanan--pemeliharaan)
-14. [FAQ & Pemecahan Masalah](#14-faq--pemecahan-masalah)
+13. [Backup & Restore Database](#13-backup--restore-database)
+14. [Keamanan & Pemeliharaan](#14-keamanan--pemeliharaan)
+15. [FAQ & Pemecahan Masalah](#15-faq--pemecahan-masalah)
 
 ---
 
@@ -383,7 +384,120 @@ Data yang diekspor meliputi: Nama, Email, NISN, Jurusan, Tahun Lulus, Status, Lo
 
 ---
 
-## 13. KEAMANAN & PEMELIHARAAN
+## 13. BACKUP & RESTORE DATABASE
+
+> [!IMPORTANT]
+> Backup database adalah langkah paling penting untuk melindungi data alumni dari kehilangan akibat kesalahan sistem, serangan, atau kerusakan server. Lakukan backup secara rutin!
+
+### 13.1 Sistem Backup Otomatis (Crontab)
+
+Server sudah dikonfigurasi untuk melakukan backup otomatis **setiap hari pukul 02:00 dini hari**. Backup tersimpan di folder:
+```
+/opt/steman-alumni/backups/database/
+```
+
+Setiap file backup diberi nama dengan format:
+```
+steman_alumni_YYYYMMDD_HHMMSS.sql.gz
+```
+Contoh: `steman_alumni_20260405_020000.sql.gz`
+
+> [!NOTE]
+> Backup lama yang sudah lebih dari **30 hari** akan otomatis dihapus oleh sistem untuk menghemat ruang penyimpanan.
+
+### 13.2 Menjalankan Backup Manual
+
+Jika Anda ingin membuat backup kapan saja (di luar jadwal otomatis), jalankan perintah ini di terminal VPS:
+
+```bash
+cd /opt/steman-alumni
+
+# Jalankan backup manual
+bash docker/scripts/backup-db.sh
+```
+
+Output yang muncul jika backup berhasil:
+```
+[2026-04-05 14:30:00] ====================================================
+[2026-04-05 14:30:00]   MEMULAI PROSES BACKUP DATABASE: steman_alumni
+[2026-04-05 14:30:00] Menjalankan mysqldump...
+[2026-04-05 14:30:02] ✅ SUKSES: Backup tersimpan di /opt/.../steman_alumni_20260405_143000.sql.gz (Ukuran: 1.2M)
+[2026-04-05 14:30:02] BACKUP SELESAI
+```
+
+### 13.3 Melihat Daftar Backup yang Tersedia
+
+```bash
+# Lihat semua file backup beserta ukurannya
+ls -lh /opt/steman-alumni/backups/database/
+
+# Lihat log aktivitas backup
+tail -50 /opt/steman-alumni/backups/backup.log
+```
+
+### 13.4 Cara Restore Database dari Backup
+
+> [!CAUTION]
+> **PERINGATAN KERAS**: Proses restore akan **MENGHAPUS SELURUH DATA SAAT INI** di database dan menggantinya dengan data dari file backup. Pastikan Anda yakin sebelum melanjutkan!
+
+**Langkah-langkah restore:**
+
+1. Pastikan Anda berada di folder project:
+```bash
+cd /opt/steman-alumni
+```
+
+2. Lihat daftar file backup yang tersedia:
+```bash
+ls -lh backups/database/
+```
+
+3. Jalankan perintah restore dengan nama file yang ingin dikembalikan:
+```bash
+bash docker/scripts/restore-db.sh steman_alumni_20260405_020000.sql.gz
+```
+
+4. Sistem akan meminta konfirmasi. Ketik `YA` (huruf kapital) lalu tekan Enter:
+```
+⚠️  PERINGATAN: Proses ini akan MENGHAPUS semua data saat ini...
+Ketik 'YA' untuk melanjutkan: YA
+```
+
+5. Tunggu proses selesai. Output sukses:
+```
+[2026-04-05 15:00:00] ✅ SUKSES: Database berhasil di-restore.
+```
+
+### 13.5 Memeriksa Jadwal Backup Otomatis
+
+Untuk memastikan crontab backup berjalan dengan benar:
+
+```bash
+# Lihat jadwal crontab yang aktif
+crontab -l
+```
+
+Output yang diharapkan:
+```cron
+# Backup database Steman Alumni - setiap hari jam 02:00 dini hari
+0 2 * * * /bin/bash /opt/steman-alumni/docker/scripts/backup-db.sh >> /opt/steman-alumni/backups/backup.log 2>&1
+
+# Backup mingguan ekstra - setiap Minggu jam 03:00
+0 3 * * 0 /bin/bash /opt/steman-alumni/docker/scripts/backup-db.sh >> /opt/steman-alumni/backups/backup.log 2>&1
+```
+
+### 13.6 Ringkasan Jadwal Backup
+
+| Jadwal | Waktu | Keterangan |
+|--------|-------|------------|
+| 🔄 **Harian** | Setiap hari pukul 02:00 | Backup rutin harian |
+| 🔄 **Mingguan** | Setiap Minggu pukul 03:00 | Backup tambahan mingguan |
+| 👤 **Manual** | Kapan saja (by Admin) | Dijalankan manual via terminal |
+| 🗑️ **Penghapusan Otomatis** | Bersamaan dengan backup | File > 30 hari dihapus otomatis |
+
+---
+
+## 14. KEAMANAN & PEMELIHARAAN
 
 ### 13.1 Mengganti Password Admin
 
@@ -425,7 +539,7 @@ docker compose -f docker-compose.prod.yml logs --tail 50 app
 
 ---
 
-## 14. FAQ & PEMECAHAN MASALAH
+## 15. FAQ & PEMECAHAN MASALAH
 
 ### ❓ Saya lupa password admin. Apa yang harus dilakukan?
 
