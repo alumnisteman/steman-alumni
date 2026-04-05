@@ -271,12 +271,88 @@
         transition: 0.8s;
     }
 
-    /* Print styling */
+    /* ── PRINT / DOWNLOAD STYLES ── */
     @media print {
-        .id-card-container { background: white; min-height: auto; }
-        .blob, .btn-group-id { display: none; }
-        .card-3d { transform: none !important; }
-        .card-back { position: relative; top: 20px; transform: none; }
+        /* Hide everything except the cards */
+        body > *:not(.id-card-outer) { display: none !important; }
+        .blob-wrapper, .btn-group-id, #flipHint { display: none !important; }
+
+        .id-card-outer {
+            background: white !important;
+            min-height: auto;
+        }
+
+        .id-card-container {
+            perspective: none !important;
+        }
+
+        /* Stack both sides vertically, flat */
+        .card-3d {
+            transform: none !important;
+            -webkit-transform: none !important;
+            transform-style: flat !important;
+            -webkit-transform-style: flat !important;
+            height: auto !important;
+            position: relative;
+            page-break-inside: avoid;
+        }
+
+        /* Show both sides flat, one below the other */
+        .card-side {
+            position: relative !important;
+            backface-visibility: visible !important;
+            -webkit-backface-visibility: visible !important;
+            transform: none !important;
+            -webkit-transform: none !important;
+            width: var(--card-width);
+            height: var(--card-height);
+            display: flex !important;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+        }
+
+        /* Front side: keep dark background for print */
+        .card-front {
+            background: #0f172a !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Back side: already white */
+        .card-back {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        /* Label separating the two sides */
+        .card-front::after {
+            content: 'Sisi Depan Kartu Alumni';
+            display: block;
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #94a3b8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .card-back::after {
+            content: 'Sisi Belakang (QR Code)';
+            display: block;
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #94a3b8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
     }
 
     @media (max-width: 500px) {
