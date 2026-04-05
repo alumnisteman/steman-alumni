@@ -243,7 +243,7 @@ Route::get('/health', function () {
 
 // Temporary Route to Initialize Running Text (Delete after use)
 Route::get('/init-settings-running', function() {
-    \App\Models\Setting::updateOrCreate(
+    $s = \App\Models\Setting::updateOrCreate(
         ['key' => 'running_text'],
         [
             'value' => 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate! Jalin Silaturahmi, Bangun Kontribusi.',
@@ -251,5 +251,13 @@ Route::get('/init-settings-running', function() {
             'group' => 'general'
         ]
     );
-    return "Running Text Initialized! Please visit home page.";
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    return "Running Text Initialized! Value: " . $s->value;
+});
+
+Route::get('/clear-all-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    return "All cache cleared! Please check homepage.";
 });
