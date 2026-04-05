@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\MapController;
 use App\Services\AIPredictionService;
 use Illuminate\Support\Facades\Route;
 
@@ -69,6 +70,10 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
     Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
+    
+    // Global Network & Mesh Map (Leaflet)
+    Route::get('/global-network', [MapController::class, 'index'])->name('global.network');
+    Route::get('/api/v1/map-data', [MapController::class, 'data'])->name('api.map.data');
 });
 
 // --- 2. Authentication Routes (Stricter Rate Limiting) ---

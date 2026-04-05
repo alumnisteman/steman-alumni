@@ -110,6 +110,7 @@
                     <li class="nav-item"><a class="nav-link" href="/profil">PROFIL</a></li>
                     <li class="nav-item"><a class="nav-link" href="/alumni">DIREKTORI</a></li>
                     <li class="nav-item"><a class="nav-link text-primary fw-bold" href="{{ route('alumni.network') }}"><i class="bi bi-globe-central-south-asia me-1"></i>3D NETWORK</a></li>
+                    <li class="nav-item"><a class="nav-link text-info fw-bold" href="{{ route('global.network') }}"><i class="bi bi-diagram-3-fill me-1"></i>GLOBAL MESH</a></li>
                     <li class="nav-item"><a class="nav-link" href="/gallery">GALERI</a></li>
                     <li class="nav-item"><a class="nav-link" href="/news">BERITA</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('analytics.index') }}">STATISTIK</a></li>
