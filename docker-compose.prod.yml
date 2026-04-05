@@ -16,6 +16,8 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - SESSION_SECURE_COOKIE=true
+      - SESSION_HTTP_ONLY=true
     deploy:
       replicas: 3
       resources:

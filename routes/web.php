@@ -72,7 +72,7 @@ Route::middleware(['throttle:global'])->group(function () {
 });
 
 // --- 2. Authentication Routes (Stricter Rate Limiting) ---
-Route::middleware(['throttle:login'])->group(function () {
+Route::middleware(['throttle:5,1'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
