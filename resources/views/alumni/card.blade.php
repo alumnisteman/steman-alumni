@@ -11,16 +11,35 @@
         --secondary-glow: #480ca8;
     }
 
-    .id-card-container {
+    /* Outer wrapper: only for background + blobs — MUST NOT have perspective here */
+    .id-card-outer {
         min-height: 80vh;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        perspective: 1500px;
         background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
-        overflow: hidden;
         position: relative;
+        /* NO overflow:hidden here - it breaks 3D transforms */
+    }
+
+    /* Clip blobs separately so they don't affect 3D context */
+    .blob-wrapper {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Card area: this is the perspective context */
+    .id-card-container {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        perspective: 1200px;
     }
 
     /* Animated background blobs */
@@ -78,6 +97,7 @@
         width: 100%;
         height: 100%;
         backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
         border-radius: 20px;
         border: 1px solid var(--glass-border);
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -206,6 +226,7 @@
     .card-back {
         background: white;
         transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -270,10 +291,15 @@
     }
 </style>
 
-<div class="id-card-container">
-    <div class="blob"></div>
-    <div class="blob blob-2"></div>
+<div class="id-card-outer">
+    <!-- Blobs in their own overflow:hidden wrapper -->
+    <div class="blob-wrapper">
+        <div class="blob"></div>
+        <div class="blob blob-2"></div>
+    </div>
 
+    <!-- Card perspective container -->
+    <div class="id-card-container">
     <div class="card-3d" id="alumniCard">
         <!-- FRONT -->
         <div class="card-side card-front">
@@ -337,10 +363,11 @@
         </a>
     </div>
 
-    <p class="mt-4 text-slate-500 small animate-pulse" id="flipHint">
-        <i class="bi bi-phone-flip me-2"></i> <span id="hintText">Klik atau hover untuk membalik kartu</span>
+    <p class="mt-4 text-slate-500 small" id="flipHint" style="color: #94a3b8;">
+        <i class="bi bi-phone-flip me-2"></i> <span id="hintText">Klik kartu untuk membalik</span>
     </p>
-</div>
+    </div><!-- end id-card-container -->
+</div><!-- end id-card-outer -->
 
 <script>
     const card = document.getElementById('alumniCard');
