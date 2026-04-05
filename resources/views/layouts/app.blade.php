@@ -40,16 +40,16 @@
         .marquee-content {
             display: inline-block;
             white-space: nowrap;
-            animation: marquee 30s linear infinite;
-            padding-left: 100%;
+            animation: marquee 35s linear infinite;
+            will-change: transform;
         }
 
         .marquee-content:hover {
             animation-play-state: paused;
         }
 
-        @keyframes marquee {
-            0% { transform: translateX(0); }
+        @@keyframes marquee {
+            0%   { transform: translateX(100vw); }
             100% { transform: translateX(-100%); }
         }
 
@@ -72,14 +72,19 @@
     </style>
 </head>
 <body>
-    <div class="running-text-wrapper">
-        <div class="running-text-label">
-            <i class="bi bi-megaphone-fill me-2"></i> INFO
-        </div>
-        <div class="marquee-content">
-            {{ setting('running_text') }} &nbsp; &bull; &nbsp; {{ setting('running_text') }} &nbsp; &bull; &nbsp; {{ setting('running_text') }}
-        </div>
+@php
+    $runningText = setting('running_text', 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate - Jalin Silaturahmi, Bangun Kontribusi!');
+@endphp
+@if($runningText)
+<div class="running-text-wrapper">
+    <div class="running-text-label">
+        <i class="bi bi-megaphone-fill me-2"></i> INFO
     </div>
+    <div class="marquee-content">
+        {{ $runningText }} &nbsp;&bull;&nbsp; {{ $runningText }} &nbsp;&bull;&nbsp; {{ $runningText }} &nbsp;&bull;&nbsp; {{ $runningText }}
+    </div>
+</div>
+@endif
     <div class="top-bar bg-dark py-2 text-white small d-none d-lg-block">
         <div class="container d-flex justify-content-between">
             <div><i class="bi bi-geo-alt-fill me-2"></i> {{ setting('contact_address', 'Jl. Ki Hajar Dewantoro, Ternate') }}</div>
