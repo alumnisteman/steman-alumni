@@ -32,7 +32,6 @@ services:
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
       - app_public:/var/www/public
-      - ./docker/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
     networks:
       - steman-network
     depends_on:
