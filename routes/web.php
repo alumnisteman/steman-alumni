@@ -105,6 +105,14 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
         Route::get('/alumni/messages', [AlumniController::class, 'messages'])->name('alumni.messages');
         Route::get('/alumni/card', [CardController::class, 'index'])->name('alumni.card');
+
+        // Nostalgia Feed Routes
+        Route::get('/nostalgia', [\App\Http\Controllers\PostController::class, 'index'])->name('nostalgia.index');
+        Route::post('/nostalgia', [\App\Http\Controllers\PostController::class, 'store'])->name('nostalgia.store');
+        Route::delete('/nostalgia/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('nostalgia.destroy');
+        Route::post('/nostalgia/{post}/like', [\App\Http\Controllers\PostController::class, 'toggleLike'])->name('nostalgia.like');
+        Route::post('/nostalgia/{post}/comment', [\App\Http\Controllers\PostController::class, 'storeComment'])->name('nostalgia.comment.store');
+        Route::get('/api/alumni/search', [\App\Http\Controllers\PostController::class, 'searchAlumni'])->name('api.alumni.search');
     });
 
     // Mentoring

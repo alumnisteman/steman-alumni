@@ -12,28 +12,31 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Add User IDs and Constraints to tables missing relations
-        Schema::table('job_vacancies', function (Blueprint $table) {
-            if (!Schema::hasColumn('job_vacancies', 'user_id')) {
-                $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->nullOnDelete();
-            }
-            $table->index('status');
-            $table->softDeletes();
-        });
+        try {
+            Schema::table('job_vacancies', function (Blueprint $table) {
+                if (!Schema::hasColumn('job_vacancies', 'user_id')) {
+                    $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->nullOnDelete();
+                }
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('programs', function (Blueprint $table) {
-            if (!Schema::hasColumn('programs', 'user_id')) {
-                $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->nullOnDelete();
-            }
-            $table->index('status');
-            $table->softDeletes();
-        });
+        try { Schema::table('job_vacancies', function (Blueprint $table) { $table->index('status'); }); } catch (\Exception $e) {}
+        try { Schema::table('job_vacancies', function (Blueprint $table) { $table->softDeletes(); }); } catch (\Exception $e) {}
+
+        try {
+            Schema::table('programs', function (Blueprint $table) {
+                if (!Schema::hasColumn('programs', 'user_id')) {
+                    $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->nullOnDelete();
+                }
+            });
+        } catch (\Exception $e) {}
+
+        try { Schema::table('programs', function (Blueprint $table) { $table->index('status'); }); } catch (\Exception $e) {}
+        try { Schema::table('programs', function (Blueprint $table) { $table->softDeletes(); }); } catch (\Exception $e) {}
 
         // 2. Add SoftDeletes & Explicit Indexes to Users
-        Schema::table('users', function (Blueprint $table) {
-            // Note: email is already unique() which acts as an index, but we ensure role is indexed
-            $table->index('role');
-            $table->softDeletes();
-        });
+        try { Schema::table('users', function (Blueprint $table) { $table->index('role'); }); } catch (\Exception $e) {}
+        try { Schema::table('users', function (Blueprint $table) { $table->softDeletes(); }); } catch (\Exception $e) {}
 
         // 3. Add SoftDeletes to other relational tables
         $tablesWithSoftDeletes = [
@@ -45,9 +48,11 @@ return new class extends Migration
         ];
 
         foreach ($tablesWithSoftDeletes as $tableName) {
-            Schema::table($tableName, function (Blueprint $table) {
-                $table->softDeletes();
-            });
+            try {
+                Schema::table($tableName, function (Blueprint $table) {
+                    $table->softDeletes();
+                });
+            } catch (\Exception $e) {}
         }
     }
 

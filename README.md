@@ -6,8 +6,8 @@ Portal Sistem Informasi Ikatan Alumni SMKN 2 Ternate. Dibangun menggunakan Larav
 
 ## ⚡ Quick Start (Windows)
 Untuk menjalankan aplikasi dengan cepat di server lokal atau produksi:
-1. **Inisialisasi IP**: Jalankan `.\update-ip.ps1`
-2. **Deploy**: Jalankan `.\deploy.ps1`
+1. **Inisialisasi IP**: Jalankan `.\scripts\deploy\update-ip.ps1`
+2. **Deploy**: Jalankan `.\scripts\deploy\deploy.ps1`
 
 ---
 

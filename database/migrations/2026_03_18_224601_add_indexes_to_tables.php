@@ -8,23 +8,29 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->index('nisn');
-            $table->index('tahun_lulus');
-            $table->index('jurusan');
-            $table->index('role');
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->index('nisn');
+                $table->index('tahun_lulus');
+                $table->index('jurusan');
+                $table->index('role');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('job_vacancies', function (Blueprint $table) {
-            $table->index('slug');
-            $table->index('status');
-            $table->index('type');
-        });
+        try {
+            Schema::table('job_vacancies', function (Blueprint $table) {
+                $table->index('slug');
+                $table->index('status');
+                $table->index('type');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('majors', function (Blueprint $table) {
-            $table->index('group');
-            $table->index('status');
-        });
+        try {
+            Schema::table('majors', function (Blueprint $table) {
+                $table->index('group');
+                $table->index('status');
+            });
+        } catch (\Exception $e) {}
     }
 
     public function down(): void

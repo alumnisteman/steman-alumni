@@ -123,17 +123,24 @@ docker compose restart app
 docker exec steman_app tail -50 storage/logs/laravel.log
 ```
 
-### ❌ 500 Server Error
-**Penyebab:** Variabel PHP undefined, DB error, atau konfigurasi salah.
+### ❌ 500 Server Error (View / Path Not Found)
+**Penyebab:** View cache rusak atau direktori framework di `storage/` terhapus (karena masuk .gitignore).
 
 **Solusi:**
 ```bash
-# Aktifkan debug sementara untuk melihat detail error
-# Edit .env: APP_DEBUG=true
-# Akses halaman yang error, lalu kembalikan APP_DEBUG=false
+# 1. Pastikan folder framework ada
+docker exec steman_app mkdir -p storage/framework/{views,sessions,cache}
+docker exec steman_app chmod -R 775 storage/framework
+docker exec steman_app chown -R www-data:www-data storage/framework
 
-docker exec steman_app php artisan config:clear
+# 2. Bersihkan view cache
+docker exec steman_app php artisan view:clear
 ```
+
+### ❌ Entrypoint Crash (Read-only System)
+**Penyebab:** Docker entrypoint mencoba melakukan `chmod` pada volume yang di-mount sebagai `:ro` (Read-only).
+
+**Solusi:** Update `docker-entrypoint.sh` untuk menggunakan `2>/dev/null || true` pada perintah `chmod`. Ini sudah diperbaiki di v6.1.
 
 ### ❌ 404 Not Found
 **Penyebab:** Route tidak ditemukan, view hilang, atau file tidak ada.
@@ -177,76 +184,67 @@ docker compose up -d reverb
 
 ---
 
-## 6️⃣ Pembaruan IP Server (Jaringan Berubah)
+## 6️⃣ Emergency: Reset Database Permissions
 
+Jika `app_user` kehilangan akses atau container DB restart dengan IP baru yang tidak dikenali:
+
+1. Gunakan script recovery:
+```bash
+bash scripts/db/reset_db.sh
+```
+Script ini akan otomatis menghentikan aplikasi, menjalankan MariaDB dalam mode pemulihan (`--skip-grant-tables`), memperbaiki izin user `app_user` ke host `%` (any host), dan merestart sistem secara aman.
+
+---
+
+## 7️⃣ Pembaruan IP Server (Jaringan Berubah)
 Setiap kali IP server berubah (DHCP/restart router), jalankan:
 ```powershell
 # Windows
-.\update-ip.ps1
+.\scripts\deploy\update-ip.ps1
 ```
 
 ---
 
-## 7️⃣ Reset Password Admin
-
+## 8️⃣ Reset Password Admin
 Jika lupa password admin, gunakan Artisan Tinker:
 ```bash
 docker exec -it steman_app php artisan tinker
 ```
 Lalu di Tinker:
 ```php
-$user = \App\Models\User::where('email', 'admin@steman.ac.id')->first();
-$user->password = \Illuminate\Support\Facades\Hash::make('PasswordBaru@123');
+$user = \App\Models\User::where('role', 'admin')->first();
+$user->password = Hash::make('PasswordBaru@123');
 $user->save();
-exit;
 ```
 
 ---
 
-## 8️⃣ Pembersihan Data Sampah (Soft Deletes / Force Delete)
-Sejak v6, aplikasi menggunakan _SoftDeletes_. Data yang dihapus tidak benar-benar lenyap dari *Database*. Jika penyimpanan penuh dan Anda ingin memusnahkan data yang telah "dihapus" secara permanen, gunakan *Tinker*:
+## 9️⃣ Pembersihan Data Sampah (Soft Deletes)
+Aplikasi menggunakan *SoftDeletes*. Untuk menghapus permanen data yang sudah masuk "Trash":
 ```bash
 docker exec -it steman_app php artisan tinker
 ```
-Lalu eksekusi perintah Force Delete (contoh pada tabel Berita):
 ```php
 \App\Models\News::onlyTrashed()->forceDelete();
-\App\Models\JobVacancy::onlyTrashed()->forceDelete();
-exit;
+\App\Models\User::onlyTrashed()->forceDelete();
 ```
 
 ---
 
-## 9️⃣ Cek Kesehatan Sistem Lengkap (One-Time Check)
-
-Jalankan perintah ini untuk memverifikasi semua sistem berjalan normal:
+## 🔟 Cek Kesehatan Sistem (Full Audit)
+Jalankan audit rutin:
 ```bash
-# 1. Status container
+# Cek semua container
 docker compose ps
 
-# 2. Koneksi database
-docker exec steman_app php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';"
+# Uji koneksi DB dari dalam App
+docker exec steman_app php artisan db:show
 
-# 3. Cek storage symlink
-docker exec steman_app ls -la public/storage
-
-# 4. Cek log error terbaru
-docker exec steman_app tail -20 storage/logs/laravel.log
-
-# 5. Cek versi PHP
-docker exec steman_app php -v
-```
-
----
-
-## 10. 🛡️ Monitoring Keamanan (Nginx Logs)
-Cek apakah ada percobaan akses ilegal ke file sensitif (.env/vendor):
-```bash
-# Melihat 50 percobaan akses terakhir yang diblokir
-docker exec steman_nginx tail -n 50 /var/log/nginx/access.log | grep "403"
+# Cek log 50 baris terakhir
+docker exec steman_app tail -n 50 storage/logs/laravel.log
 ```
 
 ---
 
 > _"Satu tetes pemeliharaan mencegah seember perbaikan."_
-> **Ikatan Alumni STEMAN — Arsitektur v6.0 (Hardened)**
+> **Ikatan Alumni STEMAN — Arsitektur v6.1 (Hardened)**

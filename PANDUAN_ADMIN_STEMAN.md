@@ -414,7 +414,7 @@ Jika Anda ingin membuat backup kapan saja (di luar jadwal otomatis), jalankan pe
 cd /opt/steman-alumni
 
 # Jalankan backup manual
-bash docker/scripts/backup-db.sh
+bash scripts/db/backup-db.sh
 ```
 
 Output yang muncul jika backup berhasil:
@@ -455,7 +455,7 @@ ls -lh backups/database/
 
 3. Jalankan perintah restore dengan nama file yang ingin dikembalikan:
 ```bash
-bash docker/scripts/restore-db.sh steman_alumni_20260405_020000.sql.gz
+bash scripts/db/restore-db.sh steman_alumni_20260405_020000.sql.gz
 ```
 
 4. Sistem akan meminta konfirmasi. Ketik `YA` (huruf kapital) lalu tekan Enter:
@@ -481,10 +481,10 @@ crontab -l
 Output yang diharapkan:
 ```cron
 # Backup database Steman Alumni - setiap hari jam 02:00 dini hari
-0 2 * * * /bin/bash /opt/steman-alumni/docker/scripts/backup-db.sh >> /opt/steman-alumni/backups/backup.log 2>&1
+0 2 * * * /bin/bash /var/www/steman-alumni/scripts/db/backup-db.sh >> /var/www/steman-alumni/backups/backup.log 2>&1
 
 # Backup mingguan ekstra - setiap Minggu jam 03:00
-0 3 * * 0 /bin/bash /opt/steman-alumni/docker/scripts/backup-db.sh >> /opt/steman-alumni/backups/backup.log 2>&1
+0 3 * * 0 /bin/bash /var/www/steman-alumni/scripts/db/backup-db.sh >> /var/www/steman-alumni/backups/backup.log 2>&1
 ```
 
 ### 13.6 Ringkasan Jadwal Backup

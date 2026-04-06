@@ -43,9 +43,9 @@ fi
 
 # --- 5. Permissions Enforcement ---
 echo "Applying runtime permissions..."
-chmod -R 755 /var/www
-chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+chmod -R 755 /var/www 2>/dev/null || true
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
+chmod -R 775 /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 
 # --- 6. Start PHP-FPM or Custom Command ---
 echo "Steman Alumni Portal is ready! Executing: $@"

@@ -32,36 +32,40 @@ try {
     Write-Host "  -> NPM Build skipped." -ForegroundColor Gray
 }
 
-# 3. Zipping files (Clean source)
-Write-Host "[3/8] Zipping application source code..." -ForegroundColor Yellow
-Compress-Archive -Path "app", "bootstrap", "config", "database", "public", "resources", "routes", "docker", ".env", "docker-compose.yml", "docker-compose.dev.yml", "docker-compose.prod.yml", "Dockerfile", "artisan", "composer.json", "package.json", "vite.config.js", "update-ip.ps1" -DestinationPath $ZIP_FILE
+# 3. Archiving files (using tar for better Linux compatibility)
+Write-Host "[3/8] Preparing Clean Archive (tar.gz)..." -ForegroundColor Yellow
+Write-Host "  -> Cleaning local Laravel Cache..." -ForegroundColor Cyan
+if (Test-Path "bootstrap/cache/*.php") { Get-ChildItem "bootstrap/cache/*.php" -Exclude ".gitignore" | Remove-Item -Force }
+if (Test-Path "public/storage") { Remove-Item "public/storage" -Recurse -Force -ErrorAction SilentlyContinue }
+Write-Host "  -> Archiving files..." -ForegroundColor Cyan
+tar -czf "steman_deploy.tar.gz" "app" "bootstrap" "config" "database" "public" "resources" "routes" "docker" ".env" "docker-compose.yml" "docker-compose.dev.yml" "docker-compose.prod.yml" "Dockerfile" "artisan" "composer.json" "composer.lock" "package.json" "package-lock.json" "vite.config.js" "update-ip.ps1"
 
 # 4. Uploading to Server
 Write-Host "[4/8] Uploading Source to $REMOTE_HOST..." -ForegroundColor Yellow
 Write-Host "(Mohon masukkan password jika diminta)" -ForegroundColor Gray
-scp $ZIP_FILE "${REMOTE_USER}@${REMOTE_HOST}:/tmp/"
+$TAR_FILE = "steman_deploy.tar.gz"
+scp $TAR_FILE "${REMOTE_USER}@${REMOTE_HOST}:/tmp/"
 
 # 5. Remote Extraction & Rebuild
 Write-Host "[5/8] Extracting and Building on server..." -ForegroundColor Yellow
 $REMOTE_CMD = @"
 mkdir -p $REMOTE_PATH
-rm -rf $REMOTE_PATH/docker/nginx/conf.d/*
-unzip -o /tmp/$ZIP_FILE -d $REMOTE_PATH
+tar -xzf /tmp/$TAR_FILE -C $REMOTE_PATH
 cd $REMOTE_PATH
-docker compose -f docker-compose.prod.yml build app
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml build --no-cache app
+docker compose -f docker-compose.prod.yml up -d --force-recreate
 "@
 
 ssh "${REMOTE_USER}@${REMOTE_HOST}" $REMOTE_CMD
 
 # 6. Post-Deploy & Health Check
 Write-Host "[6/8] Post-Deploy: Health Check, Cache & Settings (v6.0)..." -ForegroundColor Yellow
-Start-Sleep -Seconds 5
-ssh "${REMOTE_USER}@${REMOTE_HOST}" "docker exec steman_app php artisan config:cache; docker exec steman_app php artisan route:cache; docker exec steman_app php artisan view:cache; docker exec steman_app php artisan event:cache; docker exec steman_app php artisan db:seed --class=SettingSeeder --force"
+Start-Sleep -Seconds 10
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "docker exec steman_app php artisan config:cache; docker exec steman_app php artisan route:cache; docker exec steman_app php artisan view:cache; docker exec steman_app php artisan event:cache; docker exec steman_app php artisan db:seed --class=SettingSeeder --force; docker exec steman_app php artisan db:seed --class=MapDataSeeder --force"
 
-Write-Host "  -> Verifikasi Website http://$REMOTE_HOST:8000 ..." -ForegroundColor Cyan
+Write-Host "  -> Verifikasi Website http://$REMOTE_HOST ..." -ForegroundColor Cyan
 try {
-    $response = Invoke-WebRequest -Uri "http://$REMOTE_HOST:8000" -Method Get -TimeoutSec 10 -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri "http://$REMOTE_HOST" -Method Get -TimeoutSec 10 -ErrorAction Stop
     $statusCode = $response.StatusCode
     if ($statusCode -eq 200) {
         Write-Host "  -> Website Berjalan Normal (HTTPS 200 OK)" -ForegroundColor Green
@@ -96,8 +100,8 @@ if ($statusCode -eq 200) {
 
 # 8. Cleanup
 Write-Host "[8/8] Cleanup..." -ForegroundColor Yellow
-Remove-Item $ZIP_FILE
-ssh "${REMOTE_USER}@${REMOTE_HOST}" "rm /tmp/$ZIP_FILE"
+if (Test-Path $TAR_FILE) { Remove-Item $TAR_FILE }
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "rm /tmp/$TAR_FILE"
 
 Write-Host "==============================================" -ForegroundColor Green
 Write-Host "  DEPLOY SELESAI! (DNGAN PROTEKSI GITHUB)" -ForegroundColor Green

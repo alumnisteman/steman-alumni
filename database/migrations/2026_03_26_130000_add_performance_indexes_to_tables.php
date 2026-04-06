@@ -11,19 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('news', function (Blueprint $table) {
-            $table->index('category');
-            $table->index('is_published');
-        });
+        try {
+            Schema::table('news', function (Blueprint $table) {
+                $table->index('category');
+                $table->index('is_published');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('programs', function (Blueprint $table) {
-            $table->index('status');
-            $table->index('slug');
-        });
+        try {
+            Schema::table('programs', function (Blueprint $table) {
+                $table->index('status');
+                $table->index('slug');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('galleries', function (Blueprint $table) {
-            $table->index('type');
-        });
+        try {
+            Schema::table('galleries', function (Blueprint $table) {
+                $table->index('type');
+            });
+        } catch (\Exception $e) {}
     }
 
     /**

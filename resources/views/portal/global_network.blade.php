@@ -1,8 +1,8 @@
-@extends('layouts.portal')
+@extends('layouts.app')
 
 @section('title', 'Global Network - STEMAN Alumni')
 
-@base_css
+@push('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
     #map {
@@ -78,12 +78,12 @@
         background: rgba(15, 23, 42, 0.95) !important;
     }
 </style>
-@end_css
+@endpush
 
 @section('content')
 <div class="container mx-auto px-4 py-12 map-container">
-    <div class="mb-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+    <div class="mb-8 text-center text-white">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
             STEMAN <span class="text-blue-500">Global Network</span>
         </h1>
         <p class="text-gray-400 max-w-2xl mx-auto">
@@ -94,7 +94,7 @@
     <div class="map-card relative">
         <div id="map"></div>
         
-        <div class="map-overlay-info hidden md:block">
+        <div class="map-overlay-info d-none d-md-block">
             <h3 class="font-bold text-lg mb-2">STEMAN Alumni Mesh</h3>
             <div class="space-y-3">
                 <div class="flex items-center gap-3">
@@ -114,7 +114,7 @@
 </div>
 @endsection
 
-@base_js
+@push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -129,8 +129,8 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Fetch Data from API
-        fetch("{{ route('api.map-data') }}")
+        // Fetch Data from API - Fixed Route Name
+        fetch("{{ route('api.map.data') }}")
             .then(response => response.json())
             .then(data => {
                 if(data.success) {
@@ -184,11 +184,13 @@
 
                     // Refit map bounds if there are alumni
                     if(data.alumni.length > 0) {
-                        const group = new L.featureGroup(data.alumni.map(a => L.marker([a.lat, a.lng])));
-                        map.fitBounds(group.getBounds().pad(0.5));
+                        try {
+                            const group = new L.featureGroup(data.alumni.map(a => L.marker([a.lat, a.lng])));
+                            map.fitBounds(group.getBounds().pad(0.5));
+                        } catch(e) {}
                     }
                 }
             });
     });
 </script>
-@end_js
+@endpush

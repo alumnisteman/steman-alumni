@@ -8,26 +8,35 @@ Dokumen ini berisi langkah-langkah untuk Bapak mengupload kode ke GitHub dan men
 
 Bapak silakan buka **Git Bash** atau **Terminal** di folder ini, lalu jalankan perintah berikut secara berurutan:
 
-1. **Konfigurasi Identitas** (Hanya sekali seumur hidup):
+1. **Inisialisasi Git**:
    ```bash
-   git config --global user.name "Alumni STEMAN Admin"
-   git config --global user.email "admin@alumnisteman.com"
-   ```
-
-2. **Ganti Nama Folder & Sync**:
-   ```bash
-   # Inisialisasi Git kembali (jika tadi belum masuk path)
    git init
-   git remote add origin https://github.com/alumnisteman/steman-alumni.git
+   git add .
+   git commit -m "feat: Initial commit v6.1 Project Hardened"
    ```
 
-3. **Kirim Kode**:
+2. **Hubungkan ke Repository Baru**:
+   Silakan buat repository baru di GitHub (kosong, tanpa README/License), lalu hubungkan:
    ```bash
-   git add .
-   git commit -m "feat: Upgrade to v6.0 (Hardened Security, SoftDeletes, & API v1)"
+   git remote add origin https://github.com/USERNAME/REPO_NAME.git
    git branch -M main
+   ```
+
+3. **Push Kode**:
+   ```bash
    git push -u origin main
    ```
+
+---
+
+## 🔄 Bagian 2: Cara Update Kode (Sync Rutin)
+Setiap kali Bapak selesai melakukan perubahan di komputer lokal:
+```bash
+git add .
+git commit -m "update: deskripsi perubahan Bapak"
+git push
+```
+Server produksi akan mendeteksi perubahan ini secara otomatis jika **GitHub Runner** sudah aktif.
 
 ---
 

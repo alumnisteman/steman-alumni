@@ -48,7 +48,7 @@ GITHUB_CLIENT_SECRET=your-secret
 ### Langkah 3 — Build & Jalankan
 ```bash
 # Windows (PowerShell)
-.\deploy.ps1
+.\scripts\deploy\deploy.ps1
 
 # Linux / Mac
 docker compose -f docker-compose.prod.yml up -d --build
@@ -62,27 +62,21 @@ docker exec steman_app php artisan migrate --force
 # Buat storage symlink (wajib agar upload foto tampil)
 docker exec steman_app php artisan storage:link
 
-# Sinkronisasi Izin File (Otomatis ditangani Docker, tapi bisa dijalankan manual jika perlu)
-docker exec steman_app chmod -R 755 /var/www
-docker exec steman_app chown -R www-data:www-data storage bootstrap/cache
+# Sinkronisasi Izin File (PENTING: Pastikan folder storage dapat ditulis oleh Docker)
 docker exec steman_app chmod -R 775 storage bootstrap/cache
-
-# Seed data awal (jurusan, badge, dll)
-docker exec steman_app php artisan db:seed --force
+docker exec steman_app chown -R www-data:www-data storage bootstrap/cache
 ```
 
 ### Langkah 5 — Akses Aplikasi
 | URL | Keterangan |
 |---|---|
-| `http://192.168.1.15:8000` | Halaman Utama |
-| `http://192.168.1.15:8000/admin/dashboard` | Panel Admin |
-| `http://192.168.1.15:8000/login` | Login Alumni |
+| `http://IP_SERVER:8000` | Halaman Utama |
+| `http://IP_SERVER:8000/admin/dashboard` | Panel Admin |
+| `http://IP_SERVER:8000/login` | Login Alumni |
 
 **Akun Admin Default:**
-- Email: `admin@steman.ac.id`
-- Password: `Admin@1234`
-
-> ⚠️ **SEGERA ganti password admin setelah login pertama!**
+- Email: `admin@steman.ac.id` (Ganti dengan role admin Anda)
+- Password: `Admin@1234` (Ganti segera setelah login!)
 
 ---
 
@@ -91,7 +85,7 @@ docker exec steman_app php artisan db:seed --force
 Jika IP lokal server Anda berubah, jalankan:
 ```powershell
 # Windows PowerShell
-.\update-ip.ps1
+.\scripts\deploy\update-ip.ps1
 ```
 Script ini otomatis memperbarui `APP_URL` di `.env` sesuai IP aktif, lalu rebuild container.
 

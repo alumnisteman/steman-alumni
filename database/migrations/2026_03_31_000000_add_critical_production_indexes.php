@@ -11,32 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Index for status filtering (very common in directory)
-            if (!Schema::hasIndex('users', 'users_status_index')) {
-                $table->index('status');
-            }
-            // Index for role filtering
-            if (!Schema::hasIndex('users', 'users_role_index')) {
-                $table->index('role');
-            }
-            // Ensure email is unique (usually is, but ensuring index exists)
-            if (!Schema::hasIndex('users', 'users_email_unique')) {
-                $table->unique('email');
-            }
-        });
-
-        Schema::table('job_vacancies', function (Blueprint $table) {
-            if (!Schema::hasIndex('job_vacancies', 'job_vacancies_status_index')) {
-                $table->index('status');
-            }
-        });
-
-        Schema::table('programs', function (Blueprint $table) {
-            if (!Schema::hasIndex('programs', 'programs_status_index')) {
-                $table->index('status');
-            }
-        });
+        // Add indexes individually and catch exceptions if they already exist
+        try { Schema::table('users', function (Blueprint $table) { $table->index('status'); }); } catch (\Exception $e) {}
+        try { Schema::table('users', function (Blueprint $table) { $table->index('role'); }); } catch (\Exception $e) {}
+        try { Schema::table('users', function (Blueprint $table) { $table->unique('email'); }); } catch (\Exception $e) {}
+        try { Schema::table('job_vacancies', function (Blueprint $table) { $table->index('status'); }); } catch (\Exception $e) {}
+        try { Schema::table('programs', function (Blueprint $table) { $table->index('status'); }); } catch (\Exception $e) {}
     }
 
     /**

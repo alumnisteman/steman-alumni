@@ -71,7 +71,7 @@
                         <div class="position-relative z-1">
                             <h5 class="fw-black mb-3 text-uppercase tracking-wider" style="color: #ffcc00; font-size: 0.8rem;">STEMAN NEXT-GEN FEATURES 🛸</h5>
                             <div class="row g-3">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
                                         <i class="bi bi-person-badge-fill fs-3 text-warning mb-2 d-block"></i>
                                         <h6 class="fw-bold mb-1 small">3D Digital ID</h6>
@@ -79,7 +79,7 @@
                                         <a href="{{ route('alumni.card') }}" class="btn btn-warning btn-sm w-100 fw-bold rounded-pill">LIHAT KARTU</a>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
                                         <i class="bi bi-globe-americas fs-3 text-info mb-2 d-block"></i>
                                         <h6 class="fw-bold mb-1 small">3D Global Mesh</h6>
@@ -87,7 +87,15 @@
                                         <a href="{{ route('alumni.network') }}" class="btn btn-info btn-sm w-100 fw-bold rounded-pill text-white">BUKA BOLA DUNIA</a>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
+                                        <i class="bi bi-camera-reels-fill fs-3 text-danger mb-2 d-block"></i>
+                                        <h6 class="fw-bold mb-1 small">Nostalgia Feed</h6>
+                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Bagikan foto lama dan kenangan indah bersama teman seangkatan.</p>
+                                        <a href="{{ route('nostalgia.index') }}" class="btn btn-danger btn-sm w-100 fw-bold rounded-pill">BUKA FEED</a>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
                                     <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
                                         <i class="bi bi-compass-fill fs-3 text-primary mb-2 d-block"></i>
                                         <h6 class="fw-bold mb-1 small">Career Navigator</h6>
