@@ -7,47 +7,56 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         // Posts Table
-        Schema::create('posts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->text('content');
-            $table->string('image_url')->nullable();
-            $table->enum('type', ['memory', 'story', 'event'])->default('memory');
-            $table->integer('likes_count')->default(0);
-            $table->integer('comments_count')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        // Posts Table
+        if (!Schema::hasTable('posts')) {
+            Schema::create('posts', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->text('content');
+                $table->string('image_url')->nullable();
+                $table->enum('type', ['memory', 'story', 'event'])->default('memory');
+                $table->integer('likes_count')->default(0);
+                $table->integer('comments_count')->default(0);
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
 
         // Post Likes Table
-        Schema::create('post_likes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
-            
-            $table->unique(['post_id', 'user_id']);
-        });
+        if (!Schema::hasTable('post_likes')) {
+            Schema::create('post_likes', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('post_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->timestamps();
+                
+                $table->unique(['post_id', 'user_id']);
+            });
+        }
 
         // Post Comments Table
-        Schema::create('post_comments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->text('content');
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('post_comments')) {
+            Schema::create('post_comments', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('post_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->text('content');
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
 
         // Post Tags Table
-        Schema::create('post_tags', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Tagged User
-            $table->timestamps();
-            
-            $table->unique(['post_id', 'user_id']);
-        });
+        if (!Schema::hasTable('post_tags')) {
+            Schema::create('post_tags', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('post_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Tagged User
+                $table->timestamps();
+                
+                $table->unique(['post_id', 'user_id']);
+            });
+        }
     }
 
     public function down(): void {
