@@ -1,34 +1,32 @@
-# 🎓 STEMAN Alumni Portal v6.0 (Hardened)
+# Alumni STEMAN (Steman Alumni Portal)
 
-Portal Sistem Informasi Ikatan Alumni SMKN 2 Ternate. Dibangun menggunakan Laravel 12 Modular, API Sanctum, dan Dockerized Production Environment.
+A comprehensive Alumni Management System built with Laravel, featuring a robust Dashboard, Nostalgia Social Feed, Job Vacancies, Events/Galleries, and User Connections/Mentoring capabilities.
+
+## 📚 Documentation & Guides
+
+All instructions and operational guides for setting up and maintaining this platform have been organized into the `docs/` folder:
+
+- 📖 **[Panduan Admin / Penggunaan Dashboard](docs/PANDUAN_ADMIN.md)**
+  Comprehensive guide on managing the system from the backend (approving new alumni, managing forum/news, etc).
+
+- 🚀 **[Tutorial Instalasi (Local/Dev)](docs/TUTORIAL_INSTALASI.md)**
+  Step-by-step instructions to get the application running on your local machine using XAMPP/Laragon or native PHP artisan.
+
+- 🛠 **[Tutorial Maintenance](docs/TUTORIAL_MAINTENANCE.md)**
+  Commands and operational steps to perform routine application maintenance (clearing cache, storage linking).
+
+- 🌍 **[Tutorial VPS Deployment (Production)](docs/TUTORIAL_VPS_DEPLOYMENT.md)**
+  Fully automated production deployment strategy using Docker & Nginx. Covers setting up SSL, Let's Encrypt, and background workers.
+
+- 📤 **[Upload to GitHub](docs/UPLOAD_TO_GITHUB.md)**
+  Procedures to correctly push the code to version control without exposing sensitive passwords or environment variables.
+
+## Tech Stack
+- **Framework:** Laravel 12.x
+- **Database:** MariaDB / MySQL
+- **Real-time Engine:** Laravel Reverb + Redis
+- **Frontend:** Bootstrap 5, Vite, Vanilla JS
 
 ---
 
-## ⚡ Quick Start (Windows)
-Untuk menjalankan aplikasi dengan cepat di server lokal atau produksi:
-1. **Inisialisasi IP**: Jalankan `.\scripts\deploy\update-ip.ps1`
-2. **Deploy**: Jalankan `.\scripts\deploy\deploy.ps1`
-
----
-
-## 📘 Panduan Dokumentasi
-Kami menyediakan panduan lengkap untuk setiap operasional sistem:
-
-1. 🚀 **[Panduan Instalasi](TUTORIAL_INSTALASI.md)**: Langkah awal setup Docker dan lingkungan server.
-2. 🛠️ **[Panduan Maintenance](TUTORIAL_MAINTENANCE.md)**: Checklist pembersihan cache, data sampah, dan backup.
-3. 🌐 **[Panduan VPS Deployment](TUTORIAL_VPS_DEPLOYMENT.md)**: Cara mengaktifkan Auto-Deploy via GitHub Actions.
-4. ☁️ **[Panduan Upload GitHub](UPLOAD_TO_GITHUB.md)**: Instruksi sinkronisasi kode ke repositori.
-5. 📘 **[Buku Panduan Admin](PANDUAN_ADMIN_STEMAN.md)**: Cara mengoperasikan Dashboard bagi Admin & Editor.
-
----
-
-## 🛡️ Fitur Keamanan (v6.0 Hardened)
-- **SoftDeletes**: Data tidak hilang permanen saat dihapus.
-- **Strict Throttling**: Proteksi Brute-Force pada sistem login.
-- **Nginx Hardening**: Blokade otomatis pada file sensitif (`.env`, `.git`).
-- **Auto-Permissions**: Izin file `755/775` dikelola otomatis oleh Docker Entrypoint.
-
----
-> _"Menghubungkan masa lalu, membangun masa depan."_
-> **Ikatan Alumni SMKN 2 Ternate**
-
+*Repository structurally stabilized for v6.0 Production deploy. See docs/ folder for detailed procedures.*
