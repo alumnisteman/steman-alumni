@@ -40,11 +40,34 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Jurusan</label>
-                                                <select name="jurusan" class="form-select">
+                        <select name="jurusan" class="form-select">
                             <option value="">Pilih Jurusan</option>
-                        @foreach($majors as $major)
-                            <option value="{{ $major->name }}" {{ $user->jurusan == $major->name ? 'selected' : '' }}>{{ $major->name }}</option>
-                        @endforeach</select>
+                            @php 
+                                $currentGroup = ''; 
+                                $found = false;
+                                $userJurusan = $user->jurusan ?? '';
+                            @endphp
+                            @foreach($majors as $major)
+                                @if($currentGroup != $major->group)
+                                    @if($currentGroup != '') </optgroup> @endif
+                                    <optgroup label="{{ $major->group == 'Modern' ? 'Kurikulum Saat Ini' : 'Kurikulum Lama (Legacy)' }}">
+                                    @php $currentGroup = $major->group; @endphp
+                                @endif
+                                @php 
+                                    $isSelected = $userJurusan == $major->name;
+                                    if($isSelected) $found = true;
+                                @endphp
+                                <option value="{{ $major->name }}" {{ $isSelected ? 'selected' : '' }}>{{ $major->name }}</option>
+                            @endforeach
+                            @if($currentGroup != '') </optgroup> @endif
+
+                            {{-- Fallback matching: If user data doesn't match master list exactly --}}
+                            @if(!$found && !empty($userJurusan))
+                                <optgroup label="Data Saat Ini (Beda Format)">
+                                    <option value="{{ $userJurusan }}" selected>{{ $userJurusan }}</option>
+                                </optgroup>
+                            @endif
+                        </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Tahun Lulus</label>

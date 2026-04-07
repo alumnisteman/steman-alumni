@@ -12,7 +12,7 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user();
-        $majors = Major::orderBy('name')->get();
+        $majors = Major::orderBy('group')->orderBy('name')->get();
         return view('alumni.profile', compact('user', 'majors'));
     }
 

@@ -219,16 +219,31 @@
                     <label class="form-label fw-bold">Jurusan</label>
                     <select name="jurusan" class="form-select">
                         <option value="">-- Pilih Jurusan --</option>
-                        @php $currentGroup = ''; @endphp
+                        @php 
+                            $currentGroup = ''; 
+                            $found = false;
+                            $userJurusan = $user->jurusan ?? '';
+                        @endphp
                         @foreach($activeMajors as $m)
                             @if($currentGroup != $m->group)
                                 @if($currentGroup != '') </optgroup> @endif
                                 <optgroup label="{{ $m->group == 'Modern' ? 'Kurikulum Saat Ini' : 'Kurikulum Lama (Legacy)' }}">
                                 @php $currentGroup = $m->group; @endphp
                             @endif
-                            <option value="{{ $m->name }}" {{ (old('jurusan') ?? ($user->jurusan ?? '')) == $m->name ? 'selected' : '' }}>{{ $m->name }}</option>
+                            @php 
+                                $isSelected = (old('jurusan') ?? $userJurusan) == $m->name;
+                                if($isSelected) $found = true;
+                            @endphp
+                            <option value="{{ $m->name }}" {{ $isSelected ? 'selected' : '' }}>{{ $m->name }}</option>
                         @endforeach
                         @if($currentGroup != '') </optgroup> @endif
+                        
+                        {{-- Robust Fallback: If user's current value isn't in the master list, show it --}}
+                        @if(!$found && !empty($userJurusan))
+                            <optgroup label="Data Saat Ini (Tidak Sinkron)">
+                                <option value="{{ $userJurusan }}" selected>{{ $userJurusan }} (Mohon Update ke Master Data)</option>
+                            </optgroup>
+                        @endif
                     </select>
                 </div>
                 <div class="col-md-6">
