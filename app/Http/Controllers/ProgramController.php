@@ -49,7 +49,7 @@ class ProgramController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Create Program',
+            'action' => 'Create Program',
             'description' => 'Added program: ' . $program->title,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -90,7 +90,7 @@ class ProgramController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update Program',
+            'action' => 'Update Program',
             'description' => 'Updated program: ' . $program->title,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -112,7 +112,7 @@ class ProgramController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Delete Program',
+            'action' => 'Delete Program',
             'description' => 'Deleted program: ' . $name,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),
@@ -125,14 +125,14 @@ class ProgramController extends Controller
     // Frontend: List
     public function index()
     {
-        $programs = Program::where('status', 'active')->get();
+        $programs = Program::where('status', 'published')->get();
         return view('programs.index', compact('programs'));
     }
 
     // Frontend: Show
     public function show($slug)
     {
-        $program = Program::where('slug', $slug)->where('status', 'active')->firstOrFail();
+        $program = Program::where('slug', $slug)->where('status', 'published')->firstOrFail();
         return view('programs.show', compact('program'));
     }
 }

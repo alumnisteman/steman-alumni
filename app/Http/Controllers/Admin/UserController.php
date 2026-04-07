@@ -29,7 +29,7 @@ class UserController extends Controller
 
             ActivityLog::create([
                 'user_id' => Auth::id(),
-                'activity' => 'Create User',
+                'action' => 'Create User',
                 'description' => 'Created ' . $user->role . ': ' . $user->name,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),
@@ -88,7 +88,7 @@ class UserController extends Controller
 
             ActivityLog::create([
                 'user_id' => Auth::id(),
-                'activity' => 'Update User',
+                'action' => 'Update User',
                 'description' => 'Updated profile for user: ' . $user->name,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),
@@ -116,7 +116,7 @@ class UserController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update User Role',
+            'action' => 'Update User Role',
             'description' => 'Updated role for user ' . $user->name . ' to ' . $user->role,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -136,7 +136,7 @@ class UserController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Delete User',
+            'action' => 'Delete User',
             'description' => 'Deleted user: ' . $name,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),
@@ -148,7 +148,7 @@ class UserController extends Controller
     public function updateStatus(Request $request, User $user)
     {
         $request->validate([
-            'status' => 'required|in:pending,approved,rejected',
+            'status' => 'required|in:pending,approved,rejected,banned',
         ]);
 
         if ($user->id === auth()->id()) {
@@ -160,7 +160,7 @@ class UserController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update User Status',
+            'action' => 'Update User Status',
             'description' => 'Updated status for user ' . $user->name . ' to ' . $user->status,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),

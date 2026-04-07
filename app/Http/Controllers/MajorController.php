@@ -28,7 +28,7 @@ class MajorController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Create Major',
+            'action' => 'Create Major',
             'description' => 'Added major: ' . $major->name,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -50,7 +50,7 @@ class MajorController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update Major',
+            'action' => 'Update Major',
             'description' => 'Updated major: ' . $major->name,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -67,7 +67,7 @@ class MajorController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Delete Major',
+            'action' => 'Delete Major',
             'description' => 'Deleted major: ' . $name,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),

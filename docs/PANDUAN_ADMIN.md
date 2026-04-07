@@ -1,6 +1,6 @@
 # 📘 BUKU PANDUAN ADMINISTRATOR
 ## Portal Ikatan Alumni SMKN 2 Ternate (STEMAN)
-**Versi 6.0 (Modular API-Ready) | Dokumen Resmi**
+**Versi 4.1 [Hardened CI/CD Edition] | Dokumen Resmi**
 
 ---
 
@@ -187,8 +187,8 @@ Ubah status jurusan menjadi `inactive` agar tidak muncul di formulir pendaftaran
    - **Judul**: Judul artikel
    - **Kategori**: Pilih kategori berita
    - **Konten**: Isi artikel (mendukung format teks panjang)
-   - **Thumbnail**: Unggah gambar sampul (sistem otomatis melakukan kompresi 30% dan konversi ke WebP untuk performa maksimal)
-   - **Status**: Pilih `Draft` (belum tayang) atau `Published` (langsung tayang)
+   - **Thumbnail**: Unggah gambar sampul (Sistem otomatis melakukan optimasi WebP dan kompresi untuk performa maksimal).
+   - **Status**: Pilih `Draft` (Arsip/Belum Tayang) atau `Published` (Publikasikan Langsung).
 3. Klik **"Simpan & Terbitkan"**.
 
 ### 6.2 Mengedit Artikel
@@ -247,7 +247,7 @@ Program adalah kegiatan resmi organisasi alumni (seperti reuni, webinar, beasisw
    - **Judul Program**
    - **Deskripsi**
    - **Tanggal Mulai & Selesai**
-   - **Status**: `active` atau `inactive`
+   - **Status**: `Published` (aktif tampil) or `Draft` (arsip/tidak tampil)
 3. Klik **"Simpan"**.
 
 ### 8.2 Menonaktifkan Program
@@ -266,7 +266,8 @@ Ubah status program menjadi `inactive` agar tidak tampil di halaman publik.
 2. Isi:
    - **Judul Foto/Video**
    - **Tipe**: `photo` atau `video`
-   - **File**: Pilih file dari komputer (maks. 50MB)
+   - **File**: Pilih file dari perangkat (Maks. 10MB)
+   - **Status**: `Published` (tampil di galeri) atau `Draft` (simpan sementara)
 3. Klik **"Unggah"**.
 
 ### 9.2 Menghapus Foto
@@ -589,7 +590,7 @@ Fitur API sepenuhnya dilindungi oleh Laravel Sanctum Token.
 
 ### ❓ Apakah Data yang Dihapus Benar-benar Hilang? (Soft Deletes)
 
-Tidak. Sistem v6 ini dilengkapi dengan fitur *Soft Deletes*. Jika Anda secara tidak sengaja menghapus Alumni, Berita, Acara, Loker, maupun Pesan, maka data tersebut hanya **"disembunyikan"** dari tampilan dan pindah ke dalam ruang arsip (Sampah) di server (tidak hilang permanen). Hubungi tim developer teknis bila Ingin melakukan pemulihan *(Restore Data).*
+Tidak. Sistem v4.1 ini dilengkapi dengan fitur *Soft Deletes*. Jika Anda secara tidak sengaja menghapus Alumni, Berita, Acara, Loker, maupun Pesan, maka data tersebut hanya **"disembunyikan"** dari tampilan dan pindah ke dalam ruang arsip (Sampah) di database (tidak hilang permanen). Hubungi tim administrator teknis bila ingin melakukan pemulihan *(Restore Data).*
 
 ---
 

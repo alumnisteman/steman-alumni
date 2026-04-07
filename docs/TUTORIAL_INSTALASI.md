@@ -1,7 +1,7 @@
-# 🚀 Panduan Instalasi – STEMAN Alumni Portal v6.0 (Hardened)
+# 🚀 Panduan Instalasi – STEMAN Alumni Portal v4.1 [Hardened Edition]
 
 > Versi terakhir diperbarui: April 2026
-> Arsitektur: Laravel 12 Modular + API v1 Sanctum + Docker + Security Hardening
+> Arsitektur: Laravel Modular + Consolidated Migrations + Docker CI/CD Ready
 
 ---
 
@@ -50,16 +50,16 @@ GITHUB_CLIENT_SECRET=your-secret
 # Windows (PowerShell)
 .\scripts\deploy\deploy.ps1
 
-# Linux / Mac
+# Linux / Mac (Manual Docker)
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ### Langkah 4 — Inisialisasi Pertama Kali (Wajib)
 ```bash
-# Jalankan migrasi database (termasuk skema sekuritas baru)
-docker exec steman_app php artisan migrate --force
+# Jalankan migrasi database (Menggunakan skema konsolidasi v4.1)
+docker exec steman_app php artisan migrate:fresh --seed --force
 
-# Buat storage symlink (wajib agar upload foto tampil)
+# Buat storage symlink (Wajib agar upload foto tampil)
 docker exec steman_app php artisan storage:link
 
 # Sinkronisasi Izin File (PENTING: Pastikan folder storage dapat ditulis oleh Docker)
@@ -153,4 +153,4 @@ Sistem ini menggunakan konfigurasi Nginx yang sangat ketat:
 ---
 
 > _"Menghubungkan masa lalu, membangun masa depan."_
-> **Ikatan Alumni SMKN 2 Ternate — Arsitektur v6.0 (Hardened)**
+> **Ikatan Alumni SMKN 2 Ternate — Arsitektur v4.1 [Hardened]**

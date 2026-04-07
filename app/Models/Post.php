@@ -26,22 +26,23 @@ class Post extends Model
 
     public function likes()
     {
-        return $this->hasMany(PostLike::class);
+        return $this->morphMany(Like::class, 'likeable');
     }
 
     public function comments()
     {
-        return $this->hasMany(PostComment::class);
+        return $this->morphMany(Comment::class, 'commentable');
     }
 
     public function tags()
     {
-        return $this->hasMany(PostTag::class);
+        return $this->morphMany(Tag::class, 'taggable');
     }
 
     public function taggedUsers()
     {
-        return $this->belongsToMany(User::class, 'post_tags', 'post_id', 'user_id');
+        return $this->belongsToMany(User::class, 'tags', 'taggable_id', 'tagged_user_id')
+                    ->wherePivot('taggable_type', Post::class);
     }
 
     /**

@@ -48,7 +48,7 @@ class HeroController extends Controller
         
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update Hero Section',
+            'action' => 'Update Hero Section',
             'description' => 'Updated Homepage Hero title, subtitle or background.',
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),

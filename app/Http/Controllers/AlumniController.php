@@ -31,7 +31,7 @@ class AlumniController extends Controller
 
             // 1. News - Safe retrieval
             try {
-                $latestNews = News::where('is_published', true)->latest()->take(2)->get() ?? collect();
+                $latestNews = News::where('status', 'published')->latest()->take(2)->get() ?? collect();
             } catch (\Exception $e) {
                 $latestNews = collect();
             }

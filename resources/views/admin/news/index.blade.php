@@ -29,10 +29,10 @@
                         <td><span class="fw-bold text-dark">{{ Str::limit($item->title, 100) }}</span></td>
                         <td><span class="badge bg-light text-dark shadow-sm px-3 rounded-pill">{{ $item->category }}</span></td>
                         <td>
-                            @if($item->is_published)
-                                <span class="badge bg-success rounded-pill px-3">PUBLISHED</span>
+                            @if($item->status === 'published')
+                                <span class="badge bg-success rounded-pill px-3">Published</span>
                             @else
-                                <span class="badge bg-secondary rounded-pill px-3">DRAFT</span>
+                                <span class="badge bg-secondary rounded-pill px-3">Draft</span>
                             @endif
                         </td>
                         <td class="text-end pe-4">

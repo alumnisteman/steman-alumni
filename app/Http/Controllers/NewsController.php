@@ -14,7 +14,7 @@ class NewsController extends Controller
     // Public Views
     public function index(Request $request)
     {
-        $query = News::where('is_published', true);
+        $query = News::where('status', 'published');
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('content', 'like', '%' . $request->search . '%');
@@ -25,7 +25,7 @@ class NewsController extends Controller
 
     public function show($slug)
     {
-        $item = News::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $item = News::where('slug', $slug)->where('status', 'published')->firstOrFail();
         return view('news.show', compact('item'));
     }
 
@@ -33,7 +33,7 @@ class NewsController extends Controller
     public function adminIndex()
     {
         // Select only columns needed for the list; skip 'content' (large rich text) to avoid 502 OOM crash
-        $news = News::latest()->select('id', 'title', 'slug', 'category', 'thumbnail', 'is_published', 'created_at')->paginate(20);
+        $news = News::latest()->select('id', 'title', 'slug', 'category', 'thumbnail', 'status', 'created_at')->paginate(20);
         return view('admin.news.index', compact('news'));
     }
 
@@ -74,12 +74,12 @@ class NewsController extends Controller
             'content'      => $request->content,
             'category'     => $request->category,
             'thumbnail'    => $path,
-            'is_published' => $request->has('is_published')
+            'status'       => $request->status ?? 'draft'
         ]);
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Create News',
+            'action' => 'Create News',
             'description' => 'Published news: ' . $news->title,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -129,12 +129,12 @@ class NewsController extends Controller
             'content'      => $request->content,
             'category'     => $request->category,
             'thumbnail'    => $path,
-            'is_published' => $request->has('is_published')
+            'status'       => $request->status ?? 'draft'
         ]);
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update News',
+            'action' => 'Update News',
             'description' => 'Updated news: ' . $news->title,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -156,7 +156,7 @@ class NewsController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Delete News',
+            'action' => 'Delete News',
             'description' => 'Deleted news: ' . $news_title,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),

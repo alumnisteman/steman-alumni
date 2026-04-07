@@ -11,18 +11,19 @@ class Comment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'forum_id',
         'user_id',
-        'konten',
+        'commentable_id',
+        'commentable_type',
+        'content',
     ];
-
-    public function forum()
-    {
-        return $this->belongsTo(Forum::class);
-    }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function commentable()
+    {
+        return $this->morphTo();
     }
 }

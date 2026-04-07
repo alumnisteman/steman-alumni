@@ -22,6 +22,11 @@ class Program extends Model
         'image'
     ];
 
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->status === 'published';
+    }
+
     /**
      * Boot the model.
      */

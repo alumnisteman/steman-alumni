@@ -54,7 +54,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     zip \
     intl \
     sockets \
-    opcache
+    opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 # Setting up application directory
 WORKDIR /var/www

@@ -55,7 +55,7 @@ class AuthController extends Controller
             
             ActivityLog::create([
                 'user_id' => Auth::id(),
-                'activity' => 'Login',
+                'action' => 'Login',
                 'description' => 'User logged in to the system.',
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),
@@ -68,7 +68,7 @@ class AuthController extends Controller
 
         ActivityLog::create([
             'user_id' => null,
-            'activity' => 'Login Failed',
+            'action' => 'Login Failed',
             'description' => 'Failed login attempt for email: ' . $request->email,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -132,7 +132,7 @@ class AuthController extends Controller
 
             ActivityLog::create([
                 'user_id' => $user->id,
-                'activity' => 'Register',
+                'action' => 'Register',
                 'description' => 'New alumni registered: ' . $user->name,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),
@@ -151,7 +151,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             ActivityLog::create([
                 'user_id' => Auth::id(),
-                'activity' => 'Logout',
+                'action' => 'Logout',
                 'description' => 'User logged out.',
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),

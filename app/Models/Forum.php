@@ -12,10 +12,16 @@ class Forum extends Model
 
     protected $fillable = [
         'user_id',
-        'judul_diskusi',
-        'deskripsi_masalah',
-        'jumlah_komentar',
+        'title',
+        'content',
+        'views',
+        'status',
     ];
+
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->status === 'active';
+    }
 
     public function user()
     {
@@ -24,6 +30,6 @@ class Forum extends Model
 
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }

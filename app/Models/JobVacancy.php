@@ -26,6 +26,11 @@ class JobVacancy extends Model
         'image'
     ];
 
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->status === 'active';
+    }
+
     /**
      * Boot the model.
      */

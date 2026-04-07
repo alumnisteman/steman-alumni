@@ -47,14 +47,14 @@ class ProfileController extends Controller
         
         // Security: Only allow becoming a mentor if they already have sufficient points or status
         // For now, we allow the toggle but log it for admin review or add a point hurdle
-        if ($request->has('is_mentor') && !$user->is_mentor) {
-            if ($user->points >= 50) {
-                $user->is_mentor = true;
+        if ($request->has('is_mentor') && !$user->mentoring) {
+            if (($user->points ?? 0) >= 50) {
+                $user->mentoring = true;
             } else {
                 return back()->with('error', 'Poin tidak cukup untuk menjadi Mentor (Min. 50 poin).');
             }
         } elseif (!$request->has('is_mentor')) {
-            $user->is_mentor = false;
+            $user->mentoring = false;
         }
 
         $user->mentor_bio = $data['mentor_bio'] ?? $user->mentor_bio;

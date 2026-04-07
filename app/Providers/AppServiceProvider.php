@@ -33,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
         RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(100)->by($request->ip());
         });

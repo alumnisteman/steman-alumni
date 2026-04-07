@@ -199,7 +199,7 @@
                         </div>
                         <div class="border-start"></div>
                         <div>
-                            <div class="fw-bold">{{ \App\Models\Post::where('user_id', Auth::id())->count() }}</div>
+                            <div class="fw-bold">{{ $userPostsCount }}</div>
                             <div class="text-muted" style="font-size: 0.7rem;">POST</div>
                         </div>
                     </div>

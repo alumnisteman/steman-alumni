@@ -16,8 +16,13 @@ class Gallery extends Model
         'youtube_url',
         'tiktok_url',
         'description',
-        'user_id',
+        'status',
     ];
+
+    public function getIsPublishedAttribute(): bool
+    {
+        return $this->status === 'published';
+    }
 
     public function user()
     {

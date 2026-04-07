@@ -13,13 +13,14 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password',
+        'role', 'status',
         'nisn', 'tahun_lulus', 'jurusan',
         'pekerjaan_sekarang', 'perusahaan_universitas',
         'nomor_telepon', 'foto_profil',
         'alamat', 'bio',
-        'social_id', 'social_type',
-        'is_mentor', 'mentor_bio', 'mentor_expertise',
-        'latitude', 'longitude', 'points',
+        'mentoring', 'points',
+        'linkedin_url', 'instagram_url', 'twitter_url',
+        'latitude', 'longitude',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -32,6 +33,11 @@ class User extends Authenticatable
             'longitude' => 'double',
             'points' => 'integer',
         ];
+    }
+
+    public function getIsMentorAttribute(): bool
+    {
+        return (bool) $this->mentoring;
     }
 
     public function badges()

@@ -1,4 +1,4 @@
-# 🌐 Panduan Deployment VPS (Production) – v6.0 Hardened
+# 🌐 Panduan Deployment VPS (Production) – v4.1 [Hardened Edition]
 
 Dokumen ini menjelaskan langkah-langkah untuk mengubah sistem **CI/CD Localhost** (menggunakan *self-hosted runner*) menjadi **Full Auto-Deploy ke VPS Production**.
 
@@ -49,20 +49,17 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           # Menyesuaikan dengan path project di VPS Anda (contoh di /var/www/steman-alumni)
           script: |
-            cd /opt/steman-alumni || exit 1
-            git config --global --add safe.directory /opt/steman-alumni
+            cd /var/www/steman-alumni || exit 1
+            git config --global --add safe.directory /var/www/steman-alumni
             git pull origin main
             
             # Rebuild Images and restart containers
-            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml build --no-cache
             docker compose -f docker-compose.prod.yml up -d --scale app=3
             
-            # Eksekusi Command Utama Laravel (Hardened)
+            # Eksekusi Command Utama Laravel (V4.2 Hardened)
             docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-            docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan event:cache
+            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
             
             # Sinkronisasi Izin File Terakhir
             docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www

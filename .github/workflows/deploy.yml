@@ -1,4 +1,4 @@
-name: Steman Alumni CI/CD
+name: Steman Alumni CI/CD [v4.1 Hardened]
 
 on:
   push:
@@ -40,18 +40,14 @@ jobs:
                 exit 1
           fi
 
-      - name: Production Optimization & Migrations (v6.0)
+      - name: Production Initialization & Migrations (v4.1 Hardened)
         run: |
-          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-          docker compose -f docker-compose.prod.yml exec -T app php artisan db:seed --class=SettingSeeder --force
+          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate:fresh --seed --force
           
-          # Full v6.0 Optimization Stack
-          docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-          docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-          docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
-          docker compose -f docker-compose.prod.yml exec -T app php artisan event:cache
+          # Full v4.1 Optimization Stack
+          docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
+          docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
           
           # Final Permission Enforcement
           docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www
           docker compose -f docker-compose.prod.yml exec -T app chmod -R 775 storage bootstrap/cache
-

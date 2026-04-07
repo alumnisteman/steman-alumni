@@ -36,7 +36,7 @@ class JobController extends Controller
             'content'       => 'nullable|string',
             'external_link' => 'nullable|url',
             'type'          => 'required|string',
-            'status'        => 'required|in:active,inactive',
+            'status'        => 'required|in:active,closed,draft',
             'image'         => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
@@ -49,7 +49,7 @@ class JobController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Create Job Vacancy',
+            'action' => 'Create Job Vacancy',
             'description' => 'Added job: ' . $job->title . ' at ' . $job->company,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -77,7 +77,7 @@ class JobController extends Controller
             'content'       => 'nullable|string',
             'external_link' => 'nullable|url',
             'type'          => 'required|string',
-            'status'        => 'required|in:active,inactive',
+            'status'        => 'required|in:active,closed,draft',
             'image'         => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
@@ -94,7 +94,7 @@ class JobController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update Job Vacancy',
+            'action' => 'Update Job Vacancy',
             'description' => 'Updated job: ' . $vacancy->title . ' at ' . $vacancy->company,
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -116,7 +116,7 @@ class JobController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Delete Job Vacancy',
+            'action' => 'Delete Job Vacancy',
             'description' => 'Deleted job: ' . $title,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),

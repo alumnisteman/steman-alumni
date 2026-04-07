@@ -29,6 +29,7 @@
                         <th class="ps-4">PREVIEW</th>
                         <th>JUDUL</th>
                         <th>TIPE</th>
+                        <th>STATUS</th>
                         <th>SUMBER</th>
                         <th class="text-end pe-4">AKSI</th>
                     </tr>
@@ -50,6 +51,13 @@
                             <span class="badge {{ $item->type == 'photo' ? 'bg-info text-dark' : 'bg-warning text-dark' }} rounded-pill px-3">
                                 {{ strtoupper($item->type) }}
                             </span>
+                        </td>
+                        <td>
+                            @if($item->status == 'published')
+                                <span class="badge bg-success rounded-pill px-3">PUBLISHED</span>
+                            @else
+                                <span class="badge bg-secondary rounded-pill px-3">DRAFT</span>
+                            @endif
                         </td>
                         <td>
                             @if($item->youtube_url)
@@ -94,6 +102,14 @@
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold">Deskripsi</label>
                                                     <textarea name="description" class="form-control" rows="2">{{ $item->description }}</textarea>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Status Display</label>
+                                                    <select name="status" class="form-select" required>
+                                                        <option value="published" {{ $item->status == 'published' ? 'selected' : '' }}>Diterbitkan (Published)</option>
+                                                        <option value="draft" {{ $item->status == 'draft' ? 'selected' : '' }}>Draf (Draft)</option>
+                                                    </select>
                                                 </div>
                                                 
                                                 <div class="editGroup-photo-{{ $item->id }} {{ $item->type == 'photo' ? '' : 'd-none' }}">
@@ -182,9 +198,17 @@
                         <input type="url" name="youtube_url" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
                     </div>
 
-                    <div class="col-12 d-none" id="tiktokGroup">
+                    <div class="col-md-6 d-none" id="tiktokGroup">
                         <label class="form-label small fw-bold"><i class="bi bi-music-note-beamed me-1"></i>Link TikTok</label>
                         <input type="url" name="tiktok_url" class="form-control" placeholder="https://www.tiktok.com/@...">
+                    </div>
+
+                    <div class="col-md-6" id="statusGroup">
+                        <label class="form-label small fw-bold">Status</label>
+                        <select name="status" class="form-select" required>
+                            <option value="published" selected>Diterbitkan (Published)</option>
+                            <option value="draft">Draf (Draft)</option>
+                        </select>
                     </div>
 
                     <div class="col-12">

@@ -47,7 +47,7 @@
                 </div>
 
                 <div class="form-check form-switch mb-4">
-                    <input class="form-check-input" type="checkbox" name="is_published" checked id="pubSwitch">
+                    <input class="form-check-input" type="checkbox" name="status" value="published" checked id="pubSwitch">
                     <label class="form-check-label fw-bold small" for="pubSwitch">Terbitkan Sekarang</label>
                 </div>
 

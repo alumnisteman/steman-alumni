@@ -11,27 +11,27 @@ class ForumController extends Controller
 {
     public function index()
     {
-        $forums = Forum::with('user')->latest()->paginate(15);
+        $forums = Forum::where('status', 'active')->with('user')->latest()->paginate(15);
         return view('forums.index', compact('forums'));
     }
 
-    public function show(Forum $forum)
+    public function show($id)
     {
-        $forum->load(['user', 'comments.user']);
+        $forum = Forum::where('status', 'active')->with(['user', 'comments.user'])->findOrFail($id);
         return view('forums.show', compact('forum'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'judul_diskusi' => 'required|string|max:255',
-            'deskripsi_masalah' => 'required|string',
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
         ]);
 
         $forum = Forum::create([
             'user_id' => Auth::id(),
-            'judul_diskusi' => $request->judul_diskusi,
-            'deskripsi_masalah' => $request->deskripsi_masalah,
+            'title' => $request->title,
+            'content' => $request->content,
         ]);
 
         // Award Points
@@ -43,16 +43,15 @@ class ForumController extends Controller
     public function storeComment(Request $request, Forum $forum)
     {
         $request->validate([
-            'konten' => 'required|string',
+            'content' => 'required|string',
         ]);
 
-        Comment::create([
-            'forum_id' => $forum->id,
+        $forum->comments()->create([
             'user_id' => Auth::id(),
-            'konten' => $request->konten,
+            'content' => $request->content,
         ]);
 
-        $forum->increment('jumlah_komentar');
+        $forum->increment('comments_count');
 
         // Award Points
         Auth::user()->awardPoints(10);

@@ -45,8 +45,9 @@
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Status</label>
                     <select name="status" class="form-select">
-                        <option value="active" {{ old('status', $job->status ?? 'active') == 'active' ? 'selected' : '' }}>Aktif</option>
-                        <option value="inactive" {{ old('status', $job->status ?? '') == 'inactive' ? 'selected' : '' }}>Nonaktif</option>
+                        <option value="active" {{ old('status', $job->status ?? 'active') == 'active' ? 'selected' : '' }}>Aktif (Active)</option>
+                        <option value="closed" {{ old('status', $job->status ?? '') == 'closed' ? 'selected' : '' }}>Ditutup (Closed)</option>
+                        <option value="draft" {{ old('status', $job->status ?? '') == 'draft' ? 'selected' : '' }}>Draf (Draft)</option>
                     </select>
                 </div>
                 <div class="col-md-8">

@@ -28,7 +28,7 @@ Route::middleware(['throttle:global'])->group(function () {
         $data = \Illuminate\Support\Facades\Cache::remember('welcome_data', 600, function () {
             $aiService = new AIPredictionService();
             return [
-                'latestNews' => \App\Models\News::where('is_published', true)->latest()->take(3)->get(),
+                'latestNews' => \App\Models\News::where('status', 'published')->latest()->take(3)->get(),
                 'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
                 'latestVideos' => \App\Models\Gallery::where('type', 'video')->latest()->take(2)->get(),
                 'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
@@ -117,7 +117,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
 
     // Mentoring
     Route::get('/mentors', function() {
-        $mentors = \App\Models\User::where('is_mentor', true)->latest()->get();
+        $mentors = \App\Models\User::where('mentoring', true)->latest()->get();
         return view('mentors.index', compact('mentors'));
     })->name('mentors.index');
 

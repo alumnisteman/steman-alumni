@@ -71,7 +71,7 @@ class SettingController extends Controller
         try {
             ActivityLog::create([
                 'user_id'    => Auth::id(),
-                'activity'   => 'Update Settings',
+                'action'     => 'Update Settings',
                 'description'=> 'Updated site settings.',
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),

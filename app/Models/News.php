@@ -9,7 +9,7 @@ class News extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['user_id', 'title', 'slug', 'content', 'thumbnail', 'category', 'is_published'];
+    protected $fillable = ['user_id', 'title', 'slug', 'content', 'thumbnail', 'category', 'status'];
 
     protected static function boot()
     {
@@ -21,8 +21,18 @@ class News extends Model
         });
     }
 
+    public function getIsPublishedAttribute(): bool
+    {
+        return $this->status === 'published';
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }

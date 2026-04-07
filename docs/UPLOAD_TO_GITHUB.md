@@ -1,4 +1,4 @@
-# 🚀 Panduan Upload & CI/CD – v6.0 Hardened
+# 🚀 Panduan Upload & CI/CD – v4.1 [Hardened Edition]
 
 Dokumen ini berisi langkah-langkah untuk Bapak mengupload kode ke GitHub dan mengaktifkan fitur **Auto-Deploy**.
 
@@ -12,7 +12,7 @@ Bapak silakan buka **Git Bash** atau **Terminal** di folder ini, lalu jalankan p
    ```bash
    git init
    git add .
-   git commit -m "feat: Initial commit v6.1 Project Hardened"
+   git commit -m "feat: Initial commit v4.1 Project Hardened & Refined"
    ```
 
 2. **Hubungkan ke Repository Baru**:
@@ -40,7 +40,7 @@ Server produksi akan mendeteksi perubahan ini secara otomatis jika **GitHub Runn
 
 ---
 
-## 🤖 Bagian 2: Aktifkan Auto-Deploy (GitHub Runner)
+## 🤖 Bagian 3: Aktifkan Auto-Deploy (GitHub Runner)
 
 Agar server Bapak di `192.168.1.5` bisa mendeteksi perubahan dari GitHub, Bapak perlu mendaftarkan server tersebut sebagai **GitHub Runner**.
 

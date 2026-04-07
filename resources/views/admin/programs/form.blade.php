@@ -34,8 +34,8 @@
                             <div class="col-md-6 mb-4">
                                 <label class="form-label fw-bold small text-uppercase text-muted">Status</label>
                                 <select name="status" class="form-select border-0 bg-light px-4">
-                                    <option value="active" {{ (old('status', $program->status ?? '') == 'active') ? 'selected' : '' }}>Aktif</option>
-                                    <option value="inactive" {{ (old('status', $program->status ?? '') == 'inactive') ? 'selected' : '' }}>Non-Aktif</option>
+                                    <option value="published" {{ (old('status', $program->status ?? '') == 'published') ? 'selected' : '' }}>Diterbitkan (Published)</option>
+                                    <option value="draft" {{ (old('status', $program->status ?? '') == 'draft') ? 'selected' : '' }}>Draf</option>
                                 </select>
                             </div>
                         </div>

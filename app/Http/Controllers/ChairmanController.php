@@ -97,7 +97,7 @@ class ChairmanController extends Controller
 
             ActivityLog::create([
                 'user_id' => Auth::id(),
-                'activity' => 'Update Chairman Settings',
+                'action' => 'Update Chairman Settings',
                 'description' => 'Updated Alumni and Event Committee chairman details.',
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),

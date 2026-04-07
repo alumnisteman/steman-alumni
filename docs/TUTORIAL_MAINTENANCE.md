@@ -1,7 +1,7 @@
-# 🛠️ Panduan Pemeliharaan (Maintenance) – v6.0 Hardened
+# 🛠️ Panduan Pemeliharaan (Maintenance) – v4.1 [Hardened Edition]
 
 > Versi terakhir diperbarui: April 2026
-> Status: Production Stable (API Ready)
+> Status: Production Stable [Hardened]
 
 Ikuti panduan ini secara rutin agar portal tetap **stabil, cepat, dan aman**.
 
@@ -247,4 +247,4 @@ docker exec steman_app tail -n 50 storage/logs/laravel.log
 ---
 
 > _"Satu tetes pemeliharaan mencegah seember perbaikan."_
-> **Ikatan Alumni STEMAN — Arsitektur v6.1 (Hardened)**
+> **Ikatan Alumni STEMAN — Arsitektur v4.1 [Hardened]**

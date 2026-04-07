@@ -29,9 +29,9 @@ class GalleryController extends Controller
     {
         $type = $request->get('type', 'photo');
         if ($type === 'video') {
-            $media = Gallery::whereIn('type', ['video', 'tiktok'])->latest()->paginate(12);
+            $media = Gallery::whereIn('type', ['video', 'tiktok'])->where('status', 'published')->latest()->paginate(12);
         } else {
-            $media = Gallery::where('type', $type)->latest()->paginate(12);
+            $media = Gallery::where('type', $type)->where('status', 'published')->latest()->paginate(12);
         }
         return view('gallery.index', compact('media', 'type'));
     }
@@ -52,6 +52,7 @@ class GalleryController extends Controller
             'youtube_url' => 'nullable|url',
             'tiktok_url'  => 'nullable|url',
             'description' => 'nullable|string',
+            'status'      => 'required|in:draft,published',
         ]);
 
         $fileUrl    = null;
@@ -91,11 +92,12 @@ class GalleryController extends Controller
             'youtube_url' => $youtubeUrl,
             'tiktok_url'  => ($request->type === 'tiktok') ? $tiktokUrl : null,
             'description' => $request->description,
+            'status'      => $request->status ?? 'published',
         ]);
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Create Gallery Item',
+            'action' => 'Create Gallery Item',
             'description' => 'Added gallery item: ' . $gallery->title . ' (Type: ' . $gallery->type . ')',
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
@@ -117,7 +119,7 @@ class GalleryController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Delete Gallery Item',
+            'action' => 'Delete Gallery Item',
             'description' => 'Deleted gallery item: ' . $title,
             'ip_address' => request()->ip(),
             'user_agent' => request()->header('User-Agent'),
@@ -140,12 +142,14 @@ class GalleryController extends Controller
             'tiktok_url'  => 'nullable|url',
             'youtube_url' => 'nullable|url',
             'file'        => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,mp4,webm,ogg|max:102400',
+            'status'      => 'required|in:draft,published',
         ]);
 
         $data = [
             'title'       => $request->title,
             'description' => $request->description,
             'type'        => $request->type,
+            'status'      => $request->status,
         ];
 
         if ($request->type === 'tiktok' && $request->tiktok_url) {
@@ -177,7 +181,7 @@ class GalleryController extends Controller
 
         ActivityLog::create([
             'user_id' => Auth::id(),
-            'activity' => 'Update Gallery Item',
+            'action' => 'Update Gallery Item',
             'description' => 'Updated gallery item: ' . $gallery->title . ' (ID: ' . $gallery->id . ')',
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
