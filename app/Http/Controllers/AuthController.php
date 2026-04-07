@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -39,6 +40,13 @@ class AuthController extends Controller
         }
 
         Log::info('Login attempt for: ' . $request->email);
+
+        // --- Production Hardening: Anti-Brute Force Rate Limiting ---
+        if (RateLimiter::tooManyAttempts('login:' . $request->ip(), 5)) {
+            Log::warning('Login throttled for IP: ' . $request->ip());
+            return back()->with('error', 'Terlalu banyak percobaan login. Silakan tunggu 60 detik.');
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -75,6 +83,7 @@ class AuthController extends Controller
         ]);
 
         Log::warning('Login failed for: ' . $request->email);
+        RateLimiter::hit($request->ip(), 60);
         return back()->withErrors(['email' => 'Kredensial tidak cocok.'])->withInput($request->only('email'));
     }
 

@@ -313,6 +313,22 @@
                         <option value="admin" {{ old('_form')=='add_user' && old('role')=='admin' ? 'selected' : '' }}>Admin</option>
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Jurusan (Untuk Alumni)</label>
+                    <select name="jurusan" class="form-select">
+                        <option value="">-- Pilih Jurusan --</option>
+                        @php $currentGroup = ''; @endphp
+                        @foreach($activeMajors as $m)
+                            @if($currentGroup != $m->group)
+                                @if($currentGroup != '') </optgroup> @endif
+                                <optgroup label="{{ $m->group == 'Modern' ? 'Kurikulum Saat Ini' : 'Kurikulum Lama (Legacy)' }}">
+                                @php $currentGroup = $m->group; @endphp
+                            @endif
+                            <option value="{{ $m->name }}" {{ old('jurusan') == $m->name ? 'selected' : '' }}>{{ $m->name }}</option>
+                        @endforeach
+                        @if($currentGroup != '') </optgroup> @endif
+                    </select>
+                </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label small fw-bold">Password <span class="text-danger">*</span></label>

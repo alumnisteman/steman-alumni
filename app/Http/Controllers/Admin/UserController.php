@@ -16,6 +16,7 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'role' => 'required|in:admin,alumni',
+                'jurusan' => 'nullable|string|max:255',
                 'password' => 'required|string|min:4|confirmed',
             ]);
 
@@ -23,6 +24,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'role' => $request->role,
+                'jurusan' => $request->jurusan,
                 'status' => 'approved',
                 'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             ]);
@@ -45,7 +47,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::latest()->paginate(20);
-        $activeMajors = \App\Models\Major::all();
+        $activeMajors = \App\Models\Major::orderBy('group')->orderBy('name')->get();
         return view('admin.users', compact('users', 'activeMajors'));
     }
 
