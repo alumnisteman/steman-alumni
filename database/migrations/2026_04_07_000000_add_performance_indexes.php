@@ -11,22 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->index('tahun_lulus');
-            $table->index('jurusan');
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->index('tahun_lulus');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('majors', function (Blueprint $table) {
-            $table->index('group');
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->index('jurusan');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('news', function (Blueprint $table) {
-            $table->index('created_at');
-        });
-        
-        Schema::table('jobs', function (Blueprint $table) {
-            $table->index('status_keaktifan'); // Assuming this exists for job filtering
-        });
+        try {
+            Schema::table('majors', function (Blueprint $table) {
+                $table->index('group');
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('news', function (Blueprint $table) {
+                $table->index('created_at');
+            });
+        } catch (\Exception $e) {}
     }
 
     /**
@@ -34,21 +41,28 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['tahun_lulus']);
-            $table->dropIndex(['jurusan']);
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex(['tahun_lulus']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('majors', function (Blueprint $table) {
-            $table->dropIndex(['group']);
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex(['jurusan']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('news', function (Blueprint $table) {
-            $table->dropIndex(['created_at']);
-        });
-        
-        Schema::table('jobs', function (Blueprint $table) {
-            $table->dropIndex(['status_keaktifan']);
-        });
+        try {
+            Schema::table('majors', function (Blueprint $table) {
+                $table->dropIndex(['group']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('news', function (Blueprint $table) {
+                $table->dropIndex(['created_at']);
+            });
+        } catch (\Exception $e) {}
     }
 };

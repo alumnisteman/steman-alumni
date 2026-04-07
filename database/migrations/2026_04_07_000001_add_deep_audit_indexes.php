@@ -11,22 +11,35 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->index(['role', 'status'], 'idx_user_role_status');
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->index(['role', 'status'], 'idx_user_role_status');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('posts', function (Blueprint $table) {
-            $table->index('user_id');
-            $table->index('type');
-        });
+        try {
+            Schema::table('posts', function (Blueprint $table) {
+                $table->index('user_id');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('activity_logs', function (Blueprint $table) {
-            $table->index('created_at');
-        });
+        try {
+            Schema::table('posts', function (Blueprint $table) {
+                $table->index('type');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('job_vacancies', function (Blueprint $table) {
-            $table->index('status');
-        });
+        try {
+            Schema::table('activity_logs', function (Blueprint $table) {
+                $table->index('created_at');
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('job_vacancies', function (Blueprint $table) {
+                $table->index('status');
+            });
+        } catch (\Exception $e) {}
     }
 
     /**
@@ -34,21 +47,34 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex('idx_user_role_status');
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex('idx_user_role_status');
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('posts', function (Blueprint $table) {
-            $table->dropIndex(['user_id']);
-            $table->dropIndex(['type']);
-        });
+        try {
+            Schema::table('posts', function (Blueprint $table) {
+                $table->dropIndex(['user_id']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('activity_logs', function (Blueprint $table) {
-            $table->dropIndex(['created_at']);
-        });
+        try {
+            Schema::table('posts', function (Blueprint $table) {
+                $table->dropIndex(['type']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('job_vacancies', function (Blueprint $table) {
-            $table->dropIndex(['status']);
-        });
+        try {
+            Schema::table('activity_logs', function (Blueprint $table) {
+                $table->dropIndex(['created_at']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('job_vacancies', function (Blueprint $table) {
+                $table->dropIndex(['status']);
+            });
+        } catch (\Exception $e) {}
     }
 };
