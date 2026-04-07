@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\ActivityLog;
+use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,13 +30,13 @@ class UserController extends Controller
                 'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             ]);
 
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'Create User',
-                'description' => 'Created ' . $user->role . ': ' . $user->name,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                Auth::id(),
+                'Create User',
+                'Created ' . $user->role . ': ' . $user->name,
+                $request->ip(),
+                $request->header('User-Agent')
+            );
 
             return back()->with('success', 'User ' . $user->name . ' berhasil ditambahkan.');
         } catch (\Exception $e) {
@@ -88,13 +89,13 @@ class UserController extends Controller
 
             $user->save();
 
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'Update User',
-                'description' => 'Updated profile for user: ' . $user->name,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                Auth::id(),
+                'Update User',
+                'Updated profile for user: ' . $user->name,
+                $request->ip(),
+                $request->header('User-Agent')
+            );
 
             return back()->with('success', 'Profil ' . $user->name . ' berhasil diperbarui.');
         } catch (\Exception $e) {
@@ -116,13 +117,13 @@ class UserController extends Controller
         $user->role = $request->role;
         $user->save();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update User Role',
-            'description' => 'Updated role for user ' . $user->name . ' to ' . $user->role,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update User Role',
+            'Updated role for user ' . $user->name . ' to ' . $user->role,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         return back()->with('success', 'Role user berhasil diperbarui.');
     }
@@ -136,13 +137,13 @@ class UserController extends Controller
         $name = $user->name;
         $user->delete();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete User',
-            'description' => 'Deleted user: ' . $name,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete User',
+            'Deleted user: ' . $name,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
 
         return back()->with('success', 'User berhasil dihapus.');
     }
@@ -160,13 +161,13 @@ class UserController extends Controller
         $user->status = $request->status;
         $user->save();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update User Status',
-            'description' => 'Updated status for user ' . $user->name . ' to ' . $user->status,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update User Status',
+            'Updated status for user ' . $user->name . ' to ' . $user->status,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         return back()->with('success', 'Status user berhasil diperbarui.');
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Jobs\LogActivity;
 
 class ProgramController extends Controller
 {
@@ -47,13 +48,13 @@ class ProgramController extends Controller
 
         $program = Program::create($data);
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Create Program',
-            'description' => 'Added program: ' . $program->title,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create Program',
+            'Added program: ' . $program->title,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return redirect()->route('admin.programs.index')->with('success', 'Program berhasil ditambahkan.');
@@ -88,13 +89,13 @@ class ProgramController extends Controller
 
         $program->update($data);
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update Program',
-            'description' => 'Updated program: ' . $program->title,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update Program',
+            'Updated program: ' . $program->title,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return redirect()->route('admin.programs.index')->with('success', 'Program berhasil diperbarui.');
@@ -110,13 +111,13 @@ class ProgramController extends Controller
         $name = $program->title;
         $program->delete();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete Program',
-            'description' => 'Deleted program: ' . $name,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete Program',
+            'Deleted program: ' . $name,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return back()->with('success', 'Program berhasil dihapus.');

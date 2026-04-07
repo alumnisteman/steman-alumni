@@ -6,6 +6,7 @@ use App\Models\Major;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Jobs\LogActivity;
 
 class ProfileController extends Controller
 {
@@ -60,6 +61,14 @@ class ProfileController extends Controller
         $user->mentor_bio = $data['mentor_bio'] ?? $user->mentor_bio;
         $user->mentor_expertise = $data['mentor_expertise'] ?? $user->mentor_expertise;
         $user->save();
+        
+        LogActivity::dispatch(
+            $user->id,
+            'Update Profile',
+            'User updated their profile.',
+            request()->ip(),
+            request()->header('User-Agent')
+        );
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }

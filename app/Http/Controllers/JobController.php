@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use App\Jobs\LogActivity;
 
 class JobController extends Controller
 {
@@ -47,13 +48,13 @@ class JobController extends Controller
 
         $job = JobVacancy::create($data);
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Create Job Vacancy',
-            'description' => 'Added job: ' . $job->title . ' at ' . $job->company,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create Job Vacancy',
+            'Added job: ' . $job->title . ' at ' . $job->company,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return redirect()->route('admin.jobs.index')->with('success', 'Lowongan kerja berhasil ditambahkan.');
@@ -92,13 +93,13 @@ class JobController extends Controller
 
         $vacancy->update($data);
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update Job Vacancy',
-            'description' => 'Updated job: ' . $vacancy->title . ' at ' . $vacancy->company,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update Job Vacancy',
+            'Updated job: ' . $vacancy->title . ' at ' . $vacancy->company,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return redirect()->route('admin.jobs.index')->with('success', 'Lowongan kerja berhasil diperbarui.');
@@ -114,13 +115,13 @@ class JobController extends Controller
         $title = $vacancy->title;
         $vacancy->delete();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete Job Vacancy',
-            'description' => 'Deleted job: ' . $title,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete Job Vacancy',
+            'Deleted job: ' . $title,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return back()->with('success', 'Lowongan kerja berhasil dihapus.');

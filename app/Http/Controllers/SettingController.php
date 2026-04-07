@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\LogActivity;
 
 class SettingController extends Controller
 {
@@ -69,13 +70,13 @@ class SettingController extends Controller
 
         // Log the activity (non-critical)
         try {
-            ActivityLog::create([
-                'user_id'    => Auth::id(),
-                'action'     => 'Update Settings',
-                'description'=> 'Updated site settings.',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                Auth::id(),
+                'Update Settings',
+                'Updated site settings.',
+                $request->ip(),
+                $request->header('User-Agent')
+            );
         } catch (\Exception $e) {}
         
         return back()->with('success', 'Pengaturan situs berhasil diperbarui.');

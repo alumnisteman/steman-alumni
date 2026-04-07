@@ -53,7 +53,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
+        background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+        backdrop-filter: blur(2px);
+    }
+
+    .glass-hero-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 3rem;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 </style>
 
@@ -68,12 +78,14 @@
     <!-- Layer 3: Konten Text Overlay -->
     <div class="hero-content-overlay">
         <div class="container py-4">
-            <div class="badge-hero mb-4">Official Portal</div>
-            <h1 class="display-4 display-md-2 fw-black mb-4 hero-title">{!! nl2br(e(setting('hero_title', "PENGURUS PUSAT\nIKATAN ALUMNI SMKN 2"))) !!}</h1>
-            <p class="lead fw-bold mb-5 opacity-90 hero-subtitle mx-auto px-3" style="max-width: 700px;">{{ setting('hero_subtitle', 'MENJALIN JEJARING, MEMBANGUN KONTRIBUSI.') }}</p>
-            <div class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mt-2 px-4 px-md-0">
-                <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-0 shadow-lg btn-hero">JOIN NOW <i class="bi bi-arrow-right ms-2"></i></a>
-                <a href="/alumni" class="btn btn-outline-light fw-bold px-5 py-3 rounded-0 btn-hero-outline">DIRECTORY</a>
+            <div class="glass-hero-card animate__animated animate__fadeInUp">
+                <div class="badge-hero mb-4 rounded-pill">Official Alumni Portal</div>
+                <h1 class="display-4 display-md-2 fw-black mb-4 hero-title text-uppercase" style="letter-spacing: -1px;">{!! nl2br(e(setting('hero_title', "PENGURUS PUSAT\nIKATAN ALUMNI SMKN 2"))) !!}</h1>
+                <p class="lead fw-medium mb-5 opacity-90 hero-subtitle mx-auto px-3" style="max-width: 800px; color: #cbd5e1;">{{ setting('hero_subtitle', 'MENJALIN JEJARING, MEMBANGUN KONTRIBUSI.') }}</p>
+                <div class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mt-2 px-4 px-md-0">
+                    <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-pill shadow-lg hover-lift">JOIN NOW <i class="bi bi-arrow-right ms-2"></i></a>
+                    <a href="/alumni" class="btn btn-outline-light fw-bold px-5 py-3 rounded-pill hover-lift">DIRECTORY</a>
+                </div>
             </div>
         </div>
     </div>
@@ -274,11 +286,11 @@
     <div class="row g-4">
         @forelse($latestNews as $item)
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden shadow-hover">
+                <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-lift">
                     <img src="{{ $item->thumbnail ?? 'https://via.placeholder.com/400x250' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $item->title }}" loading="lazy">
                     <div class="card-body p-4">
                         <small class="text-primary fw-bold d-block mb-2">{{ $item->created_at->format('d M Y') }}</small>
-                        <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none">{{ $item->title }}</a></h5>
+                        <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none hover-text-primary">{{ $item->title }}</a></h5>
                         <p class="text-muted small mb-0">{{ \Illuminate\Support\Str::limit(strip_tags($item->content), 90) }}</p>
                     </div>
                 </div>
@@ -304,16 +316,16 @@
         <div class="row g-4">
             @forelse($latestJobs ?? [] as $job)
                 <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-lift">
                         <div class="d-flex align-items-start gap-3">
                             <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4">
                                 <i class="bi bi-briefcase-fill fs-3"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <div class="badge bg-secondary mb-2">{{ $job->type }}</div>
+                                <div class="badge bg-secondary mb-2 rounded-pill">{{ $job->type }}</div>
                                 <h5 class="fw-bold mb-1">{{ $job->title }}</h5>
                                 <p class="text-muted small mb-3"><i class="bi bi-building me-1"></i> {{ $job->company }} | <i class="bi bi-geo-alt me-1"></i> {{ $job->location }}</p>
-                                <a href="/jobs/{{ $job->slug }}" class="btn btn-link text-primary p-0 text-decoration-none fw-bold">Lihat Detail <i class="bi bi-arrow-right ms-1"></i></a>
+                                <a href="/jobs/{{ $job->slug }}" class="btn btn-link text-primary p-0 text-decoration-none fw-bold hover-translate-x">Lihat Detail <i class="bi bi-arrow-right ms-1"></i></a>
                             </div>
                         </div>
                     </div>

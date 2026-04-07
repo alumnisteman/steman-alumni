@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Jobs\LogActivity;
 
 class PostController extends Controller
 {
@@ -72,6 +73,14 @@ class PostController extends Controller
         // Award Points
         Auth::user()->awardPoints(20);
 
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create Alumni Post',
+            'Alumni posted a new ' . $request->type . ' on the nostalgia feed.',
+            $request->ip(),
+            $request->header('User-Agent')
+        );
+
         return back()->with('success', 'Postingan nostalgia berhasil dibagikan! +20 poin untuk Anda.');
     }
 
@@ -92,6 +101,14 @@ class PostController extends Controller
         }
 
         $post->delete();
+
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete Alumni Post',
+            'Alumni deleted a post from the nostalgia feed.',
+            request()->ip(),
+            request()->header('User-Agent')
+        );
 
         return back()->with('success', 'Kenangan berhasil dihapus');
     }

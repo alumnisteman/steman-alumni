@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Major;
 use App\Models\ActivityLog;
+use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,13 +27,13 @@ class MajorController extends Controller
 
         $major = Major::create($request->only(['name', 'group']));
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Create Major',
-            'description' => 'Added major: ' . $major->name,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create Major',
+            'Added major: ' . $major->name,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         return back()->with('success', 'Jurusan berhasil ditambahkan.');
     }
@@ -48,13 +49,13 @@ class MajorController extends Controller
 
         $major->update($request->only(['name', 'group', 'status']));
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update Major',
-            'description' => 'Updated major: ' . $major->name,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update Major',
+            'Updated major: ' . $major->name,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         return back()->with('success', 'Jurusan berhasil diperbarui.');
     }
@@ -65,13 +66,13 @@ class MajorController extends Controller
         $name = $major->name;
         $major->delete();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete Major',
-            'description' => 'Deleted major: ' . $name,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete Major',
+            'Deleted major: ' . $name,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
 
         return back()->with('success', 'Jurusan berhasil dihapus.');
     }

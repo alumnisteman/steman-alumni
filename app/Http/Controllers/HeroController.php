@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\ActivityLog;
+use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
@@ -46,13 +47,13 @@ class HeroController extends Controller
 
         Artisan::call('optimize:clear');
         
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update Hero Section',
-            'description' => 'Updated Homepage Hero title, subtitle or background.',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update Hero Section',
+            'Updated Homepage Hero title, subtitle or background.',
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         return back()->with('success', 'Tampilan Beranda (Hero Section) berhasil diperbarui!');
     }

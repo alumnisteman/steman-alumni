@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\LogActivity;
 
 class ChairmanController extends Controller
 {
@@ -95,13 +96,13 @@ class ChairmanController extends Controller
 
             Artisan::call('optimize:clear');
 
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'Update Chairman Settings',
-                'description' => 'Updated Alumni and Event Committee chairman details.',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                Auth::id(),
+                'Update Chairman Settings',
+                'Updated Alumni and Event Committee chairman details.',
+                $request->ip(),
+                $request->header('User-Agent')
+            );
 
             return back()->with('success', 'Sambutan berhasil diperbarui!');
         } catch (\Exception $e) {

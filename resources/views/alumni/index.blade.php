@@ -1,47 +1,83 @@
 @extends('layouts.app')
 @section('content')
-<div class="card border-0 shadow">
-    <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold mb-0">Daftar Alumni {{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }}</h4>
-            <form action="/alumni" method="GET" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Cari nama/jurusan..." value="{{ request('search') }}">
-                <button type="submit" class="btn btn-primary">Cari</button>
+<div class="container py-4">
+    <div class="row mb-5 align-items-center">
+        <div class="col-lg-6">
+            <h2 class="fw-black mb-1"> DIREKTORI ALUMNI</h2>
+            <p class="text-muted">Temukan dan jalin komunikasi dengan jejaring alumni {{ setting('school_name', 'SMKN 2 Ternate') }} di seluruh dunia.</p>
+        </div>
+        <div class="col-lg-6">
+            <form action="/alumni" method="GET" class="glass-effect p-3 rounded-4 shadow-sm">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0 shadow-none bg-transparent" placeholder="Cari berdasarkan nama, jurusan, atau angkatan..." value="{{ request('search') }}">
+                    <button type="submit" class="btn btn-primary px-4 rounded-3 h-100">Cari Alumni</button>
+                </div>
             </form>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="bg-light text-nowrap">
-                    <tr>
-                        <th>NAMA</th>
-                        <th>JURUSAN</th>
-                        <th>ANGKATAN</th>
-                        <th>PEKERJAAN</th>
-                        <th>STATUS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($alumni as $user)
-                    <tr>
-                        <td class="fw-bold"><a href="/alumni/{{ $user->id }}" class="text-dark text-decoration-none">{{ $user->name }}</a></td>
-                        <td>{{ $user->jurusan ?? '-' }}</td>
-                        <td>{{ $user->tahun_lulus ?? '-' }}</td>
-                        <td>{{ $user->pekerjaan_sekarang ?? 'Belum terisi' }}</td>
-                        <td>
-                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
-                                <i class="bi bi-patch-check-fill me-1"></i> Verified
-                            </span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-person-x d-block fs-3 mb-2"></i> Belum ada alumni terdaftar.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="mt-4">
-            {{ $alumni->links() }}
-        </div>
+    </div>
+
+    <div class="row g-4">
+        @forelse($alumni as $user)
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
+                    <div class="card-header border-0 bg-transparent py-4 text-center">
+                        <div class="position-relative d-inline-block">
+                            <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=6366f1&color=fff' }}" 
+                                 class="rounded-circle border border-4 border-white shadow-sm" 
+                                 style="width: 100px; height: 100px; object-fit: cover;" 
+                                 alt="{{ $user->name }}">
+                            @if($user->is_mentor)
+                                <div class="position-absolute bottom-0 end-0 bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 30px; height: 30px;" title="Mentor Verified">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <h5 class="fw-bold mt-3 mb-1"><a href="/alumni/{{ $user->username ?? $user->id }}" class="text-dark text-decoration-none hover-text-primary">{{ $user->name }}</a></h5>
+                        <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ $user->jurusan ?? 'Umum' }}</div>
+                    </div>
+                    <div class="card-body pt-0 px-4">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="bi bi-award me-2 text-primary"></i>
+                                <span>Angkatan {{ $user->tahun_lulus ?? '-' }}</span>
+                            </div>
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="bi bi-briefcase me-2 text-primary"></i>
+                                <span class="text-truncate">{{ $user->pekerjaan_sekarang ?? 'Belum terisi' }}</span>
+                            </div>
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="bi bi-geo-alt me-2 text-primary"></i>
+                                <span class="text-truncate">{{ $user->alamat ?? 'Lokasi' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer border-0 bg-light bg-opacity-50 py-3">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a href="/alumni/{{ $user->username ?? $user->id }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">Lihat Profil</a>
+                            </div>
+                            <div class="col-6">
+                                <a href="mailto:{{ $user->email }}" class="btn btn-primary btn-sm w-100 rounded-pill">Kontak</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-12 text-center py-5">
+                <div class="glass-effect p-5 rounded-4 d-inline-block">
+                    <i class="bi bi-person-x d-block display-4 text-muted mb-3"></i>
+                    <h5 class="text-muted">Tidak ada alumni yang sesuai dengan kriteria pencarian.</h5>
+                    <a href="/alumni" class="btn btn-link">Tampilkan Semua</a>
+                </div>
+            </div>
+        @endforelse
+    </div>
+
+    <div class="mt-5 d-flex justify-content-center">
+        {{ $alumni->links() }}
     </div>
 </div>
+@endsection
 @endsection

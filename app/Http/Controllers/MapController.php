@@ -20,23 +20,25 @@ class MapController extends Controller
      */
     public function data()
     {
-        $alumni = User::where('role', 'alumni')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->select('id', 'name', 'jurusan', 'tahun_lulus', 'latitude', 'longitude', 'city_name', 'foto_profil')
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'major' => $user->jurusan,
-                    'year' => $user->tahun_lulus,
-                    'lat' => (float) $user->latitude,
-                    'lng' => (float) $user->longitude,
-                    'city' => $user->city_name,
-                    'avatar' => $user->foto_profil ? asset('storage/' . $user->foto_profil) : asset('assets/images/default-avatar.png'),
-                ];
-            });
+        $alumni = \Illuminate\Support\Facades\Cache::remember('global_network_data', 3600, function () {
+            return User::where('role', 'alumni')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->select('id', 'name', 'jurusan', 'tahun_lulus', 'latitude', 'longitude', 'city_name', 'foto_profil')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'major' => $user->jurusan,
+                        'year' => $user->tahun_lulus,
+                        'lat' => (float) $user->latitude,
+                        'lng' => (float) $user->longitude,
+                        'city' => $user->city_name,
+                        'avatar' => $user->foto_profil ? asset('storage/' . $user->foto_profil) : asset('assets/images/default-avatar.png'),
+                    ];
+                });
+        });
 
         return response()->json([
             'success' => true,

@@ -1,132 +1,148 @@
-/* Steman V5 Modern CSS Overrides */
+/* Steman V5 Modern CSS Overrides - Premium Edition */
 
 :root {
-    --body-bg: #ffffff;
-    --text-main: #212121;
+    /* Primary Color Palette (Slate & Deep Indigo with Gold) */
+    --primary-core: #6366f1; /* Indigo 500 */
+    --primary-hover: #4f46e5; /* Indigo 600 */
+    --accent-gold: #fbbf24; /* Amber 400 */
+    --accent-gold-soft: rgba(251, 191, 36, 0.1);
+    
+    /* Surfaces */
+    --body-bg: #f8fafc;
+    --text-main: #0f172a;
     --nav-bg: #ffffff;
     --card-bg: #ffffff;
-    --footer-bg: #000000;
-    --section-bg: #f8f9fa;
-    --border-color: #e9ecef;
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
+    --footer-bg: #0f172a;
+    --section-bg: #f1f5f9;
+    --border-color: #e2e8f0;
+    
+    /* Premium Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
 }
 
 [data-bs-theme='dark'] {
-    --body-bg: #0f172a;
-    --text-main: #f8fafc;
-    --nav-bg: #1e293b;
-    --card-bg: #1e293b;
-    --footer-bg: #020617;
-    --section-bg: #1e293b;
-    --border-color: #334155;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(148, 163, 184, 0.2);
+    --body-bg: #020617; /* Slate 950 */
+    --text-main: #f1f5f9; /* Slate 100 */
+    --nav-bg: #0f172a; /* Slate 900 */
+    --card-bg: #0f172a;
+    --footer-bg: #000000;
+    --section-bg: #0f172a;
+    --border-color: #1e293b;
+    
+    --glass-bg: rgba(15, 23, 42, 0.8);
+    --glass-border: rgba(51, 65, 85, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 body {
     background-color: var(--body-bg) !important;
     color: var(--text-main) !important;
-    transition: background-color 0.4s ease, color 0.4s ease;
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-font-smoothing: antialiased;
 }
 
+/* Navbar Enhancements */
 .navbar {
     background-color: var(--nav-bg) !important;
-    border-bottom-color: #ffcc00 !important;
+    border-bottom: 2px solid var(--accent-gold) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     transition: all 0.4s ease;
 }
 
-.nav-link, .navbar-brand {
+.nav-link {
     color: var(--text-main) !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
+.nav-link:hover {
+    color: var(--primary-core) !important;
+    background-color: rgba(99, 102, 241, 0.08);
+}
+
+.nav-link.active {
+    color: var(--primary-core) !important;
+    background-color: rgba(99, 102, 241, 0.12);
+}
+
+/* Card Enhancements */
 .card, .glass-card {
     background-color: var(--card-bg) !important;
     color: var(--text-main) !important;
-    border-color: var(--border-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Glassmorphism Classes */
 .glass-effect {
     background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    box-shadow: var(--glass-shadow);
 }
 
-/* 3D ID Card Styles */
+/* Micro-animations */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease !important;
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+}
+
+/* 3D ID Card Styles - Refined */
 .card-3d-wrapper {
-    perspective: 1000px;
+    perspective: 1200px;
     width: 350px;
     height: 220px;
     cursor: pointer;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-}
-
-.card-3d-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-}
-
-.card-3d-wrapper:hover .card-3d-inner {
-    transform: rotateY(180deg);
-}
-
-.card-front, .card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: 15px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    color: white;
 }
 
 .card-front {
-    background: linear-gradient(135deg, #000000 0%, #3f37c9 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #6366f1 100%);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
 }
 
 .card-back {
-    background: linear-gradient(135deg, #3f37c9 0%, #ffcc00 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #fbbf24 100%);
     transform: rotateY(180deg);
-    color: #000000;
+    color: #0f172a;
 }
 
-/* Transitions */
-.transition-all {
-    transition: all 0.3s ease;
+/* Custom Gradients */
+.gradient-primary {
+    background: linear-gradient(135deg, var(--primary-core) 0%, #4f46e5 100%);
 }
 
-.fw-black { font-weight: 900 !important; }
-
-.hover-translate-y {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+.gradient-gold {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
 }
 
-.hover-translate-y:hover {
-    transform: translateY(-8px) scale(1.02) !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+/* Skeleton Screens (Simplified CSS approach) */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
 }
 
-.glass-card {
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+[data-bs-theme='dark'] .skeleton {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
 }
 
-.icon-glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
+

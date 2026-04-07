@@ -5,6 +5,8 @@ use App\Models\ContactMessage;
 use App\Mail\ContactFormMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
+use App\Jobs\LogActivity;
 
 class ContactMessageController extends Controller
 {
@@ -84,6 +86,14 @@ class ContactMessageController extends Controller
             'is_read' => true,
         ]);
 
+        LogActivity::dispatch(
+            Auth::id(),
+            'Reply Contact Message',
+            'Replied to message from: ' . $message->email,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
+
         return back()->with('success', 'Balasan internal berhasil disimpan!');
     }
 
@@ -92,7 +102,18 @@ class ContactMessageController extends Controller
      */
     public function destroy($id)
     {
-        ContactMessage::findOrFail($id)->delete();
+        $message = ContactMessage::findOrFail($id);
+        $email = $message->email;
+        $message->delete();
+
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete Contact Message',
+            'Deleted message from: ' . $email,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
+
         return back()->with('success', 'Pesan berhasil dihapus.');
     }
 }

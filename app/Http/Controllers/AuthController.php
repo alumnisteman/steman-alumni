@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use App\Jobs\LogActivity;
 
 class AuthController extends Controller
 {
@@ -61,26 +62,26 @@ class AuthController extends Controller
         if ($this->authService->login($credentials)) {
             Log::info('Login success for: ' . $request->email);
             
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'Login',
-                'description' => 'User logged in to the system.',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                Auth::id(),
+                'Login',
+                'User logged in to the system.',
+                $request->ip(),
+                $request->header('User-Agent')
+            );
 
             $request->session()->regenerate();
             if (Auth::user()->role === 'admin') return redirect()->intended('/admin/dashboard');
             return redirect()->intended('/alumni/dashboard');
         }
 
-        ActivityLog::create([
-            'user_id' => null,
-            'action' => 'Login Failed',
-            'description' => 'Failed login attempt for email: ' . $request->email,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            null,
+            'Login Failed',
+            'Failed login attempt for email: ' . $request->email,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         Log::warning('Login failed for: ' . $request->email);
         RateLimiter::hit($request->ip(), 60);
@@ -139,13 +140,13 @@ class AuthController extends Controller
             ]);
             Log::info('User created: ID ' . $user->id);
 
-            ActivityLog::create([
-                'user_id' => $user->id,
-                'action' => 'Register',
-                'description' => 'New alumni registered: ' . $user->name,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                $user->id,
+                'Register',
+                'New alumni registered: ' . $user->name,
+                $request->ip(),
+                $request->header('User-Agent')
+            );
 
             Auth::login($user);
             return redirect('/alumni/dashboard');
@@ -158,13 +159,13 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         if (Auth::check()) {
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'Logout',
-                'description' => 'User logged out.',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-            ]);
+            LogActivity::dispatch(
+                Auth::id(),
+                'Logout',
+                'User logged out.',
+                $request->ip(),
+                $request->header('User-Agent')
+            );
         }
 
         Auth::logout();

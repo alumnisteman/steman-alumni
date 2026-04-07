@@ -6,6 +6,7 @@ use App\Models\Forum;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\LogActivity;
 
 class ForumController extends Controller
 {
@@ -37,6 +38,14 @@ class ForumController extends Controller
         // Award Points
         Auth::user()->awardPoints(10);
 
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create Forum Post',
+            'Created discussion: ' . $forum->title,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
+
         return back()->with('success', 'Diskusi berhasil dibuat dan Anda mendapatkan 10 poin!');
     }
 
@@ -55,6 +64,14 @@ class ForumController extends Controller
 
         // Award Points
         Auth::user()->awardPoints(10);
+
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create Forum Comment',
+            'Commented on discussion: ' . $forum->title,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
 
         return back()->with('success', 'Komentar ditambahkan! +10 poin untuk Anda.');
     }

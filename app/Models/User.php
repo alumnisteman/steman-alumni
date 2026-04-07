@@ -18,7 +18,7 @@ class User extends Authenticatable
         'pekerjaan_sekarang', 'perusahaan_universitas',
         'nomor_telepon', 'foto_profil',
         'alamat', 'bio',
-        'mentoring', 'points',
+        'mentoring', 'mentor_expertise', 'mentor_bio', 'points',
         'linkedin_url', 'instagram_url', 'twitter_url',
         'latitude', 'longitude',
     ];

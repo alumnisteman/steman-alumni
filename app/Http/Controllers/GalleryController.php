@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gallery;
 use App\Models\ActivityLog;
+use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -117,16 +118,15 @@ class GalleryController extends Controller
         $title = $gallery->title;
         $gallery->delete();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete Gallery Item',
-            'description' => 'Deleted gallery item: ' . $title,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-        ]);
-        Cache::forget('welcome_data');
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete Gallery Item',
+            'Deleted media: ' . $title,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
 
-        return back()->with('success', 'Media berhasil dihapus.');
+        return back()->with('success', 'Konten berhasil dihapus.');
     }
 
     public function edit(Gallery $gallery)

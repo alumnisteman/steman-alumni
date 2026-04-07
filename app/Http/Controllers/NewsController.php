@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use App\Jobs\LogActivity;
 
 class NewsController extends Controller
 {
@@ -77,13 +78,13 @@ class NewsController extends Controller
             'status'       => $request->status ?? 'draft'
         ]);
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Create News',
-            'description' => 'Published news: ' . $news->title,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Create News',
+            'Published news: ' . $news->title,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return redirect('/admin/news')->with('success', 'Berita berhasil diterbitkan.');
@@ -132,13 +133,13 @@ class NewsController extends Controller
             'status'       => $request->status ?? 'draft'
         ]);
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Update News',
-            'description' => 'Updated news: ' . $news->title,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Update News',
+            'Updated news: ' . $news->title,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return redirect('/admin/news')->with('success', 'Berita berhasil diperbarui.');
@@ -154,13 +155,13 @@ class NewsController extends Controller
         $news_title = $news->title;
         $news->delete();
 
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'Delete News',
-            'description' => 'Deleted news: ' . $news_title,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-        ]);
+        LogActivity::dispatch(
+            Auth::id(),
+            'Delete News',
+            'Deleted news: ' . $news_title,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
         Cache::forget('welcome_data');
 
         return back()->with('success', 'Berita berhasil dihapus.');
