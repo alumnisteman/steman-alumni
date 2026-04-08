@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\LogActivity;
+use App\Jobs\GenerateAIAutoReply;
 
 class ContactMessageController extends Controller
 {
@@ -30,7 +31,10 @@ class ContactMessageController extends Controller
         ]);
 
         // Save to database
-        ContactMessage::create($request->only(['name', 'email', 'subject', 'message']));
+        $message = ContactMessage::create($request->only(['name', 'email', 'subject', 'message']));
+
+        // AI Auto-Reply Suggestion (Background)
+        GenerateAIAutoReply::dispatch($message);
 
         // Send email notification to admin
         try {

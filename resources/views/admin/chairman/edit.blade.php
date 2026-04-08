@@ -136,6 +136,59 @@
             </div>
         </div>
 
+        <div class="row g-4 mt-1">
+            <!-- 3. SEKRETARIS PANITIA ACARA -->
+            <div class="col-lg-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                    <div class="card-header bg-success bg-opacity-10 py-3 border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-person-fill-check me-2"></i>SEKRETARIS PANITIA
+                        </h5>
+                        <span class="badge bg-success text-white rounded-pill shadow-sm">Event</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Nama Sekretaris Panitia</label>
+                                    <input type="text" name="secretary_name" class="form-control" value="{{ setting('secretary_name') }}" id="s_name" placeholder="Nama sekretaris pelaksana">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Keterangan / Jabatan</label>
+                                    <input type="text" name="secretary_period" class="form-control" value="{{ setting('secretary_period') }}" id="s_period" placeholder="Contoh: Sekretaris Panitia Reuni 2026">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Sambutan Sekretaris</label>
+                                    <textarea name="secretary_message" class="form-control" rows="5" id="s_message" placeholder="Teks sambutan sekretaris...">{{ setting('secretary_message') }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Upload Foto Sekretaris</label>
+                                    <div class="p-3 bg-light rounded-4 text-center">
+                                        <label for="s_photo" class="d-block cursor-pointer">
+                                            <img src="{{ setting('secretary_photo', 'https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400') }}" 
+                                                 onerror="this.src='https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400'"
+                                                 class="img-fluid rounded-4 shadow-sm border border-4 border-white mb-3" id="s_preview_photo" 
+                                                 style="height: 200px; width: 100%; object-fit: cover; object-position: top;">
+                                            <div class="btn btn-outline-success btn-sm w-100 rounded-pill">
+                                                <i class="bi bi-camera me-1"></i> Ganti Foto
+                                            </div>
+                                        </label>
+                                        <input type="file" name="secretary_photo" class="d-none" id="s_photo">
+                                        <div class="mt-3">
+                                            <h6 class="fw-bold mb-1" id="s_preview_name">{{ setting('secretary_name', 'Nama Sekretaris') }}</h6>
+                                            <p class="small text-muted mb-0" id="s_preview_period">{{ setting('secretary_period', 'Jabatan Sekretaris') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-4 mb-5 pb-5">
             <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill shadow-lg fw-bold overflow-hidden position-relative border-0" style="background: linear-gradient(135deg, #1e293b, #334155);">
                 <span class="position-relative z-1">
@@ -174,6 +227,7 @@
 
         setupPreview('c', 'c');
         setupPreview('e', 'e');
+        setupPreview('s', 's');
     });
 </script>
 @endsection

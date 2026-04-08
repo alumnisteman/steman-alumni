@@ -1,5 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
+// FINAL DIAGNOSTIC ROUTES
+Route::get('/ping-test', function() { return 'PONG'; });
+Route::get('/nostalgia-isolated', [\App\Http\Controllers\PostController::class, 'index'])->name('nostalgia.isolated');
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AdminDashboardController;
@@ -13,37 +19,21 @@ use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MapController;
 use App\Services\AIPredictionService;
-use Illuminate\Support\Facades\Route;
 
 // --- 1. Global Public Routes (Rate Limited) ---
 Route::middleware(['throttle:global'])->group(function () {
     
     // Public Home
-    Route::get('/', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('welcome_data', 600, function () {
-            $aiService = new AIPredictionService();
-            return [
-                'latestNews' => \App\Models\News::where('status', 'published')->latest()->take(3)->get(),
-                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
-                'latestVideos' => \App\Models\Gallery::where('type', 'video')->latest()->take(2)->get(),
-                'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
-                'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
-                'mapAnalytics' => \App\Models\User::getMapAnalytics(),
-                'aiInsights' => $aiService->getGlobalInsights(),
-            ];
-        });
-        
-        return view('welcome', array_merge($data, [
-            'alumniLocations' => $data['mapAnalytics']['alumniLocations'],
-            'nationalCount' => $data['mapAnalytics']['nationalCount'],
-            'internationalCount' => $data['mapAnalytics']['internationalCount'],
-            'aiInsights' => $data['aiInsights'],
-        ]));
+    Route::get('/', function (\App\Services\AlumniService $alumniService) {
+        $data = $alumniService->getWelcomeData();
+        return view('welcome', $data);
     })->name('home');
 
     Route::get('/profil', function () { return view('profil'); })->name('public.profile');
@@ -65,12 +55,10 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('/news', [NewsController::class, 'index'])->name('news.index');
     Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
+    Route::get('/jejak-sukses/{successStory}', [\App\Http\Controllers\AlumniController::class, 'successStoryDetail'])->name('success-stories.show');
 
-    // Gallery & Alumni Public
+    // --- Public Content (Articles, Programs, Jobs) ---
     Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
-    Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
-    Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
-    
     // Global Network & Mesh Map (Leaflet)
     Route::get('/global-network', [MapController::class, 'index'])->name('global.network');
     Route::get('/api/v1/map-data', [MapController::class, 'data'])->name('api.map.data');
@@ -103,7 +91,10 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // Alumni Features
     Route::middleware(['alumni'])->group(function () {
         Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
+        Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
+        Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
         Route::get('/alumni/messages', [AlumniController::class, 'messages'])->name('alumni.messages');
+        Route::get('/api/dashboard/ai-data', [\App\Http\Controllers\Api\DashboardApiController::class, 'getAIData'])->name('dashboard.ai.data');
         Route::get('/alumni/card', [CardController::class, 'index'])->name('alumni.card');
 
         // Nostalgia Feed Routes
@@ -149,6 +140,8 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
             Route::match(['PUT', 'PATCH'], '/admin/users/{user}/status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
             Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
             Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
+            Route::get('/admin/users/verification', [UserController::class, 'verification'])->name('admin.users.verification');
+            Route::resource('/admin/success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class)->names('admin.success-stories');
         });
 
         // News Management
@@ -158,6 +151,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/admin/news/{news}/edit', [NewsController::class, 'edit'])->name('admin.news.edit');
         Route::put('/admin/news/{news}', [NewsController::class, 'update'])->name('admin.news.update');
         Route::delete('/admin/news/{news}', [NewsController::class, 'destroy'])->name('admin.news.destroy');
+        Route::post('/admin/news/{news}/publish', [NewsController::class, 'quickPublish'])->name('admin.news.publish');
 
         // Gallery Management
         Route::get('/admin/gallery', [GalleryController::class, 'adminIndex'])->name('admin.gallery.index');
@@ -207,6 +201,13 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::delete('/admin/majors/{major}', [MajorController::class, 'destroy'])->name('admin.majors.destroy');
 
         Route::get('/admin/export', [\App\Http\Controllers\Admin\AlumniExportController::class, 'export'])->name('admin.export');
+
+        // AI Control Panel Routes
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('/admin/ai', [AIController::class, 'dashboard'])->name('admin.ai.dashboard');
+            Route::post('/admin/ai/generate', [AIController::class, 'generateNow'])->name('admin.ai.generate');
+            Route::post('/admin/ai/publish/{news}', [AIController::class, 'publish'])->name('admin.ai.publish');
+        });
     });
 });
 
@@ -253,3 +254,6 @@ Route::get('/health', function () {
 
     return response()->json($status, $status['status'] === 'healthy' ? 200 : 503);
 });
+
+// --- AI Chat Assistant API ---
+Route::post('/api/ai/chat', [AIChatController::class, 'ask'])->middleware('throttle:global');

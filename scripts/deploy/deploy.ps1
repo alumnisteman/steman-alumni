@@ -22,14 +22,19 @@ if (Test-Path "update-ip.ps1") {
 # 1. Cleaning up old files on local
 if (Test-Path $ZIP_FILE) { Remove-Item $ZIP_FILE }
 
-# 2. Local Builds (Node.js/NPM only)
-Write-Host "[2/8] Running Local Frontend Build (Node.js)..." -ForegroundColor Yellow
+# 2. Local Builds (Node.js & Composer)
+Write-Host "[2/8] Running Local Builds (Node.js & Composer)..." -ForegroundColor Yellow
 try {
+    # Node Build
     npm install --silent
     npm run build
     Write-Host "  -> NPM Build Success." -ForegroundColor Green
+    
+    # PHP Build (Production-ready)
+    composer install --no-dev --optimize-autoloader --no-interaction
+    Write-Host "  -> Composer Install Success." -ForegroundColor Green
 } catch {
-    Write-Host "  -> NPM Build skipped." -ForegroundColor Gray
+    Write-Host "  -> Local Build skipped / failed. Ensure Node and Composer are installed." -ForegroundColor Gray
 }
 
 # 3. Archiving files (using tar for better Linux compatibility)
@@ -38,7 +43,7 @@ Write-Host "  -> Cleaning local Laravel Cache..." -ForegroundColor Cyan
 if (Test-Path "bootstrap/cache/*.php") { Get-ChildItem "bootstrap/cache/*.php" -Exclude ".gitignore" | Remove-Item -Force }
 if (Test-Path "public/storage") { Remove-Item "public/storage" -Recurse -Force -ErrorAction SilentlyContinue }
 Write-Host "  -> Archiving files..." -ForegroundColor Cyan
-tar -czf "steman_deploy.tar.gz" "app" "bootstrap" "config" "database" "public" "resources" "routes" "docker" ".env" "docker-compose.yml" "docker-compose.dev.yml" "docker-compose.prod.yml" "Dockerfile" "artisan" "composer.json" "composer.lock" "package.json" "package-lock.json" "vite.config.js" "update-ip.ps1"
+tar -czf "steman_deploy.tar.gz" "app" "bootstrap" "config" "database" "public" "resources" "routes" "docker" ".env" "docker-compose.yml" "docker-compose.dev.yml" "docker-compose.prod.yml" "Dockerfile" "Dockerfile.prod" "artisan" "composer.json" "composer.lock" "package.json" "package-lock.json" "vite.config.js" "update-ip.ps1" "vendor"
 
 # 4. Uploading to Server
 Write-Host "[4/8] Uploading Source to $REMOTE_HOST..." -ForegroundColor Yellow

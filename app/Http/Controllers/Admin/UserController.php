@@ -171,4 +171,10 @@ class UserController extends Controller
 
         return back()->with('success', 'Status user berhasil diperbarui.');
     }
+
+    public function verification()
+    {
+        $users = User::where('status', 'pending')->where('role', 'alumni')->latest()->paginate(20);
+        return view('admin.users.verification', compact('users'));
+    }
 }

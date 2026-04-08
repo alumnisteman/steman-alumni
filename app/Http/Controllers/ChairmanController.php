@@ -33,6 +33,11 @@ class ChairmanController extends Controller
             'event_chairman_period' => 'nullable|string|max:255',
             'event_chairman_message' => 'nullable|string',
             'event_chairman_photo' => 'nullable|image|max:5120',
+
+            'secretary_name' => 'nullable|string|max:255',
+            'secretary_period' => 'nullable|string|max:255',
+            'secretary_message' => 'nullable|string',
+            'secretary_photo' => 'nullable|image|max:5120',
         ]);
 
         try {
@@ -90,6 +95,34 @@ class ChairmanController extends Controller
                         'value' => $url,
                         'label' => 'Foto Ketua Panitia',
                         'group' => 'event_chairman'
+                    ]
+                );
+            }
+
+            // Secretary Settings
+            $secretaryKeys = ['secretary_name', 'secretary_period', 'secretary_message'];
+            foreach ($secretaryKeys as $key) {
+                if ($request->has($key)) {
+                    Setting::updateOrCreate(
+                        ['key' => $key],
+                        [
+                            'value' => $request->get($key),
+                            'label' => ucwords(str_replace('_', ' ', $key)),
+                            'group' => 'secretary'
+                        ]
+                    );
+                }
+            }
+
+            if ($request->hasFile('secretary_photo')) {
+                $path = $request->file('secretary_photo')->store('uploads/chairman', 'public');
+                $url = '/storage/' . $path;
+                Setting::updateOrCreate(
+                    ['key' => 'secretary_photo'], 
+                    [
+                        'value' => $url,
+                        'label' => 'Foto Sekretaris Panitia',
+                        'group' => 'secretary'
                     ]
                 );
             }

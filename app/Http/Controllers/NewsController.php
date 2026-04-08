@@ -26,7 +26,14 @@ class NewsController extends Controller
 
     public function show($slug)
     {
-        $item = News::where('slug', $slug)->where('status', 'published')->firstOrFail();
+        $query = News::where('slug', $slug);
+        
+        // If not published, only allow admin/editor to see it (Preview mode)
+        if (!auth()->check() || (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('editor'))) {
+            $query->where('status', 'published');
+        }
+
+        $item = $query->firstOrFail();
         return view('news.show', compact('item'));
     }
 
@@ -165,5 +172,21 @@ class NewsController extends Controller
         Cache::forget('welcome_data');
 
         return back()->with('success', 'Berita berhasil dihapus.');
+    }
+
+    public function quickPublish(News $news)
+    {
+        $news->update(['status' => 'published']);
+        
+        LogActivity::dispatch(
+            Auth::id(),
+            'Publish News',
+            'Published news: ' . $news->title,
+            request()->ip(),
+            request()->header('User-Agent')
+        );
+        Cache::forget('welcome_data');
+        
+        return back()->with('success', 'Berita berhasil diterbitkan!');
     }
 }

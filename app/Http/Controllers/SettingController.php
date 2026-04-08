@@ -21,7 +21,9 @@ class SettingController extends Controller
                 'contact' => 4,
                 'chairman' => 5,
                 'event_chairman' => 6,
-                'program' => 7
+                'secretary' => 7,
+                'program' => 8,
+                'ai' => 9
             ];
             return $priority[$key] ?? 100;
         });
@@ -65,8 +67,11 @@ class SettingController extends Controller
             Setting::where('key', $key)->update(['value' => $value ?? '']);
         }
 
-        // Clear cache so settings reflect immediately
-        try { Artisan::call('optimize:clear'); } catch (\Exception $e) {}
+        // Clear all possible caches so settings reflect immediately (Self-Healing)
+        try { 
+            Artisan::call('optimize:clear'); 
+            \Illuminate\Support\Facades\Cache::flush();
+        } catch (\Exception $e) {}
 
         // Log the activity (non-critical)
         try {

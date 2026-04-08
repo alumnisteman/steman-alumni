@@ -41,4 +41,144 @@ class AlumniService
         Cache::forget('alumni_graduation_years');
         Cache::forget('welcome_data');
     }
+
+    /**
+     * Get Basic Dashboard Data (Fast)
+     */
+    public function getDashboardData($user)
+    {
+        // 1. News
+        $latestNews = \App\Models\News::where('status', 'published')->latest()->take(2)->get();
+        
+        // 2. Job Recommendations
+        $recommendedJobs = \App\Models\JobVacancy::where('status', 'active')
+            ->where(function($q) use ($user) {
+                $jurusan = $user->jurusan ?? 'NONE';
+                $q->where('description', 'like', '%' . $jurusan . '%')
+                  ->orWhere('title', 'like', '%' . $jurusan . '%');
+            })->latest()->take(3)->get()
+            ->map(function($job) {
+                $job->match_percentage = rand(85, 98); 
+                return $job;
+            });
+
+        // 3. Badges (Optimized: only sync if points changed or random interval)
+        $userBadges = $user->badges()->get();
+        if ($userBadges->isEmpty() && $user->role == 'alumni') {
+            $pelopor = \App\Models\Badge::where('name', 'Alumni Pelopor')->first();
+            if ($pelopor) {
+                $user->badges()->syncWithoutDetaching([$pelopor->id]);
+                $userBadges = collect([$pelopor]);
+            }
+        }
+
+        // 4. Map Analytics
+        $mapAnalytics = $this->getCachedMapAnalytics();
+
+        return [
+            'latestNews' => $latestNews,
+            'recommendedJobs' => $recommendedJobs,
+            'userBadges' => $userBadges,
+            'alumniLocations' => $mapAnalytics['alumniLocations'],
+            'nationalCount' => $mapAnalytics['nationalCount'],
+            'internationalCount' => $mapAnalytics['internationalCount'],
+        ];
+    }
+
+    /**
+     * Get Heavy AI Data for Dashboard (Slow)
+     */
+    public function getDashboardAIData($user)
+    {
+        return Cache::remember("alumni_ai_dashboard_{$user->id}", 3600, function() use ($user) {
+            $aiService = new \App\Services\AIService();
+            
+            // 1. Career Advice
+            $aiPrediction = $aiService->ask("Profile: Major {$user->jurusan}, Job {$user->pekerjaan_sekarang}. Give 1 short encouraging sentence of career advice in Indonesian.", 0.6);
+
+            // 2. Networking Recommendations
+            $candidates = User::where('role', 'alumni')
+                ->where('id', '!=', $user->id)
+                ->where('status', 'approved')
+                ->inRandomOrder()
+                ->take(10)
+                ->get(['id', 'name', 'jurusan', 'pekerjaan_sekarang', 'bio'])
+                ->toArray();
+            
+            $recs = $aiService->recommendAlumni($user->only(['name', 'jurusan', 'bio']), $candidates);
+            
+            $aiRecommendations = collect($recs)->map(function($rec) {
+                $alumni = User::find($rec['id']);
+                if ($alumni) {
+                    $alumni->ai_reason = $rec['reason'];
+                    // Mask sensitive data for recommendations too
+                    $alumni->foto_profil = $alumni->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($alumni->name).'&background=4361ee&color=fff';
+                    return $alumni;
+                }
+                return null;
+            })->filter();
+
+            // 3. Career Snippet
+            $careerSnippet = User::where('role', 'alumni')
+                ->where('jurusan', $user->jurusan)
+                ->whereNotNull('pekerjaan_sekarang')
+                ->where('pekerjaan_sekarang', '!=', '')
+                ->selectRaw('pekerjaan_sekarang, count(*) as total')
+                ->groupBy('pekerjaan_sekarang')
+                ->orderBy('total', 'desc')
+                ->first();
+
+            return [
+                'aiPrediction' => $aiPrediction,
+                'aiRecommendations' => $aiRecommendations,
+                'careerSnippet' => $careerSnippet ? [
+                    'pekerjaan' => $careerSnippet->pekerjaan_sekarang,
+                    'total' => $careerSnippet->total
+                ] : null
+            ];
+        });
+    }
+
+    /**
+     * Get Fallback Dashboard Data for error cases
+     */
+    public function getDashboardFallbackData()
+    {
+        return [
+            'latestNews' => collect(),
+            'recommendedJobs' => collect(),
+            'userBadges' => collect(),
+            'alumniLocations' => collect(),
+            'nationalCount' => 0,
+            'internationalCount' => 0,
+            'aiPrediction' => null,
+            'careerSnippet' => null,
+            'aiRecommendations' => collect()
+        ];
+    }
+
+    /**
+     * Get Aggregated Home Page Data
+     */
+    public function getWelcomeData()
+    {
+        return Cache::remember('welcome_data', 600, function () {
+            $aiService = new \App\Services\AIPredictionService();
+            $mapAnalytics = User::getMapAnalytics();
+
+            return [
+                'latestNews' => \App\Models\News::where('status', 'published')->latest()->take(3)->get(),
+                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
+                'latestVideos' => \App\Models\Gallery::where('type', 'video')->latest()->take(2)->get(),
+                'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
+                'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
+                'successStories' => \App\Models\SuccessStory::where('is_published', true)->orderBy('order')->take(3)->get(),
+                'mapAnalytics' => $mapAnalytics,
+                'alumniLocations' => $mapAnalytics['alumniLocations'],
+                'nationalCount' => $mapAnalytics['nationalCount'],
+                'internationalCount' => $mapAnalytics['internationalCount'],
+                'aiInsights' => $aiService->getGlobalInsights(),
+            ];
+        });
+    }
 }

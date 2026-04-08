@@ -14,7 +14,7 @@ class AlumniRepository implements AlumniRepositoryInterface
      */
     public function getPaginatedAlumni(array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
-        $query = User::where('role', 'alumni');
+        $query = User::with('badges')->where('role', 'alumni');
 
         if (!empty($filters['search'])) {
             $query->where('name', 'like', '%' . $filters['search'] . '%');

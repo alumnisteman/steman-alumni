@@ -42,7 +42,7 @@ jobs:
 
       - name: Production Initialization & Migrations (v4.1 Hardened)
         run: |
-          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate:fresh --seed --force
+          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
           
           # Full v4.1 Optimization Stack
           docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear

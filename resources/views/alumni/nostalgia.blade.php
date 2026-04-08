@@ -84,11 +84,11 @@
             <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden post-card" id="post-{{ $post->id }}">
                 <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-start">
                     <div class="d-flex align-items-center">
-                        <img src="{{ $post->user->foto_profil ? $post->user->foto_profil : 'https://ui-avatars.com/api/?name='.urlencode($post->user->name) }}" class="rounded-circle me-3" width="45" height="45" style="object-fit: cover;">
+                        <img src="{{ ($post->user && $post->user->foto_profil) ? $post->user->foto_profil : 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? 'Alumni') }}" class="rounded-circle me-3" width="45" height="45" style="object-fit: cover;">
                         <div>
-                            <h6 class="fw-bold mb-0">{{ $post->user->name }}</h6>
+                            <h6 class="fw-bold mb-0">{{ $post->user->name ?? 'Alumni' }}</h6>
                             <small class="text-muted">
-                                {{ $post->user->tahun_lulus ? 'Angkatan ' . $post->user->tahun_lulus : 'Alumni' }} 
+                                {{ ($post->user && $post->user->tahun_lulus) ? 'Angkatan ' . $post->user->tahun_lulus : 'Alumni' }} 
                                 &bull; {{ $post->created_at->diffForHumans() }}
                                 @if($post->type == 'story')
                                     <span class="badge bg-info-subtle text-info rounded-pill ms-1">Cerita Lucu</span>
@@ -123,7 +123,7 @@
                     <div class="mb-3 small">
                         <span class="text-muted"><i class="bi bi-people-fill me-1"></i> Bersama: </span>
                         @foreach($post->taggedUsers as $user)
-                            <a href="{{ route('alumni.show', $user->id) }}" class="text-decoration-none fw-bold text-primary">@ {{ $user->name }}</a>{{ !$loop->last ? ',' : '' }}
+                            <a href="{{ route('alumni.show', $user->id) }}" class="text-decoration-none fw-bold text-primary">@ {{ $user->name ?? 'Alumni' }}</a>{{ !$loop->last ? ',' : '' }}
                         @endforeach
                     </div>
                     @endif
@@ -154,7 +154,7 @@
                             <img src="{{ $comment->user->foto_profil ? $comment->user->foto_profil : 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name) }}" class="rounded-circle me-2" width="28" height="28">
                             <div class="bg-light rounded-3 px-3 py-2 flex-grow-1">
                                 <div class="d-flex justify-content-between">
-                                    <span class="fw-bold small">{{ $comment->user->name }}</span>
+                                    <span class="fw-bold small">{{ $comment->user->name ?? 'Alumni' }}</span>
                                     <small class="text-muted" style="font-size: 0.7rem;">{{ $comment->created_at->diffForHumans() }}</small>
                                 </div>
                                 <p class="small mb-0">{{ $comment->content }}</p>

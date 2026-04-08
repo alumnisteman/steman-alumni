@@ -50,6 +50,47 @@
 
                         <hr class="my-5 opacity-10">
 
+                        <div class="row g-4 mb-5">
+                            <div class="col-12 mb-2">
+                                <h6 class="text-primary fw-bold text-uppercase small mb-1">Struktur Panitia Acara</h6>
+                                <h3 class="fw-bold text-dark">Panitia Pelaksana</h3>
+                            </div>
+                            <!-- Ketua Panitia -->
+                            <div class="col-md-6">
+                                <div class="p-4 bg-light rounded-4 border-0 h-100 shadow-sm border-start border-4 border-primary">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
+                                             class="rounded-3 shadow-sm me-3" 
+                                             style="height: 60px; width: 60px; object-fit: cover;" alt="Ketua Panitia">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">{{ setting('event_chairman_name', 'Nama Ketua Panitia') }}</h6>
+                                            <small class="text-muted">Ketua Panitia Pelaksana</small>
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mb-0 lh-base italic">
+                                        "{!! nl2br(e(setting('event_chairman_message', 'Bekerja bersama untuk menyukseskan agenda alumni.'))) !!}"
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- Sekretaris Panitia -->
+                            <div class="col-md-6">
+                                <div class="p-4 bg-light rounded-4 border-0 h-100 shadow-sm border-start border-4 border-success">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="{{ setting('secretary_photo', 'https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400') }}" 
+                                             class="rounded-3 shadow-sm me-3" 
+                                             style="height: 60px; width: 60px; object-fit: cover;" alt="Sekretaris Panitia">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">{{ setting('secretary_name', 'Nama Sekretaris') }}</h6>
+                                            <small class="text-muted">Sekretaris Panitia</small>
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mb-0 lh-base italic">
+                                        "{!! nl2br(e(setting('secretary_message', 'Mengelola administrasi dan koordinasi kegiatan alumni.'))) !!}"
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row g-5">
                             <div class="col-md-6">
                                 <div class="p-4 bg-white rounded-4 h-100 border border-light">

@@ -27,6 +27,8 @@
                             @elseif($group == 'contact') <span class="bg-success text-white p-2 rounded-3 me-3"><i class="bi bi-telephone-fill"></i></span>Informasi Kontak & Sekretariat
                             @elseif($group == 'chairman') <span class="bg-info text-white p-2 rounded-3 me-3"><i class="bi bi-person-workspace"></i></span>Sambutan Ketua Umum
                             @elseif($group == 'event_chairman') <span class="bg-danger text-white p-2 rounded-3 me-3"><i class="bi bi-megaphone-fill"></i></span>Sambutan Ketua Panitia
+                            @elseif($group == 'secretary') <span class="bg-success text-white p-2 rounded-3 me-3"><i class="bi bi-person-fill-check"></i></span>Sambutan Sekretaris Panitia
+                            @elseif($group == 'ai') <span class="bg-dark text-white p-2 rounded-3 me-3"><i class="bi bi-robot"></i></span>Integrasi & API AI
                             @else <span class="bg-secondary text-white p-2 rounded-3 me-3"><i class="bi bi-grid-fill"></i></span>Konfigurasi Lanjutan @endif
                         </h4>
                         <hr class="mb-4 opacity-10">
@@ -77,7 +79,14 @@
                                     </div>
                                 </div>
                             @else
-                                <input type="text" name="{{ $item->key }}" class="form-control shadow-sm" value="{{ $item->value }}" style="border-radius: 10px;">
+                                @if(strpos($item->key, 'api_key') !== false)
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;"><i class="bi bi-key-fill text-muted"></i></span>
+                                        <input type="password" name="{{ $item->key }}" class="form-control border-start-0 shadow-sm" value="{{ $item->value }}" style="border-radius: 0 10px 10px 0;" placeholder="Masukkan kunci rahasia...">
+                                    </div>
+                                @else
+                                    <input type="text" name="{{ $item->key }}" class="form-control shadow-sm" value="{{ $item->value }}" style="border-radius: 10px;">
+                                @endif
                             @endif
                             <div class="form-text small opacity-50">Kunci: <code>{{ $item->key }}</code></div>
                         </div>

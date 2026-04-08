@@ -36,6 +36,7 @@ class AuthService
     public function register(array $data)
     {
         $data['password'] = Hash::make($data['password']);
+        $data['status'] = 'pending'; // Require admin approval
         return $this->authRepository->create($data);
     }
 

@@ -41,9 +41,9 @@
         width: calc(100% + 100px);
         height: calc(100% + 100px);
         object-fit: cover;
-        filter: blur(50px) brightness(0.3);
+        filter: brightness(0.3);
         z-index: 1;
-        opacity: 0.6;
+        opacity: 0.8;
     }
 
     .hero-content-overlay {
@@ -53,13 +53,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
-        backdrop-filter: blur(2px);
+        background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%);
     }
 
     .glass-hero-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
+        background: rgba(0, 0, 0, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.1);
         padding: 3rem;
         border-radius: 24px;
@@ -155,29 +153,61 @@
 </div>
 
 
-<!-- Event Chairman Section -->
+<!-- Event Leadership Duo Section (Chairman & Secretary) -->
 <div class="bg-light py-4 py-md-5">
     <div class="container py-4 py-md-5">
-        <div class="row align-items-center g-5 flex-column-reverse flex-lg-row-reverse">
-            <div class="col-lg-4 text-center">
-                <div class="position-relative d-inline-block">
-                    <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
-                         class="img-fluid rounded-4 shadow-lg border border-4 border-white" 
-                         alt="Ketua Panitia"
-                         style="aspect-ratio: 3/4; height: 280px; width: 100%; max-width: 210px; object-fit: cover; object-position: top;">
-                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3">
-                        <span class="badge bg-primary text-white px-4 py-2 rounded-pill shadow-sm fw-bold">KETUA PANITIA</span>
+        <div class="row g-5">
+            <!-- 1. Ketua Panitia -->
+            <div class="col-lg-6">
+                <div class="h-100 bg-white p-4 p-md-5 rounded-4 shadow-sm border-top border-4 border-primary">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="position-relative me-4">
+                            <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
+                                 class="rounded-circle shadow-sm border border-3 border-white" 
+                                 alt="Ketua Panitia"
+                                 style="height: 100px; width: 100px; object-fit: cover;">
+                            <div class="position-absolute bottom-0 start-50 translate-middle-x">
+                                <span class="badge bg-primary text-white rounded-pill px-2 py-1 x-small shadow-sm">KETUA</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.8rem;">Sambutan Ketua Panitia</h6>
+                            <h4 class="fw-bold mb-0">{{ setting('event_chairman_name', 'Nama Ketua Panitia') }}</h4>
+                            <small class="text-muted">{{ setting('event_chairman_period', 'Event Organizers') }}</small>
+                        </div>
+                    </div>
+                    <div class="message-content position-relative">
+                        <i class="bi bi-quote fs-1 text-primary opacity-10 position-absolute top-0 start-0"></i>
+                        <p class="text-muted mb-0 lh-lg" style="font-style: italic; position: relative; z-index: 1; padding-top: 10px;">
+                            "{!! nl2br(e(setting('event_chairman_message', 'Pesan sambutan dalam rangka kegiatan alumni...'))) !!}"
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-8">
-                <div class="ps-lg-4">
-                    <h6 class="text-primary fw-bold text-uppercase mb-2">Sambutan Ketua Panitia</h6>
-                    <h2 class="fw-bold mb-4 font-heading">{{ setting('event_chairman_name', 'Nama Ketua Panitia') }}</h2>
-                    <p class="text-muted small mb-4 italic">"{{ setting('event_chairman_period', 'Tema Acara / Periode') }}"</p>
-                    <div class="message-box bg-white p-4 rounded-4 shadow-sm border-start border-4 border-primary">
-                        <p class="lead mb-0 text-dark opacity-75" style="line-height: 1.8; font-style: italic;">
-                            {{ setting('event_chairman_message', 'Pesan sambutan dalam rangka kegiatan alumni...') }}
+
+            <!-- 2. Sekretaris Panitia -->
+            <div class="col-lg-6">
+                <div class="h-100 bg-white p-4 p-md-5 rounded-4 shadow-sm border-top border-4 border-success">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="position-relative me-4">
+                            <img src="{{ setting('secretary_photo', 'https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400') }}" 
+                                 class="rounded-circle shadow-sm border border-3 border-white" 
+                                 alt="Sekretaris Panitia"
+                                 style="height: 100px; width: 100px; object-fit: cover;">
+                            <div class="position-absolute bottom-0 start-50 translate-middle-x">
+                                <span class="badge bg-success text-white rounded-pill px-2 py-1 x-small shadow-sm">SEKRETARIS</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-success fw-bold text-uppercase mb-1" style="font-size: 0.8rem;">Sambutan Sekretaris Panitia</h6>
+                            <h4 class="fw-bold mb-0">{{ setting('secretary_name', 'Nama Sekretaris') }}</h4>
+                            <small class="text-muted">{{ setting('secretary_period', 'Event Committee') }}</small>
+                        </div>
+                    </div>
+                    <div class="message-content position-relative">
+                        <i class="bi bi-quote fs-1 text-success opacity-10 position-absolute top-0 start-0"></i>
+                        <p class="text-muted mb-0 lh-lg" style="font-style: italic; position: relative; z-index: 1; padding-top: 10px;">
+                            "{!! nl2br(e(setting('secretary_message', 'Pesan sambutan sekretaris dalam rangka persiapan kegiatan alumni...'))) !!}"
                         </p>
                     </div>
                 </div>
@@ -232,7 +262,7 @@
         <div class="row g-4">
             @foreach($aiInsights as $key => $insight)
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 bg-white bg-opacity-10 backdrop-blur rounded-4 p-4 shadow-lg ai-card">
+                    <div class="card h-100 border-0 bg-white bg-opacity-25 rounded-4 p-4 shadow-lg ai-card">
                         <div class="d-flex justify-content-between align-items-start mb-4">
                             <div class="ai-icon-box bg-warning bg-opacity-20 text-warning rounded-3 p-3">
                                 <i class="bi {{ $insight['icon'] }} fs-3"></i>
@@ -252,7 +282,6 @@
 </div>
 
 <style>
-    .backdrop-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
     .ai-card { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1) !important; }
     .ai-card:hover { 
         transform: translateY(-10px); 
@@ -358,6 +387,58 @@
         @endforeach
     </div>
 </div>
+
+<!-- Success Stories / Hall of Fame -->
+<div class="py-5" style="background-color: #fff;">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase mb-2">Inspirasi Steman</h6>
+            <h2 class="fw-black mb-0">JEJAK SUKSES ALUMNI</h2>
+            <div class="section-divider mx-auto mt-3"></div>
+            <p class="text-muted mx-auto" style="max-width: 600px;">Kisah nyata perjuangan dan pencapaian alumni yang membanggakan almamater di kancah nasional maupun internasional.</p>
+        </div>
+
+        <div class="row g-4">
+            @forelse($successStories as $story)
+            <div class="col-md-4">
+                <a href="{{ \Illuminate\Support\Facades\Route::has('success-stories.show') ? route('success-stories.show', $story->id) : '#' }}" class="text-decoration-none card-link h-100">
+                    <div class="card h-100 border-0 shadow-lg rounded-4 overflow-hidden hover-lift success-card">
+                        <div class="success-img-wrapper">
+                            <img src="{{ $story->image_path ? asset('storage/'.$story->image_path) : 'https://ui-avatars.com/api/?name='.urlencode($story->name).'&background=ffcc00&color=000&size=500' }}" 
+                                 class="card-img-top h-100" style="object-fit: cover;" alt="{{ $story->name }}">
+                            <div class="success-overlay p-4">
+                                <span class="badge bg-warning text-dark mb-2">{{ $story->title }}</span>
+                                <h5 class="fw-bold text-white mb-0">{{ $story->name }}</h5>
+                                <small class="text-white opacity-75">{{ $story->major_year }}</small>
+                            </div>
+                        </div>
+                        <div class="card-body p-4 bg-white">
+                            <p class="text-muted italic mb-0" style="font-size: 0.9rem;">"{{ \Illuminate\Support\Str::limit($story->quote, 120) }}"</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            @empty
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Belum ada kisah sukses yang ditonjolkan.</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-link { display: block; }
+    .success-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .success-img-wrapper { position: relative; height: 320px; overflow: hidden; }
+    .success-overlay {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+        z-index: 2;
+    }
+    .success-card:hover { transform: translateY(-15px); }
+</style>
 
 <!-- Join Section -->
 <div class="bg-dark text-white py-5 mt-5">

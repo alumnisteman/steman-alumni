@@ -11,12 +11,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\LogActivity;
+use App\Jobs\ModerateContentWithAI;
 
 class PostController extends Controller
 {
     public function index(Request $request)
     {
         $query = Post::with(['user', 'likes', 'comments.user', 'taggedUsers'])->latest();
+
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
         // Filter by angkatan if requested
         if ($request->has('angkatan') && $request->angkatan != '') {
@@ -80,6 +85,9 @@ class PostController extends Controller
             $request->ip(),
             $request->header('User-Agent')
         );
+
+        // AI Moderation (Background)
+        ModerateContentWithAI::dispatch($post);
 
         return back()->with('success', 'Postingan nostalgia berhasil dibagikan! +20 poin untuk Anda.');
     }

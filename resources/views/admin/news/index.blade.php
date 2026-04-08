@@ -41,6 +41,14 @@
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                    @if($item->status === 'draft')
+                                    <li>
+                                        <form action="{{ route('admin.news.publish', $item->id) }}" method="POST">
+                                            @csrf
+                                            <button class="dropdown-item fw-bold text-success"><i class="bi bi-cloud-upload me-2"></i>Terbitkan</button>
+                                        </form>
+                                    </li>
+                                    @endif
                                     <li><a class="dropdown-item" href="/news/{{ $item->slug }}" target="_blank">Lihat</a></li>
                                     <li><a class="dropdown-item" href="/admin/news/{{ $item->id }}/edit">Edit</a></li>
                                     <li>

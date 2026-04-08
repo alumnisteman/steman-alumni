@@ -139,28 +139,42 @@
                 <h4 class="fw-bold mb-0">AI PERSONALIZED PREDICTION</h4>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4 glass-card p-4" style="background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white; border-radius: 20px;">
+            <div id="ai-prediction-container" class="card border-0 shadow-sm mb-4 glass-card p-4" style="background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white; border-radius: 20px;">
                 <div class="d-flex align-items-start gap-3">
                     <div class="icon-glass bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-lightbulb-fill fs-4"></i>
+                        <i class="bi bi-robot fs-4"></i>
                     </div>
-                    <div>
-                        <p class="small opacity-75 mb-0">
-                            @if(is_array($aiPrediction))
-                                {{ $aiPrediction['suggestion'] }}
-                                <br><small class="opacity-75">Target Karir: {{ $aiPrediction['milestone'] }} Tahun Mendatang ({{ $aiPrediction['reunion_year'] }})</small>
-                            @else
-                                {{ $aiPrediction ?? "Berdasarkan data profil, Anda memiliki potensi besar di bidang $user->jurusan. Rekomendasi: Ambil sertifikasi keahlian tambahan untuk meningkatkan daya tawar di " . ($user->pekerjaan_sekarang ?? 'industri') . "." }}
-                            @endif
-                        </p>
-                        @if(isset($careerSnippet) && $careerSnippet)
-                        <div class="mt-3 p-2 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
-                            <small class="fw-bold d-block mb-1">DATA INSIGHT:</small>
-                            <small class="opacity-75">Mayoritas alumni {{ $user->jurusan }} kini sukses sebagai <b>{{ $careerSnippet->pekerjaan_sekarang }}</b></small>
+                    <div class="flex-grow-1">
+                        <div id="ai-prediction-content">
+                            <div class="skeleton-shimmer mb-2" style="height: 20px; width: 80%;"></div>
+                            <div class="skeleton-shimmer" style="height: 20px; width: 60%;"></div>
                         </div>
-                        @endif
+                        <div id="career-snippet-content" class="mt-3 d-none">
+                            <div class="p-2 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
+                                <small class="fw-bold d-block mb-1">DATA INSIGHT:</small>
+                                <small class="opacity-75" id="career-snippet-text"></small>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- AI Networking Recommendations -->
+            <div id="ai-recommendations-wrapper" class="d-none">
+                <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
+                    <h4 class="fw-bold mb-0">AI NETWORKING MATCHES</h4>
+                    <a href="/alumni" class="text-primary small fw-bold text-decoration-none">LIHAT SEMUA <i class="bi bi-chevron-right small"></i></a>
+                </div>
+
+                <div id="ai-recommendations-container" class="row g-3 mb-5">
+                    <!-- Recommendations will be injected here -->
+                </div>
+            </div>
+            
+            <div id="ai-recommendations-skeleton" class="row g-3 mb-5">
+                <div class="col-md-4"><div class="skeleton-shimmer rounded-4" style="height: 180px;"></div></div>
+                <div class="col-md-4"><div class="skeleton-shimmer rounded-4" style="height: 180px;"></div></div>
+                <div class="col-md-4"><div class="skeleton-shimmer rounded-4" style="height: 180px;"></div></div>
             </div>
 
             <h4 class="fw-bold mb-4">INFORMASI KOMUNITAS</h4>
@@ -261,4 +275,77 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('{{ route('dashboard.ai.data') }}')
+        .then(response => response.json())
+        .then(data => {
+            // 1. Update Prediction
+            const predictionContent = document.getElementById('ai-prediction-content');
+            if (data.aiPrediction) {
+                predictionContent.innerHTML = `<p class="small opacity-75 mb-0">${data.aiPrediction}</p>`;
+            } else {
+                predictionContent.innerHTML = `<p class="small opacity-75 mb-0">Berdasarkan data profil, Anda memiliki potensi besar di bidang {{ $user->jurusan }}. Rekomendasi: Ambil sertifikasi keahlian tambahan.</p>`;
+            }
+
+            // 2. Update Career Snippet
+            if (data.careerSnippet) {
+                document.getElementById('career-snippet-content').classList.remove('d-none');
+                document.getElementById('career-snippet-text').innerHTML = `Mayoritas alumni {{ $user->jurusan }} kini sukses sebagai <b>${data.careerSnippet.pekerjaan}</b>`;
+            }
+
+            // 3. Update Recommendations
+            const recContainer = document.getElementById('ai-recommendations-container');
+            const recWrapper = document.getElementById('ai-recommendations-wrapper');
+            const recSkeleton = document.getElementById('ai-recommendations-skeleton');
+
+            if (data.aiRecommendations && data.aiRecommendations.length > 0) {
+                let html = '';
+                data.aiRecommendations.forEach(rec => {
+                    html += `
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm p-3 position-relative overflow-hidden transition-all hover-translate-y" style="border-radius: 20px; background: white;">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="${rec.foto_profil}" class="rounded-circle me-3" width="50" height="50" style="object-fit: cover;">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${rec.name}</h6>
+                                    <p class="text-muted mb-0" style="font-size: 0.7rem;">${rec.jurusan}</p>
+                                </div>
+                            </div>
+                            <div class="p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-10 mb-3">
+                                <p class="mb-0 text-dark" style="font-size: 0.75rem; line-height: 1.4;">
+                                    <i class="bi bi-magic text-primary me-1"></i> ${rec.ai_reason}
+                                </p>
+                            </div>
+                            <a href="/alumni/${rec.id}" class="btn btn-outline-primary btn-sm rounded-pill fw-bold w-100 mt-auto">LIHAT PROFIL</a>
+                        </div>
+                    </div>`;
+                });
+                recContainer.innerHTML = html;
+                recWrapper.classList.remove('d-none');
+                recSkeleton.classList.add('d-none');
+            } else {
+                recSkeleton.classList.add('d-none');
+            }
+        })
+        .catch(error => {
+            console.error('AI Dashboard Loading Error:', error);
+            document.getElementById('ai-recommendations-skeleton').classList.add('d-none');
+        });
+});
+</script>
+@endpush
+
+<style>
+.skeleton-shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+</style>
 @endsection

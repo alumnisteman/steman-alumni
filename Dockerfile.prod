@@ -1,0 +1,65 @@
+# Dockerfile.prod - Lightweight Production Runner
+# ===============================================
+# This version skips building Node/Composer on the server to save RAM.
+# It assumes 'vendor' and 'public/build' are pre-built locally.
+
+FROM php:8.4-fpm-alpine
+LABEL maintainer="Ikatan Alumni STEMAN"
+
+# Install runtime system dependencies
+RUN apk add --no-cache \
+    libpng-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    libzip-dev zlib-dev libwebp-dev \
+    icu-dev \
+    linux-headers \
+    netcat-openbsd \
+    unzip \
+    libjpeg-turbo-dev \
+    freetype-dev
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    intl \
+    sockets \
+    opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis
+
+# Setting up application directory
+WORKDIR /var/www
+
+# Copy PHP config
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+# Copy ALL files (including locally built vendor and public/build)
+COPY . /var/www/
+
+# Copy custom entrypoint
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Optimize Permissions
+RUN chmod -R 755 /var/www \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Environment configuration
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+
+# Expose PHP-FPM port
+EXPOSE 9000
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["php-fpm"]

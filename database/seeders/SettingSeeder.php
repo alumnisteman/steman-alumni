@@ -159,6 +159,32 @@ class SettingSeeder extends Seeder
                 'label' => 'Gambar Latar Banner Utama (Hero Background)',
                 'group' => 'hero'
             ],
+
+            // Secretary Section
+            [
+                'key' => 'secretary_name',
+                'value' => 'Hj. Siti Aminah',
+                'label' => 'Nama Sekretaris Panitia',
+                'group' => 'secretary'
+            ],
+            [
+                'key' => 'secretary_period',
+                'value' => 'Reuni Akbar 2026',
+                'label' => 'Periode Sekretaris',
+                'group' => 'secretary'
+            ],
+            [
+                'key' => 'secretary_message',
+                'value' => 'Mari kita sukseskan bersama agenda silaturahmi besar ini.',
+                'label' => 'Sambutan Sekretaris',
+                'group' => 'secretary'
+            ],
+            [
+                'key' => 'secretary_photo',
+                'value' => 'https://ui-avatars.com/api/?name=Sekretaris+Panitia&background=28a745&color=fff&size=400',
+                'label' => 'Foto Sekretaris',
+                'group' => 'secretary'
+            ],
         ];
 
         foreach ($settings as $setting) {

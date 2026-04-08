@@ -202,11 +202,15 @@
                         ['url' => '/admin/news', 'icon' => 'newspaper', 'color' => 'primary', 'title' => 'Berita', 'desc' => 'Artikel'],
                         ['url' => '/admin/programs', 'icon' => 'calendar-event', 'color' => 'success', 'title' => 'Program', 'desc' => 'Beasiswa'],
                         ['url' => '/admin/gallery', 'icon' => 'image', 'color' => 'warning', 'title' => 'Galeri', 'desc' => 'Foto/Video'],
+                        ['url' => '/admin/chairman/edit', 'icon' => 'person-badge', 'color' => 'warning', 'title' => 'Sambutan', 'desc' => 'Ketua & Sek'],
                         ['url' => '/admin/contact', 'icon' => 'telephone', 'color' => 'danger', 'title' => 'Kontak', 'desc' => 'Sekolah'],
                         ['url' => '/admin/messages', 'icon' => 'envelope', 'color' => 'info', 'title' => 'Inbox', 'desc' => 'Pesan'],
                         ['url' => '/admin/users', 'icon' => 'people', 'color' => 'primary', 'title' => 'Users', 'desc' => 'Alumni'],
-                        ['url' => route('admin.jobs.index'), 'icon' => 'briefcase', 'color' => 'success', 'title' => 'Lowongan', 'desc' => 'Karir'],
-                        ['url' => route('admin.majors.index'), 'icon' => 'mortarboard', 'color' => 'warning', 'title' => 'Jurusan', 'desc' => 'Keahlian'],
+                        ['url' => \Illuminate\Support\Facades\Route::has('admin.users.verification') ? route('admin.users.verification') : '#', 'icon' => 'person-check', 'color' => 'warning', 'title' => 'Verifikasi', 'desc' => 'Queue'],
+                        ['url' => \Illuminate\Support\Facades\Route::has('admin.success-stories.index') ? route('admin.success-stories.index') : '#', 'icon' => 'trophy', 'color' => 'primary', 'title' => 'Jejak Sukses', 'desc' => 'Inspirasi'],
+                        ['url' => \Illuminate\Support\Facades\Route::has('admin.jobs.index') ? route('admin.jobs.index') : '/admin/jobs', 'icon' => 'briefcase', 'color' => 'success', 'title' => 'Lowongan', 'desc' => 'Karir'],
+                        ['url' => \Illuminate\Support\Facades\Route::has('admin.majors.index') ? route('admin.majors.index') : '/admin/majors', 'icon' => 'mortarboard', 'color' => 'warning', 'title' => 'Jurusan', 'desc' => 'Keahlian'],
+                        ['url' => \Illuminate\Support\Facades\Route::has('admin.ai.dashboard') ? route('admin.ai.dashboard') : '/admin/ai', 'icon' => 'robot', 'color' => 'info', 'title' => 'AI Panel', 'desc' => 'Automation'],
                         ['url' => '/admin/settings', 'icon' => 'gear', 'color' => 'secondary', 'title' => 'Settings', 'desc' => 'Web App']
                     ];
                 @endphp

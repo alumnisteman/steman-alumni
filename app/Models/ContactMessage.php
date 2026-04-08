@@ -13,6 +13,8 @@ class ContactMessage extends Model
         'subject',
         'message',
         'reply_content',
+        'ai_suggested_reply',
+        'is_ai_processed',
         'is_read',
         'replied_at',
     ];
