@@ -2,9 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-// FINAL DIAGNOSTIC ROUTES
-Route::get('/ping-test', function() { return 'PONG'; });
-Route::get('/nostalgia-isolated', [\App\Http\Controllers\PostController::class, 'index'])->name('nostalgia.isolated');
+
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AlumniController;
@@ -83,19 +81,25 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     
     Route::get('/pending-notice', function () {
         if (auth()->check() && auth()->user()->status !== 'pending') {
-            return redirect('/alumni/dashboard');
+            return redirect(auth()->user()->dashboardUrl());
         }
         return view('auth.pending');
     })->name('pending.notice');
 
-    // Alumni Features
-    Route::middleware(['alumni'])->group(function () {
-        Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
+        // Alumni Directory & Profiles
         Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
-        Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
-        Route::get('/alumni/messages', [AlumniController::class, 'messages'])->name('alumni.messages');
-        Route::get('/api/dashboard/ai-data', [\App\Http\Controllers\Api\DashboardApiController::class, 'getAIData'])->name('dashboard.ai.data');
-        Route::get('/alumni/card', [CardController::class, 'index'])->name('alumni.card');
+        
+        // Alumni-Only Features (Specific paths first)
+        Route::middleware(['alumni'])->group(function () {
+            Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
+            Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
+            Route::get('/alumni/messages', [AlumniController::class, 'messages'])->name('alumni.messages');
+            Route::get('/api/dashboard/ai-data', [\App\Http\Controllers\Api\DashboardApiController::class, 'getAIData'])->name('dashboard.ai.data');
+            Route::get('/alumni/card', [CardController::class, 'index'])->name('alumni.card');
+        });
+
+        // Wildcard Profile Route (Last in the alumni group)
+        Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
 
         // Nostalgia Feed Routes
         Route::get('/nostalgia', [\App\Http\Controllers\PostController::class, 'index'])->name('nostalgia.index');
@@ -104,6 +108,18 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::post('/nostalgia/{post}/like', [\App\Http\Controllers\PostController::class, 'toggleLike'])->name('nostalgia.like');
         Route::post('/nostalgia/{post}/comment', [\App\Http\Controllers\PostController::class, 'storeComment'])->name('nostalgia.comment.store');
         Route::get('/api/alumni/search', [\App\Http\Controllers\PostController::class, 'searchAlumni'])->name('api.alumni.search');
+    });
+
+    // Business Directory Routes - Secured by standard Role Middleware
+    Route::middleware(['role:admin,editor,alumni'])->group(function () {
+        Route::get('/alumni/business', [\App\Http\Controllers\BusinessController::class, 'index'])->name('alumni.business.index');
+        Route::get('/alumni/business/create', [\App\Http\Controllers\BusinessController::class, 'create'])->name('alumni.business.create');
+        Route::post('/alumni/business', [\App\Http\Controllers\BusinessController::class, 'store'])->name('alumni.business.store');
+        Route::get('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'show'])->name('alumni.business.show');
+        Route::get('/alumni/business/{business}/edit', [\App\Http\Controllers\BusinessController::class, 'edit'])->name('alumni.business.edit');
+        Route::put('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'update'])->name('alumni.business.update');
+        Route::delete('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'destroy'])->name('alumni.business.destroy');
+        Route::delete('/alumni/business-photo/{photo}', [\App\Http\Controllers\BusinessController::class, 'deletePhoto'])->name('alumni.business.photo.delete');
     });
 
     // Mentoring
@@ -115,9 +131,6 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // Shared Profile
     Route::get('/alumni/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/alumni/profile', [ProfileController::class, 'update'])->name('profile.update');
-    
-    // Public wildcard alumni profile (moved here to prevent 404 on specific alumni paths above)
-    Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
     
     // Forums
     Route::get('/forums', [\App\Http\Controllers\ForumController::class, 'index'])->name('forums.index');
@@ -132,17 +145,18 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         });
         Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
         
-        // User Management (Admin Only)
-        Route::middleware(['role:admin'])->group(function() {
-            Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
-            Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
-            Route::match(['PUT', 'PATCH'], '/admin/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
-            Route::match(['PUT', 'PATCH'], '/admin/users/{user}/status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
-            Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
-            Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
-            Route::get('/admin/users/verification', [UserController::class, 'verification'])->name('admin.users.verification');
-            Route::resource('/admin/success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class)->names('admin.success-stories');
-        });
+        // User Management (Admin & Editor)
+        Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
+        Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
+        Route::match(['PUT', 'PATCH'], '/admin/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
+        Route::match(['PUT', 'PATCH'], '/admin/users/{user}/status', [UserController::class, 'updateStatus'])->name('admin.users.updateStatus');
+        Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+        Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
+        Route::get('/admin/users/verification', [UserController::class, 'verification'])->name('admin.users.verification');
+        Route::resource('/admin/success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class)->names('admin.success-stories');
+
+            Route::get('/admin/export', [\App\Http\Controllers\Admin\AlumniExportController::class, 'export'])->name('admin.export');
+
 
         // News Management
         Route::get('/admin/news', [NewsController::class, 'adminIndex'])->name('admin.news.index');
@@ -160,24 +174,29 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/admin/gallery/{gallery}/edit', [GalleryController::class, 'edit'])->name('admin.gallery.edit');
         Route::put('/admin/gallery/{gallery}', [GalleryController::class, 'update'])->name('admin.gallery.update');
 
-        // CMS / Settings (Admin Only)
-        Route::middleware(['role:admin'])->group(function() {
-            Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
-            Route::post('/admin/settings/store', [SettingController::class, 'store'])->name('admin.settings.store');
-            Route::put('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
-            Route::get('/admin/contact', [SettingController::class, 'contact'])->name('admin.contact.index');
+        // CMS / Settings (Admin & Editor)
+        Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
+        Route::post('/admin/settings/store', [SettingController::class, 'store'])->name('admin.settings.store');
+        Route::put('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
+        Route::get('/admin/contact', [SettingController::class, 'contact'])->name('admin.contact.index');
 
-            // Messages / Inbox
-            Route::get('/admin/messages', [ContactMessageController::class, 'index'])->name('admin.messages.index');
-            Route::get('/admin/messages/{id}', [ContactMessageController::class, 'show'])->name('admin.messages.show');
-            Route::post('/admin/messages/{id}/reply', [ContactMessageController::class, 'reply'])->name('admin.messages.reply');
-            Route::delete('/admin/messages/{id}', [ContactMessageController::class, 'destroy'])->name('admin.messages.destroy');
+        // Messages / Inbox
+        Route::get('/admin/messages', [ContactMessageController::class, 'index'])->name('admin.messages.index');
+        Route::get('/admin/messages/{id}', [ContactMessageController::class, 'show'])->name('admin.messages.show');
+        Route::post('/admin/messages/{id}/reply', [ContactMessageController::class, 'reply'])->name('admin.messages.reply');
+        Route::delete('/admin/messages/{id}', [ContactMessageController::class, 'destroy'])->name('admin.messages.destroy');
 
-            Route::get('/admin/hero/edit', [HeroController::class, 'edit'])->name('admin.hero.edit');
-            Route::put('/admin/hero', [HeroController::class, 'update'])->name('admin.hero.update');
+        Route::get('/admin/hero/edit', [HeroController::class, 'edit'])->name('admin.hero.edit');
+        Route::put('/admin/hero', [HeroController::class, 'update'])->name('admin.hero.update');
 
-            Route::get('/admin/chairman/edit', [ChairmanController::class, 'edit'])->name('admin.chairman.edit');
-            Route::put('/admin/chairman/update', [ChairmanController::class, 'update'])->name('admin.chairman.update');
+        Route::get('/admin/chairman/edit', [ChairmanController::class, 'edit'])->name('admin.chairman.edit');
+        Route::put('/admin/chairman/update', [ChairmanController::class, 'update'])->name('admin.chairman.update');
+
+        // Admin Business Moderation (Admin & Editor)
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/businesses', [\App\Http\Controllers\Admin\BusinessController::class, 'index'])->name('business.index');
+            Route::post('/businesses/{business}/approve', [\App\Http\Controllers\Admin\BusinessController::class, 'approve'])->name('business.approve');
+            Route::post('/businesses/{business}/reject', [\App\Http\Controllers\Admin\BusinessController::class, 'reject'])->name('business.reject');
         });
 
         // Programs Management
@@ -200,14 +219,15 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::put('/admin/majors/{major}', [MajorController::class, 'update'])->name('admin.majors.update');
         Route::delete('/admin/majors/{major}', [MajorController::class, 'destroy'])->name('admin.majors.destroy');
 
-        Route::get('/admin/export', [\App\Http\Controllers\Admin\AlumniExportController::class, 'export'])->name('admin.export');
 
-        // AI Control Panel Routes
-        Route::middleware(['role:admin'])->group(function () {
-            Route::get('/admin/ai', [AIController::class, 'dashboard'])->name('admin.ai.dashboard');
-            Route::post('/admin/ai/generate', [AIController::class, 'generateNow'])->name('admin.ai.generate');
-            Route::post('/admin/ai/publish/{news}', [AIController::class, 'publish'])->name('admin.ai.publish');
-        });
+        // AI Control Panel Routes (Admin & Editor)
+        Route::get('/admin/ai', [AIController::class, 'dashboard'])->name('admin.ai.dashboard');
+        Route::post('/admin/ai/generate', [AIController::class, 'generateNow'])->name('admin.ai.generate');
+        Route::post('/admin/ai/publish/{news}', [AIController::class, 'publish'])->name('admin.ai.publish');
+
+        // SYSTEM LOGS (Admin & Editor Debug Tool)
+        Route::get('/admin/system/logs', [\App\Http\Controllers\Admin\SystemController::class, 'logs'])->name('admin.system.logs');
+        Route::post('/admin/system/logs/clear', [\App\Http\Controllers\Admin\SystemController::class, 'clearLogs'])->name('admin.system.logs.clear');
     });
 });
 
@@ -223,6 +243,8 @@ Route::get('/storage/{path}', function ($path) {
     $response->header("Content-Type", $type);
     return $response;
 })->where('path', '.*');
+
+
 
 // Health Check Endpoint
 Route::get('/health', function () {

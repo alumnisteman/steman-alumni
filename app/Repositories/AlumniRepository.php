@@ -14,18 +14,18 @@ class AlumniRepository implements AlumniRepositoryInterface
      */
     public function getPaginatedAlumni(array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
-        $query = User::with('badges')->where('role', 'alumni');
+        $query = User::with('badges')->whereIn('role', ['alumni', 'admin', 'editor']);
 
         if (!empty($filters['search'])) {
             $query->where('name', 'like', '%' . $filters['search'] . '%');
         }
 
-        if (!empty($filters['jurusan'])) {
-            $query->where('jurusan', $filters['jurusan']);
+        if (!empty($filters['major'])) {
+            $query->where('major', $filters['major']);
         }
 
         if (!empty($filters['angkatan'])) {
-            $query->where('tahun_lulus', $filters['angkatan']);
+            $query->where('graduation_year', $filters['angkatan']);
         }
 
         return $query->latest()->paginate($perPage);
@@ -34,24 +34,11 @@ class AlumniRepository implements AlumniRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function findById(int $id): ?User
-    {
-        return User::where('role', 'alumni')->find($id);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function findByIdentifier(string $identifier): ?User
     {
-        // Adjust depending on what your identifier field is (username, slug, etc)
-        // Default to ID if it's numeric, otherwise check username
-        if (is_numeric($identifier)) {
-            return User::where('role', 'alumni')->find($identifier);
-        }
-        
-        return User::where('role', 'alumni')->where(function($q) use ($identifier) {
-            $q->where('username', $identifier)->orWhere('slug', $identifier);
+        return User::whereIn('role', ['alumni', 'admin', 'editor'])->where(function($q) use ($identifier) {
+            $q->where('id', $identifier)
+              ->orWhere('nisn', $identifier);
         })->first();
     }
 
@@ -62,10 +49,18 @@ class AlumniRepository implements AlumniRepositoryInterface
     {
         return Cache::remember('alumni_graduation_years', 3600, function () {
             return User::where('role', 'alumni')
-                ->whereNotNull('tahun_lulus')
+                ->whereNotNull('graduation_year')
                 ->distinct()
-                ->orderBy('tahun_lulus', 'desc')
-                ->pluck('tahun_lulus');
+                ->orderBy('graduation_year', 'desc')
+                ->pluck('graduation_year');
         });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findById(int $id): ?User
+    {
+        return User::whereIn('role', ['alumni', 'admin', 'editor'])->find($id);
     }
 }
