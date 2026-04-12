@@ -108,7 +108,6 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::post('/nostalgia/{post}/like', [\App\Http\Controllers\PostController::class, 'toggleLike'])->name('nostalgia.like');
         Route::post('/nostalgia/{post}/comment', [\App\Http\Controllers\PostController::class, 'storeComment'])->name('nostalgia.comment.store');
         Route::get('/api/alumni/search', [\App\Http\Controllers\PostController::class, 'searchAlumni'])->name('api.alumni.search');
-    });
 
     // Business Directory Routes - Secured by standard Role Middleware
     Route::middleware(['role:admin,editor,alumni'])->group(function () {
