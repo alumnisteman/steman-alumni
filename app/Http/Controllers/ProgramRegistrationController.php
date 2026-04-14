@@ -19,7 +19,7 @@ class ProgramRegistrationController extends Controller
     {
         $request->validate([
             'phone_number' => 'required|string|max:20',
-            'motivation' => 'required|string|min:20',
+            'motivation' => 'required|string|min:10',
             'attachment' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:5120', // 5MB max
         ]);
 

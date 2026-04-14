@@ -69,6 +69,24 @@
                             @else
                                 <form action="{{ route('programs.register', $program->id) }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 rounded-4 shadow-sm border mt-3">
                                     @csrf
+                                    
+                                    @if(session('success'))
+                                        <div class="alert alert-success mt-3 rounded-3"><i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}</div>
+                                    @endif
+                                    @if(session('error'))
+                                        <div class="alert alert-danger mt-3 rounded-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}</div>
+                                    @endif
+                                    @if($errors->any())
+                                        <div class="alert alert-danger mt-3 rounded-3">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Pendaftaran Gagal:</strong>
+                                            <ul class="mb-0 mt-2">
+                                                @foreach($errors->all() as $err)
+                                                    <li>{{ $err }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label fw-bold">Nomor WhatsApp/Telepon</label>
