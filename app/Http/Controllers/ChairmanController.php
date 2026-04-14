@@ -57,8 +57,24 @@ class ChairmanController extends Controller
             }
 
             if ($request->hasFile('chairman_photo')) {
-                $path = $request->file('chairman_photo')->store('uploads/chairman', 'public');
-                // Use relative path to avoid IP mismatch issues (APP_URL)
+                $file = $request->file('chairman_photo');
+                $fileName = 'chairman_' . time() . '.webp';
+                $path = 'uploads/chairman/' . $fileName;
+
+                if (class_exists(\Intervention\Image\ImageManager::class)) {
+                    try {
+                        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                        $image = $manager->read($file);
+                        $image->scale(width: 1000); // Leadership photos can be slightly larger for quality
+                        $encoded = $image->toWebp(85);
+                        Storage::disk('public')->put($path, (string) $encoded);
+                    } catch (\Exception $e) {
+                        $path = $file->store('uploads/chairman', 'public');
+                    }
+                } else {
+                    $path = $file->storeAs('uploads/chairman', $fileName, 'public');
+                }
+
                 $url = '/storage/' . $path;
                 Setting::updateOrCreate(
                     ['key' => 'chairman_photo'], 
@@ -86,8 +102,24 @@ class ChairmanController extends Controller
             }
 
             if ($request->hasFile('event_chairman_photo')) {
-                $path = $request->file('event_chairman_photo')->store('uploads/chairman', 'public');
-                // Use relative path to avoid IP mismatch issues (APP_URL)
+                $file = $request->file('event_chairman_photo');
+                $fileName = 'event_chairman_' . time() . '.webp';
+                $path = 'uploads/chairman/' . $fileName;
+
+                if (class_exists(\Intervention\Image\ImageManager::class)) {
+                    try {
+                        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                        $image = $manager->read($file);
+                        $image->scale(width: 800);
+                        $encoded = $image->toWebp(80);
+                        Storage::disk('public')->put($path, (string) $encoded);
+                    } catch (\Exception $e) {
+                        $path = $file->store('uploads/chairman', 'public');
+                    }
+                } else {
+                    $path = $file->storeAs('uploads/chairman', $fileName, 'public');
+                }
+
                 $url = '/storage/' . $path;
                 Setting::updateOrCreate(
                     ['key' => 'event_chairman_photo'], 
@@ -115,7 +147,24 @@ class ChairmanController extends Controller
             }
 
             if ($request->hasFile('secretary_photo')) {
-                $path = $request->file('secretary_photo')->store('uploads/chairman', 'public');
+                $file = $request->file('secretary_photo');
+                $fileName = 'secretary_' . time() . '.webp';
+                $path = 'uploads/chairman/' . $fileName;
+
+                if (class_exists(\Intervention\Image\ImageManager::class)) {
+                    try {
+                        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                        $image = $manager->read($file);
+                        $image->scale(width: 800);
+                        $encoded = $image->toWebp(80);
+                        Storage::disk('public')->put($path, (string) $encoded);
+                    } catch (\Exception $e) {
+                        $path = $file->store('uploads/chairman', 'public');
+                    }
+                } else {
+                    $path = $file->storeAs('uploads/chairman', $fileName, 'public');
+                }
+
                 $url = '/storage/' . $path;
                 Setting::updateOrCreate(
                     ['key' => 'secretary_photo'], 

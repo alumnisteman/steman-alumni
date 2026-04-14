@@ -28,7 +28,9 @@
                     </div>
                 </div>
 
-                <img src="{{ $item->thumbnail }}" class="img-fluid w-100 rounded-0 mb-5 shadow-sm" alt="{{ $item->title }}">
+                @if($item->thumbnail)
+                    <img src="{{ Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="img-fluid w-100 rounded-0 mb-5 shadow-sm" alt="{{ $item->title }}">
+                @endif
 
                 <div class="news-content fs-5 lh-lg mb-5">
                     {!! $item->content !!}

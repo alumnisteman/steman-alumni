@@ -67,7 +67,24 @@ class GalleryController extends Controller
 
         if ($request->type == 'photo') {
             if (!$request->hasFile('file')) return back()->with('error', 'Foto wajib diunggah.');
-            $path    = $request->file('file')->store('gallery', 'public');
+            $file = $request->file('file');
+            $fileName = time() . '.webp';
+            $path = 'gallery/' . $fileName;
+
+            if (class_exists(\Intervention\Image\ImageManager::class)) {
+                try {
+                    $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                    $image = $manager->read($file);
+                    $image->scale(width: 1200); // Gallery photos can be larger for detail
+                    $encoded = $image->toWebp(80);
+                    Storage::disk('public')->put($path, (string) $encoded);
+                } catch (\Exception $e) {
+                    $path = $file->store('gallery', 'public');
+                }
+            } else {
+                $path = $file->storeAs('gallery', $fileName, 'public');
+            }
+
             $fileUrl = '/storage/' . $path;
         } elseif ($request->type == 'tiktok') {
             if (!$request->tiktok_url) return back()->with('error', 'Wajib menyertakan link TikTok.');
@@ -85,16 +102,16 @@ class GalleryController extends Controller
             }
         }
 
-        $gallery = Gallery::create([
-            'user_id'     => auth()->id(),
-            'title'       => $request->title,
-            'type'        => $request->type,
-            'file_path'   => $fileUrl,
-            'youtube_url' => $youtubeUrl,
-            'tiktok_url'  => ($request->type === 'tiktok') ? $tiktokUrl : null,
-            'description' => $request->description,
-            'status'      => $request->status ?? 'published',
-        ]);
+        $gallery = new Gallery();
+        $gallery->user_id     = auth()->id();
+        $gallery->title       = $request->title;
+        $gallery->type        = $request->type;
+        $gallery->file_path   = $fileUrl;
+        $gallery->youtube_url = $youtubeUrl;
+        $gallery->tiktok_url  = ($request->type === 'tiktok') ? $tiktokUrl : null;
+        $gallery->description = $request->description;
+        $gallery->status      = $request->status ?? 'published';
+        $gallery->save();
 
         ActivityLog::create([
             'user_id' => Auth::id(),
@@ -169,11 +186,28 @@ class GalleryController extends Controller
         if ($request->hasFile('file') && $request->type === 'photo') {
             // Delete old file if it exists
             if ($gallery->file_path) {
-                // Path stored as '/storage/gallery/file.jpg', strip '/storage/' prefix for disk deletion
                 $relativePath = ltrim(str_replace('/storage/', '', $gallery->file_path), '/');
                 Storage::disk('public')->delete($relativePath);
             }
-            $path              = $request->file('file')->store('gallery', 'public');
+
+            $file = $request->file('file');
+            $fileName = time() . '.webp';
+            $path = 'gallery/' . $fileName;
+
+            if (class_exists(\Intervention\Image\ImageManager::class)) {
+                try {
+                    $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                    $image = $manager->read($file);
+                    $image->scale(width: 1200);
+                    $encoded = $image->toWebp(80);
+                    Storage::disk('public')->put($path, (string) $encoded);
+                } catch (\Exception $e) {
+                    $path = $file->store('gallery', 'public');
+                }
+            } else {
+                $path = $file->storeAs('gallery', $fileName, 'public');
+            }
+
             $data['file_path'] = '/storage/' . $path;
         }
 

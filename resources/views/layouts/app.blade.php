@@ -134,7 +134,7 @@
                                 </div>
                             </ul>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="{{ auth()->user()->role == 'admin' ? '/admin/dashboard' : '/alumni/dashboard' }}">DASHBOARD</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ auth()->user()->dashboardUrl() }}">DASHBOARD</a></li>
                         <li class="nav-item">
                             <form action="/logout" method="POST" class="d-inline">
                                 @csrf

@@ -18,7 +18,7 @@ class AlumniExportController extends Controller
         $html .= '<h2>Laporan Data Alumni Steman</h2>';
         $html .= '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">';
         $html .= '<tr style="background-color:#3f37c9; color:#ffffff; font-weight:bold; text-align:center;">';
-        $html .= '<th>ID</th><th>Nama Lengkap</th><th>Email</th><th>NISN</th><th>Jurusan</th><th>Tahun Lulus</th><th>Status / Pekerjaan</th><th>Tempat / Instansi</th><th>No. Telp</th><th>Alamat Lengkap</th><th>Bio Singkat</th>';
+        $html .= '<th>ID</th><th>Nama Lengkap</th><th>Email</th><th>NISN</th><th>major</th><th>Tahun Lulus</th><th>Status / Pekerjaan</th><th>Tempat / Instansi</th><th>No. Telp</th><th>address Lengkap</th><th>Bio Singkat</th>';
         $html .= '</tr>';
 
         foreach ($alumni as $user) {
@@ -27,12 +27,12 @@ class AlumniExportController extends Controller
             $html .= '<td>' . htmlspecialchars((string) $user->name) . '</td>';
             $html .= '<td>' . htmlspecialchars((string) $user->email) . '</td>';
             $html .= '<td style="mso-number-format:\'\@\'; text-align:center;">' . htmlspecialchars((string) $user->nisn) . '</td>';
-            $html .= '<td>' . htmlspecialchars((string) $user->jurusan) . '</td>';
-            $html .= '<td style="text-align:center;">' . htmlspecialchars((string) $user->tahun_lulus) . '</td>';
-            $html .= '<td>' . htmlspecialchars((string) $user->pekerjaan_sekarang) . '</td>';
-            $html .= '<td>' . htmlspecialchars((string) $user->perusahaan_universitas) . '</td>';
-            $html .= '<td style="mso-number-format:\'\@\';">' . htmlspecialchars((string) $user->nomor_telepon) . '</td>';
-            $html .= '<td>' . htmlspecialchars((string) $user->alamat) . '</td>';
+            $html .= '<td>' . htmlspecialchars((string) $user->major) . '</td>';
+            $html .= '<td style="text-align:center;">' . htmlspecialchars((string) $user->graduation_year) . '</td>';
+            $html .= '<td>' . htmlspecialchars((string) $user->current_job) . '</td>';
+            $html .= '<td>' . htmlspecialchars((string) $user->company_university) . '</td>';
+            $html .= '<td style="mso-number-format:\'\@\';">' . htmlspecialchars((string) $user->phone_number) . '</td>';
+            $html .= '<td>' . htmlspecialchars((string) $user->address) . '</td>';
             $html .= '<td>' . htmlspecialchars((string) $user->bio) . '</td>';
             $html .= '</tr>';
         }

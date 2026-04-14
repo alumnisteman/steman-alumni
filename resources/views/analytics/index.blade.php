@@ -36,14 +36,14 @@
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
                 <h5 class="fw-bold mb-4 d-flex align-items-center">
                     <span class="bg-primary p-2 rounded-3 me-3 text-white"><i class="bi bi-diagram-3-fill"></i></span>
-                    Distribusi per Jurusan
+                    Distribusi per major
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <tbody>
                             @foreach($alumniByMajor as $item)
                             <tr>
-                                <td class="fw-bold text-dark opacity-75">{{ $item->jurusan }}</td>
+                                <td class="fw-bold text-dark opacity-75">{{ $item->major }}</td>
                                 <td class="text-end">
                                     <span class="badge bg-light text-dark rounded-pill px-3">{{ $item->total }} Alumni</span>
                                 </td>
@@ -72,14 +72,14 @@
                         <h6 class="mb-0 fw-bold">{{ $major }}</h6>
                     </div>
                     <div class="card-body p-4 bg-white">
-                        <p class="small text-muted mb-4 italic">Alumni dari jurusan ini paling banyak sukses berkarir sebagai:</p>
+                        <p class="small text-muted mb-4 italic">Alumni dari major ini paling banyak sukses berkarir sebagai:</p>
                         @foreach($paths as $index => $path)
                         <div class="d-flex align-items-center mb-3">
                             <div class="flex-shrink-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 25px; height: 25px; font-size: 0.7rem;">
                                 {{ $index + 1 }}
                             </div>
                             <div class="ms-3 flex-grow-1">
-                                <div class="fw-bold text-dark">{{ $path->pekerjaan_sekarang }}</div>
+                                <div class="fw-bold text-dark">{{ $path->current_job }}</div>
                                 <div class="progress mt-1" style="height: 4px;">
                                     <div class="progress-bar bg-primary" style="width: {{ rand(40, 95) }}%"></div>
                                 </div>
@@ -113,7 +113,7 @@
         new Chart(ctxYear, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($alumniByYear->pluck('tahun_lulus')) !!},
+                labels: {!! json_encode($alumniByYear->pluck('graduation_year')) !!},
                 datasets: [{
                     label: 'Jumlah Alumni',
                     data: {!! json_encode($alumniByYear->pluck('total')) !!},

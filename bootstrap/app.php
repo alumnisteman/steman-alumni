@@ -20,10 +20,33 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified_alumni' => \App\Http\Middleware\EnsureUserIsVerified::class,
         ]);
         $middleware->appendToGroup('web', 'throttle:global');
+        $middleware->trustProxies(at: '*');
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->reportable(function (\Throwable $e) {
-            file_put_contents('/tmp/laravel_error.log', date('Y-m-d H:i:s') . ' - ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n", FILE_APPEND);
+            // Master Emergency Logger: Captures fatal context safely
+            try {
+                // Safely try to get user ID, fallback to Guest if session/auth is not ready
+                $user = 'Guest';
+                try {
+                    if (app()->bound('auth') && app('auth')->guard()->check()) {
+                        $user = app('auth')->guard()->id();
+                    }
+                } catch (\Throwable $authIgnored) {}
+
+                $msg = sprintf("[%s] [EMERGENCY] User:%s | URL:%s\nMessage: %s\nStack Trace:\n%s\n%s\n", 
+                    date('Y-m-d H:i:s'), 
+                    $user, 
+                    request()->fullUrl(), 
+                    $e->getMessage(),
+                    $e->getTraceAsString(),
+                    str_repeat('-', 80)
+                );
+                @file_put_contents(storage_path('logs/emergency_fatal.log'), $msg, FILE_APPEND);
+            } catch (\Throwable $fatalInherited) {
+                // Last resort: standard system error log
+                error_log("Laravel Critical Error: " . $e->getMessage());
+            }
         });
     })->create();

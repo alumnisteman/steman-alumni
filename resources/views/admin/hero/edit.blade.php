@@ -1,7 +1,8 @@
-@extends('layouts.app')
-@section('content')
-<div class="container py-4">
+@extends('layouts.admin')
+
+@section('admin-content')
     <div class="mb-4 d-flex justify-content-between align-items-center">
+
         <div>
             <h2 class="section-title mb-1">Editor Banner Utama (Hero)</h2>
             <p class="text-muted">Sesuaikan teks penyambutan dan gambar latar belakang beranda Anda.</p>

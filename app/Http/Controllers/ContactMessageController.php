@@ -16,42 +16,52 @@ class ContactMessageController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string|min:10',
-        ], [
-            'name.required'    => 'Nama lengkap wajib diisi.',
-            'email.required'   => 'Email wajib diisi.',
-            'email.email'      => 'Format email tidak valid.',
-            'subject.required' => 'Subjek wajib diisi.',
-            'message.required' => 'Pesan wajib diisi.',
-            'message.min'      => 'Pesan minimal 10 karakter.',
-        ]);
-
-        // Save to database
-        $message = ContactMessage::create($request->only(['name', 'email', 'subject', 'message']));
-
-        // AI Auto-Reply Suggestion (Background)
-        GenerateAIAutoReply::dispatch($message);
-
-        // Send email notification to admin
         try {
-            Mail::to(setting('contact_email', config('mail.from.address', 'alumnisteman@gmail.com')))->send(
-                new ContactFormMail(
-                    $request->name,
-                    $request->email,
-                    $request->subject,
-                    $request->message
-                )
-            );
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to send contact email: ' . $e->getMessage());
-            // Email failed but message is saved — non-critical
-        }
+            $request->validate([
+                'name'    => 'required|string|max:255',
+                'email'   => 'required|email|max:255',
+                'subject' => 'required|string|max:255',
+                'message' => 'required|string|min:10',
+            ], [
+                'name.required'    => 'Nama lengkap wajib diisi.',
+                'email.required'   => 'Email wajib diisi.',
+                'email.email'      => 'Format email tidak valid.',
+                'subject.required' => 'Subjek wajib diisi.',
+                'message.required' => 'message wajib diisi.',
+                'message.min'      => 'message minimal 10 karakter.',
+            ]);
 
-        return back()->with('message_sent', 'Pesan Anda telah berhasil dikirim! Kami akan segera menghubungi Anda.');
+            // Save to database
+            $message = ContactMessage::create($request->only(['name', 'email', 'subject', 'message']));
+
+            // AI Auto-Reply Suggestion (Background)
+            GenerateAIAutoReply::dispatch($message);
+
+            // Send email notification to admin
+            try {
+                Mail::to(setting('contact_email', config('mail.from.address', 'alumnisteman@gmail.com')))->send(
+                    new ContactFormMail(
+                        $request->name,
+                        $request->email,
+                        $request->subject,
+                        $request->message
+                    )
+                );
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send contact email: ' . $e->getMessage());
+                // Email failed but message is saved — non-critical
+            }
+
+            return back()->with('message_sent', 'message Anda telah berhasil dikirim! Kami akan segera menghubungi Anda.');
+        } catch (\Throwable $t) {
+            \Illuminate\Support\Facades\Log::error("FATAL CONTACT FORM ERROR: " . $t->getMessage() . "\n" . $t->getTraceAsString());
+            return response()->json([
+                'error' => $t->getMessage(),
+                'file' => $t->getFile(),
+                'line' => $t->getLine(),
+                'trace' => $t->getTraceAsString()
+            ], 500);
+        }
     }
 
     /**
@@ -79,13 +89,13 @@ class ContactMessageController extends Controller
      */
     public function reply(Request $request, $id)
     {
-        $message = ContactMessage::findOrFail($id);
         $request->validate([
             'reply_content' => 'required|string',
         ]);
 
+        $message = ContactMessage::findOrFail($id);
         $message->update([
-            'reply_content' => $request->reply_content,
+            'reply_content' => strip_tags($request->reply_content),
             'replied_at' => now(),
             'is_read' => true,
         ]);
@@ -118,6 +128,6 @@ class ContactMessageController extends Controller
             request()->header('User-Agent')
         );
 
-        return back()->with('success', 'Pesan berhasil dihapus.');
+        return back()->with('success', 'message berhasil dihapus.');
     }
 }

@@ -29,15 +29,15 @@
                     </div>
 
                     <div class="card-body p-4 text-center">
-                        <img src="{{ $mentor->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($mentor->name).'&background=0D6EFD&color=fff&size=200' }}" 
+                        <img src="{{ $mentor->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($mentor->name).'&background=0D6EFD&color=fff&size=200' }}" 
                              class="rounded-circle border border-3 border-primary mb-3 shadow" width="110" height="110" style="object-fit: cover;">
                         
                         <h5 class="fw-bold mb-1">{{ $mentor->name }}</h5>
-                        <p class="text-primary small mb-1 fw-bold">{{ $mentor->jurusan ?? 'Alumni' }} · Angkatan {{ $mentor->tahun_lulus }}</p>
+                        <p class="text-primary small mb-1 fw-bold">{{ $mentor->major ?? 'Alumni' }} · Angkatan {{ $mentor->graduation_year }}</p>
                         
-                        @if($mentor->pekerjaan_sekarang)
+                        @if($mentor->current_job)
                         <p class="text-muted small mb-3">
-                            <i class="bi bi-briefcase me-1"></i>{{ $mentor->pekerjaan_sekarang }}
+                            <i class="bi bi-briefcase me-1"></i>{{ $mentor->current_job }}
                         </p>
                         @endif
                         
@@ -52,8 +52,8 @@
                         </p>
                         
                         <div class="d-grid gap-2 mb-2">
-                            @if($mentor->nomor_telepon)
-                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $mentor->nomor_telepon) }}" target="_blank" class="btn btn-success rounded-pill fw-bold">
+                            @if($mentor->phone_number)
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $mentor->phone_number) }}" target="_blank" class="btn btn-success rounded-pill fw-bold">
                                 <i class="bi bi-whatsapp me-2"></i> Hubungi WhatsApp
                             </a>
                             @endif

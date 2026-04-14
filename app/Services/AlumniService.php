@@ -53,9 +53,9 @@ class AlumniService
         // 2. Job Recommendations
         $recommendedJobs = \App\Models\JobVacancy::where('status', 'active')
             ->where(function($q) use ($user) {
-                $jurusan = $user->jurusan ?? 'NONE';
-                $q->where('description', 'like', '%' . $jurusan . '%')
-                  ->orWhere('title', 'like', '%' . $jurusan . '%');
+                $major = $user->major ?? 'NONE';
+                $q->where('description', 'like', '%' . $major . '%')
+                  ->orWhere('title', 'like', '%' . $major . '%');
             })->latest()->take(3)->get()
             ->map(function($job) {
                 $job->match_percentage = rand(85, 98); 
@@ -94,7 +94,7 @@ class AlumniService
             $aiService = new \App\Services\AIService();
             
             // 1. Career Advice
-            $aiPrediction = $aiService->ask("Profile: Major {$user->jurusan}, Job {$user->pekerjaan_sekarang}. Give 1 short encouraging sentence of career advice in Indonesian.", 0.6);
+            $aiPrediction = $aiService->ask("Profile: Major {$user->major}, Job {$user->current_job}. Give 1 short encouraging sentence of career advice in Indonesian.", 0.6);
 
             // 2. Networking Recommendations
             $candidates = User::where('role', 'alumni')
@@ -102,17 +102,17 @@ class AlumniService
                 ->where('status', 'approved')
                 ->inRandomOrder()
                 ->take(10)
-                ->get(['id', 'name', 'jurusan', 'pekerjaan_sekarang', 'bio'])
+                ->get(['id', 'name', 'major', 'current_job', 'bio'])
                 ->toArray();
             
-            $recs = $aiService->recommendAlumni($user->only(['name', 'jurusan', 'bio']), $candidates);
+            $recs = $aiService->recommendAlumni($user->only(['name', 'major', 'bio']), $candidates);
             
             $aiRecommendations = collect($recs)->map(function($rec) {
                 $alumni = User::find($rec['id']);
                 if ($alumni) {
                     $alumni->ai_reason = $rec['reason'];
                     // Mask sensitive data for recommendations too
-                    $alumni->foto_profil = $alumni->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($alumni->name).'&background=4361ee&color=fff';
+                    $alumni->profile_picture = $alumni->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($alumni->name).'&background=4361ee&color=fff';
                     return $alumni;
                 }
                 return null;
@@ -120,11 +120,11 @@ class AlumniService
 
             // 3. Career Snippet
             $careerSnippet = User::where('role', 'alumni')
-                ->where('jurusan', $user->jurusan)
-                ->whereNotNull('pekerjaan_sekarang')
-                ->where('pekerjaan_sekarang', '!=', '')
-                ->selectRaw('pekerjaan_sekarang, count(*) as total')
-                ->groupBy('pekerjaan_sekarang')
+                ->where('major', $user->major)
+                ->whereNotNull('current_job')
+                ->where('current_job', '!=', '')
+                ->selectRaw('current_job, count(*) as total')
+                ->groupBy('current_job')
                 ->orderBy('total', 'desc')
                 ->first();
 
@@ -132,7 +132,7 @@ class AlumniService
                 'aiPrediction' => $aiPrediction,
                 'aiRecommendations' => $aiRecommendations,
                 'careerSnippet' => $careerSnippet ? [
-                    'pekerjaan' => $careerSnippet->pekerjaan_sekarang,
+                    'pekerjaan' => $careerSnippet->current_job,
                     'total' => $careerSnippet->total
                 ] : null
             ];

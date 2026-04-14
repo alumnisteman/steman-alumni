@@ -30,7 +30,7 @@
                     </div>
                     <div>
                         <h6 class="fw-bold mb-0">SEKRETARIAT</h6>
-                        <small class="text-muted text-uppercase fw-bold">Alamat Lengkap</small>
+                        <small class="text-muted text-uppercase fw-bold">address Lengkap</small>
                     </div>
                 </div>
                 <p class="text-dark small mb-0">{{ setting('contact_address', 'Jl. Ki Hajar Dewantoro, Ternate') }}</p>
@@ -63,7 +63,7 @@
             </div>
             
             @auth
-                @if(auth()->user()->role == 'admin')
+                @if(auth()->user()->canAccessAdminPanel())
                     <div class="mt-4">
                         <button type="button" class="btn btn-primary w-100 py-3 rounded-pill shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#editKontakModal">
                             <i class="bi bi-pencil-square me-2"></i>EDIT KONTAK
@@ -128,7 +128,7 @@
 </div>
 
 @auth
-    @if(auth()->user()->role == 'admin')
+    @if(auth()->user()->canAccessAdminPanel())
     <!-- Modal Edit Kontak -->
     <div class="modal fade" id="editKontakModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -142,7 +142,7 @@
                     @method('PUT')
                     <div class="modal-body p-4">
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-uppercase opacity-50">Sekretariat / Alamat</label>
+                            <label class="form-label small fw-bold text-uppercase opacity-50">Sekretariat / address</label>
                             <textarea name="contact_address" class="form-control border-0 bg-light p-3" rows="3" style="border-radius: 15px;">{{ setting('contact_address') }}</textarea>
                         </div>
                         <div class="mb-4">

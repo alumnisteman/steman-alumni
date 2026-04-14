@@ -22,28 +22,51 @@ class ProfileController extends Controller
         $user = Auth::user();
         $data = $request->validated();
 
-        if ($request->hasFile('foto_profil')) {
+        if ($request->hasFile('profile_picture')) {
             // Delete old photo if it exists and is in the avatars directory
-            if ($user->foto_profil && str_contains($user->foto_profil, 'avatars/')) {
-                $oldPath = 'avatars/' . basename($user->foto_profil);
+            if ($user->profile_picture && str_contains($user->profile_picture, 'avatars/')) {
+                $oldPath = 'avatars/' . basename($user->profile_picture);
                 if (Storage::disk('public')->exists($oldPath)) {
                     Storage::disk('public')->delete($oldPath);
                 }
             }
             
-            // Store to public disk explicitly
-            $path = $request->file('foto_profil')->store('avatars', 'public');
-            $user->foto_profil = '/storage/' . $path;
+            $file = $request->file('profile_picture');
+            $fileName = time() . '.webp';
+            $path = 'avatars/' . $fileName;
+
+            // Use InterventionImage if available for WebP compression (Modern CDN behavior)
+            if (class_exists(\Intervention\Image\ImageManager::class)) {
+                try {
+                    $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                    $image = $manager->read($file);
+                    
+                    // Resize to standard 800px (Anti-Bloat)
+                    $image->scale(width: 800);
+                    
+                    // Convert to WebP with 80% quality
+                    $encoded = $image->toWebp(80);
+                    Storage::disk('public')->put($path, (string) $encoded);
+                } catch (\Exception $e) {
+                    // Fallback to standard storage if processing fails
+                    $path = $file->store('avatars', 'public');
+                }
+            } else {
+                // Fallback to standard storage
+                $path = $file->storeAs('avatars', $fileName, 'public');
+            }
+
+            $user->profile_picture = '/storage/' . $path;
         }
 
         $user->name = $data['name'];
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
-        $user->jurusan = $data['jurusan'] ?? $user->jurusan;
-        $user->tahun_lulus = $data['tahun_lulus'] ?? $user->tahun_lulus;
-        $user->pekerjaan_sekarang = $data['pekerjaan_sekarang'] ?? $user->pekerjaan_sekarang;
-        $user->alamat = $data['alamat'] ?? $user->alamat;
+        $user->major = $data['major'] ?? $user->major;
+        $user->graduation_year = $data['graduation_year'] ?? $user->graduation_year;
+        $user->current_job = $data['current_job'] ?? $user->current_job;
+        $user->address = $data['address'] ?? $user->address;
         $user->bio = $data['bio'] ?? $user->bio;
         
         // Security: Only allow becoming a mentor if they already have sufficient points or status

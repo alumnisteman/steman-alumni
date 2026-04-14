@@ -16,12 +16,12 @@
                 @csrf @method('PUT')
                 
                 <div class="text-center mb-4">
-                    <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
+                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
                          class="rounded-circle border" width="150" height="150" style="object-fit: cover;">
                     <div class="mt-3">
                         <label class="btn btn-sm btn-outline-primary shadow-none">
                             Ganti Foto Profil
-                            <input type="file" name="foto_profil" class="d-none">
+                            <input type="file" name="profile_picture" class="d-none">
                         </label>
                     </div>
                 </div>
@@ -39,13 +39,13 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Jurusan</label>
-                        <select name="jurusan" class="form-select">
-                            <option value="">Pilih Jurusan</option>
+                        <label class="form-label">major</label>
+                        <select name="major" class="form-select">
+                            <option value="">Pilih major</option>
                             @php 
                                 $currentGroup = ''; 
                                 $found = false;
-                                $userJurusan = $user->jurusan ?? '';
+                                $usermajor = $user->major ?? '';
                             @endphp
                             @foreach($majors as $major)
                                 @if($currentGroup != $major->group)
@@ -54,7 +54,7 @@
                                     @php $currentGroup = $major->group; @endphp
                                 @endif
                                 @php 
-                                    $isSelected = $userJurusan == $major->name;
+                                    $isSelected = $usermajor == $major->name;
                                     if($isSelected) $found = true;
                                 @endphp
                                 <option value="{{ $major->name }}" {{ $isSelected ? 'selected' : '' }}>{{ $major->name }}</option>
@@ -62,26 +62,26 @@
                             @if($currentGroup != '') </optgroup> @endif
 
                             {{-- Fallback matching: If user data doesn't match master list exactly --}}
-                            @if(!$found && !empty($userJurusan))
+                            @if(!$found && !empty($usermajor))
                                 <optgroup label="Data Saat Ini (Beda Format)">
-                                    <option value="{{ $userJurusan }}" selected>{{ $userJurusan }}</option>
+                                    <option value="{{ $usermajor }}" selected>{{ $usermajor }}</option>
                                 </optgroup>
                             @endif
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Tahun Lulus</label>
-                        <input type="number" name="tahun_lulus" class="form-control" value="{{ $user->tahun_lulus }}">
+                        <input type="number" name="graduation_year" class="form-control" value="{{ $user->graduation_year }}">
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Pekerjaan Sekarang</label>
-                    <input type="text" name="pekerjaan_sekarang" class="form-control" value="{{ $user->pekerjaan_sekarang }}">
+                    <input type="text" name="current_job" class="form-control" value="{{ $user->current_job }}">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Alamat</label>
-                    <textarea name="alamat" class="form-control" rows="2">{{ $user->alamat }}</textarea>
+                    <label class="form-label">address</label>
+                    <textarea name="address" class="form-control" rows="2">{{ $user->address }}</textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Tentang Saya (Bio)</label>

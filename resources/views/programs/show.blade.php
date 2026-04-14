@@ -34,18 +34,64 @@
                     </div>
 
                     <div class="mt-5 p-4 bg-light rounded-4 border-start border-warning border-5">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-info-circle-fill me-2"></i>Informasi Pendaftaran</h5>
-                        <p class="mb-3">Tertarik bergabung atau butuh informasi lebih lanjut mengenai program ini? Klik tombol di bawah untuk mendaftar atau hubungi sekretariat kami.</p>
-                        <div class="d-flex flex-wrap gap-3">
-                            @if($program->registration_link)
-                                <a href="{{ $program->registration_link }}" target="_blank" class="btn btn-warning px-5 py-3 rounded-pill fw-bold shadow-sm">
-                                    DAFTAR SEKARANG <i class="bi bi-rocket-takeoff ms-2"></i>
+                        <h5 class="fw-bold mb-3"><i class="bi bi-info-circle-fill me-2"></i>PORTAL PENDAFTARAN ALUMNI</h5>
+                        
+                        @guest
+                            <p class="mb-3">Silakan login sebagai Alumni untuk melakukan pendaftaran secara online melalui portal ini.</p>
+                            <div class="d-flex flex-wrap gap-3">
+                                <a href="{{ route('login') }}" class="btn btn-warning px-5 py-3 rounded-pill fw-bold shadow-sm">
+                                    LOGIN UNTUK MENDAFTAR <i class="bi bi-box-arrow-in-right ms-2"></i>
                                 </a>
+                                <a href="mailto:{{ setting('contact_email', 'alumnisteman@gmail.com') }}" class="btn btn-dark px-4 py-3 rounded-pill fw-bold">
+                                    HUBUNGI KAMI
+                                </a>
+                            </div>
+                        @else
+                            @php
+                                $registration = Auth::user()->programRegistrations()->where('program_id', $program->id)->first();
+                            @endphp
+
+                            @if($registration)
+                                <div class="alert alert-{{ $registration->status === 'approved' ? 'success' : ($registration->status === 'rejected' ? 'danger' : 'info') }} rounded-4 p-4 border-0">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi {{ $registration->status === 'approved' ? 'bi-check-circle-fill' : ($registration->status === 'rejected' ? 'bi-x-circle-fill' : 'bi-clock-history') }} fs-4 me-3"></i>
+                                        <h6 class="fw-bold mb-0">Status Pendaftaran: {{ strtoupper($registration->status) }}</h6>
+                                    </div>
+                                    <p class="mb-0 text-dark opacity-75">
+                                        Pendaftaran Anda diterima pada {{ $registration->created_at->format('d M Y') }}.
+                                        @if($registration->admin_notes)
+                                            <hr>
+                                            <strong>Catatan Admin:</strong><br>
+                                            {{ $registration->admin_notes }}
+                                        @endif
+                                    </p>
+                                </div>
+                            @else
+                                <form action="{{ route('programs.register', $program->id) }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 rounded-4 shadow-sm border mt-3">
+                                    @csrf
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Nomor WhatsApp/Telepon</label>
+                                            <input type="text" name="phone_number" class="form-control rounded-3" value="{{ old('phone_number', Auth::user()->phone_number) }}" placeholder="Contoh: 081234567890" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Lampiran (Opsional, PDF/JPG)</label>
+                                            <input type="file" name="attachment" class="form-control rounded-3">
+                                            <small class="text-muted">CV / Transkrip dlm bentuk satu file (Max 5MB)</small>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold">Motivasi & Alasan Mengikuti</label>
+                                            <textarea name="motivation" class="form-control rounded-3" rows="4" placeholder="Jelaskan mengapa Anda tertarik mengikuti program ini..." required>{{ old('motivation') }}</textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow-sm">
+                                                KIRIM PENDAFTARAN SEKARANG <i class="bi bi-send-fill ms-2"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
                             @endif
-                            <a href="mailto:{{ setting('contact_email', 'alumnisteman@gmail.com') }}" class="btn btn-dark px-4 py-3 rounded-pill fw-bold">
-                                HUBUNGI KAMI
-                            </a>
-                        </div>
+                        @endguest
                     </div>
                 </div>
             </div>

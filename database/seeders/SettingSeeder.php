@@ -31,7 +31,7 @@ class SettingSeeder extends Seeder
             [
                 'key' => 'contact_address',
                 'value' => 'Jl. Ki Hajar Dewantoro, Ternate',
-                'label' => 'Alamat Kontak',
+                'label' => 'address Kontak',
                 'group' => 'contact'
             ],
 
@@ -91,7 +91,7 @@ class SettingSeeder extends Seeder
             [
                 'key' => 'alumni_message',
                 'value' => 'Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan untuk almamater dan bangsa.',
-                'label' => 'Pesan Khusus Untuk Alumni',
+                'label' => 'message Khusus Untuk Alumni',
                 'group' => 'chairman'
             ],
             [

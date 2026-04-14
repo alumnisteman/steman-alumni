@@ -1,9 +1,10 @@
-@extends('layouts.app')
-@section('content')
-<div class="container py-4">
+@extends('layouts.admin')
+
+@section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h2 class="section-title mb-0">Manajemen Pengguna</h2>
-        @if(auth()->user()->role === 'admin')
+        @if(in_array(auth()->user()->role, ['admin', 'editor']))
         <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addUserModal">
             <i class="bi bi-person-plus-fill me-2"></i>Tambah Pengguna
         </button>
@@ -41,18 +42,21 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
+                                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
                                          class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
                                     <span class="fw-bold">{{ $user->name }}</span>
                                 </div>
                             </td>
                             <td>{{ $user->email }}</td>
                             <td>
-                                @if($user->role == 'admin')
-                                    <span class="badge bg-danger rounded-pill px-3">ADMIN</span>
-                                @else
-                                    <span class="badge bg-primary rounded-pill px-3">ALUMNI</span>
-                                @endif
+                                @php
+                                    $roleBadge = match($user->role) {
+                                        'admin'  => ['bg-danger',  'ADMIN'],
+                                        'editor' => ['bg-info text-white', 'EDITOR'],
+                                        default  => ['bg-primary', 'ALUMNI'],
+                                    };
+                                @endphp
+                                <span class="badge {{ $roleBadge[0] }} rounded-pill px-3">{{ $roleBadge[1] }}</span>
                             </td>
                             <td>
                                 @if($user->status == 'approved')
@@ -72,18 +76,16 @@
 
                                 <form action="/admin/users/{{ $user->id }}/role" method="POST" class="d-inline">
                                     @csrf @method('PUT')
-                                    @if($user->role == 'admin')
-                                        <input type="hidden" name="role" value="alumni">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary me-1"
-                                            {{ $user->id == auth()->id() ? 'disabled' : '' }}>
-                                            <i class="bi bi-person-badge"></i> Jadikan Alumni
+                                    <div class="btn-group me-1">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" {{ $user->id == auth()->id() ? 'disabled' : '' }}>
+                                            <i class="bi bi-shield-check"></i> Role
                                         </button>
-                                    @else
-                                        <input type="hidden" name="role" value="admin">
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary me-1">
-                                            <i class="bi bi-shield-check"></i> Jadikan Admin
-                                        </button>
-                                    @endif
+                                        <ul class="dropdown-menu shadow-sm">
+                                            @if(auth()->user()->role === 'admin' && $user->role !== 'admin')<li><button class="dropdown-item" type="submit" name="role" value="admin">Jadikan Admin</button></li>@endif
+                                            @if($user->role !== 'editor')<li><button class="dropdown-item" type="submit" name="role" value="editor">Jadikan Editor</button></li>@endif
+                                            @if($user->role !== 'alumni')<li><button class="dropdown-item" type="submit" name="role" value="alumni">Jadikan Alumni</button></li>@endif
+                                        </ul>
+                                    </div>
                                 </form>
 
                                 @if($user->role !== 'admin')
@@ -113,6 +115,11 @@
                                 @endif
 
                                 @if(auth()->user()->role === 'admin' && $user->id !== auth()->id())
+                                <button type="button" class="btn btn-sm btn-danger"
+                                    data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $user->id }}">
+                                    <i class="bi bi-trash-fill"></i> Hapus
+                                </button>
+                                @elseif(auth()->user()->role === 'editor' && $user->role === 'alumni')
                                 <button type="button" class="btn btn-sm btn-danger"
                                     data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $user->id }}">
                                     <i class="bi bi-trash-fill"></i> Hapus
@@ -148,7 +155,7 @@
             </div>
             <div class="modal-body p-4 text-center">
                 <div class="mb-3">
-                    <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}"
+                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}"
                         class="rounded-circle" width="70" height="70" style="object-fit:cover;">
                 </div>
                 <p class="mb-1">Anda yakin ingin menghapus pengguna ini?</p>
@@ -199,10 +206,10 @@
                 <div class="col-md-12">
                     <label class="form-label fw-bold">Foto Profil</label>
                     <div class="d-flex align-items-center">
-                        <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
+                        <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
                                 class="rounded-circle me-3" width="60" height="60" style="object-fit: cover;">
-                        <input type="file" name="foto_profil" class="form-control @error('foto_profil') is-invalid @enderror" accept="image/*">
-                        @error('foto_profil') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <input type="file" name="profile_picture" class="form-control @error('profile_picture') is-invalid @enderror" accept="image/*">
+                        @error('profile_picture') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
                 
@@ -212,17 +219,17 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Tahun Lulus</label>
-                    <input type="number" name="tahun_lulus" class="form-control" value="{{ $user->tahun_lulus }}">
+                    <input type="number" name="graduation_year" class="form-control" value="{{ $user->graduation_year }}">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Jurusan</label>
-                    <select name="jurusan" class="form-select">
-                        <option value="">-- Pilih Jurusan --</option>
+                    <label class="form-label fw-bold">major</label>
+                    <select name="major" class="form-select">
+                        <option value="">-- Pilih major --</option>
                         @php 
                             $currentGroup = ''; 
                             $found = false;
-                            $userJurusan = $user->jurusan ?? '';
+                            $usermajor = $user->major ?? '';
                         @endphp
                         @foreach($activeMajors as $m)
                             @if($currentGroup != $m->group)
@@ -231,7 +238,7 @@
                                 @php $currentGroup = $m->group; @endphp
                             @endif
                             @php 
-                                $isSelected = (old('jurusan') ?? $userJurusan) == $m->name;
+                                $isSelected = (old('major') ?? $usermajor) == $m->name;
                                 if($isSelected) $found = true;
                             @endphp
                             <option value="{{ $m->name }}" {{ $isSelected ? 'selected' : '' }}>{{ $m->name }}</option>
@@ -239,21 +246,21 @@
                         @if($currentGroup != '') </optgroup> @endif
                         
                         {{-- Robust Fallback: If user's current value isn't in the master list, show it --}}
-                        @if(!$found && !empty($userJurusan))
+                        @if(!$found && !empty($usermajor))
                             <optgroup label="Data Saat Ini (Tidak Sinkron)">
-                                <option value="{{ $userJurusan }}" selected>{{ $userJurusan }} (Mohon Update ke Master Data)</option>
+                                <option value="{{ $usermajor }}" selected>{{ $usermajor }} (Mohon Update ke Master Data)</option>
                             </optgroup>
                         @endif
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Nomor Telepon</label>
-                    <input type="text" name="nomor_telepon" class="form-control" value="{{ $user->nomor_telepon }}">
+                    <input type="text" name="phone_number" class="form-control" value="{{ $user->phone_number }}">
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label fw-bold">Alamat Domisili</label>
-                    <textarea name="alamat" class="form-control" rows="2">{{ $user->alamat }}</textarea>
+                    <label class="form-label fw-bold">address Domisili</label>
+                    <textarea name="address" class="form-control" rows="2">{{ $user->address }}</textarea>
                 </div>
                 
                 <div class="col-12">
@@ -324,14 +331,18 @@
                 <div class="mb-3">
                     <label class="form-label small fw-bold">Role</label>
                     <select name="role" class="form-select" required>
-                        <option value="alumni" {{ old('_form')=='add_user' && old('role')=='alumni' ? 'selected' : '' }}>Alumni</option>
-                        <option value="admin" {{ old('_form')=='add_user' && old('role')=='admin' ? 'selected' : '' }}>Admin</option>
+                        @foreach(\App\Models\User::ROLES as $roleOption)
+                            <option value="{{ $roleOption }}"
+                                {{ old('_form')=='add_user' && old('role')==$roleOption ? 'selected' : '' }}>
+                                {{ ucfirst($roleOption) }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Jurusan (Untuk Alumni)</label>
-                    <select name="jurusan" class="form-select">
-                        <option value="">-- Pilih Jurusan --</option>
+                    <label class="form-label small fw-bold">major (Untuk Alumni)</label>
+                    <select name="major" class="form-select">
+                        <option value="">-- Pilih major --</option>
                         @php $currentGroup = ''; @endphp
                         @foreach($activeMajors as $m)
                             @if($currentGroup != $m->group)
@@ -339,7 +350,7 @@
                                 <optgroup label="{{ $m->group == 'Modern' ? 'Kurikulum Saat Ini' : 'Kurikulum Lama (Legacy)' }}">
                                 @php $currentGroup = $m->group; @endphp
                             @endif
-                            <option value="{{ $m->name }}" {{ old('jurusan') == $m->name ? 'selected' : '' }}>{{ $m->name }}</option>
+                            <option value="{{ $m->name }}" {{ old('major') == $m->name ? 'selected' : '' }}>{{ $m->name }}</option>
                         @endforeach
                         @if($currentGroup != '') </optgroup> @endif
                     </select>

@@ -11,19 +11,19 @@ class Message extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'pengirim_id',
-        'penerima_id',
-        'angkatan_tujuan',
-        'pesan',
+        'sender_id',
+        'receiver_id',
+        'target_year',
+        'message',
     ];
 
-    public function pengirim()
+    public function sender()
     {
-        return $this->belongsTo(User::class, 'pengirim_id');
+        return $this->belongsTo(User::class, 'sender_id');
     }
 
-    public function penerima()
+    public function receiver()
     {
-        return $this->belongsTo(User::class, 'penerima_id');
+        return $this->belongsTo(User::class, 'receiver_id');
     }
 }

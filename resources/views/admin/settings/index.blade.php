@@ -1,7 +1,8 @@
-@extends('layouts.app')
-@section('content')
-<div class="container py-4">
+@extends('layouts.admin')
+
+@section('admin-content')
     <div class="mb-4">
+
         <h2 class="section-title">Konfigurasi & Branding Situs</h2>
         <p class="text-muted">Atur nama organisasi, identitas sekolah, dan deskripsi program di sini.</p>
     </div>

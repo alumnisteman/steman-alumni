@@ -19,9 +19,9 @@ class AlumniResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email, // Optional: might want to hide email in public APIs
             'role' => $this->role,
-            'jurusan' => $this->jurusan,
-            'angkatan' => $this->tahun_lulus,
-            'pekerjaan_sekarang' => $this->pekerjaan_sekarang,
+            'major' => $this->major,
+            'angkatan' => $this->graduation_year,
+            'current_job' => $this->current_job,
             'profile_picture' => $this->hasProfilePicture() ? url($this->getProfilePicture()) : null,
             'slug' => $this->slug,
             'joined_at' => $this->created_at->format('Y-m-d H:i:s'),

@@ -15,32 +15,35 @@ class ModerateContentWithAI implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected Post $post;
+    protected $model;
 
-    public function __construct(Post $post)
+    public function __construct($model)
     {
-        $this->post = $post;
+        $this->model = $model;
     }
 
     public function handle(AIService $aiService): void
     {
-        Log::info("AI Moderating Post #{$this->post->id}...");
+        $content = $this->model->content ?? $this->model->message ?? $this->model->title;
+        
+        if (empty($content)) return;
 
-        $evaluation = $aiService->moderate($this->post->content);
+        Log::info("AI Moderating " . class_basename($this->model) . " #{$this->model->id}...");
+
+        $evaluation = $aiService->moderate($content);
 
         if (!$evaluation['is_safe']) {
-            Log::warning("AI Flagged Post #{$this->post->id} for '{$evaluation['reason']}' with score {$evaluation['score']}");
+            Log::warning("AI Flagged " . class_basename($this->model) . " #{$this->model->id} for '{$evaluation['reason']}' with score {$evaluation['score']}");
             
-            // Mark as hidden/unapproved so it doesn't appear for users
-            // Or delete if it's high confidence scam
-            if ($evaluation['score'] > 0.9) {
-                $this->post->delete();
-                Log::error("Post #{$this->post->id} deleted automatically by AI (High Confidence Scam/Spam).");
-            } else {
-                // Here we assume a 'status' or 'is_approved' column might be needed or just hide it
-                // For now, let's just log and maybe soft delete or flag it.
-                // Assuming we have a status or soft delete.
-                $this->post->delete(); 
+            // Delete if it's high confidence violation
+            if ($evaluation['score'] > 0.8) {
+                // Send official warning notification first
+                if ($this->model->user) {
+                    $this->model->user->notify(new \App\Notifications\ContentViolationNotification($this->model, $evaluation['reason']));
+                }
+                
+                $this->model->delete();
+                Log::error(class_basename($this->model) . " #{$this->model->id} deleted automatically by AI.");
             }
         }
     }

@@ -24,13 +24,29 @@ class DatabaseSeeder extends Seeder
             JobVacancySeeder::class,
         ]);
 
-        // 2. Default Admin User
+        // 1.5. Master License Seeder
+        $this->call([
+            LicenseSeeder::class,
+        ]);
+
+        // 2. Default Access Users (Admin & Editor)
         User::updateOrCreate(
             ['email' => 'admin@steman.ac.id'],
             [
                 'name' => 'Administrator',
                 'password' => \Illuminate\Support\Facades\Hash::make('Admin@1234'),
                 'role' => 'admin',
+                'status' => 'approved',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'editor@steman.ac.id'],
+            [
+                'name' => 'Content Editor',
+                'password' => \Illuminate\Support\Facades\Hash::make('Editor@1234'),
+                'role' => 'editor',
                 'status' => 'approved',
                 'email_verified_at' => now(),
             ]
@@ -46,8 +62,8 @@ class DatabaseSeeder extends Seeder
                 'status' => 'approved',
                 'latitude' => -6.2088, // Jakarta
                 'longitude' => 106.8456,
-                'jurusan' => 'Teknik Komputer dan Jaringan',
-                'tahun_lulus' => '2020',
+                'major' => 'Teknik Komputer dan Jaringan',
+                'graduation_year' => '2020',
             ],
             [
                 'name' => 'Alumni Nasional 2',
@@ -57,8 +73,8 @@ class DatabaseSeeder extends Seeder
                 'status' => 'approved',
                 'latitude' => -7.2575, // Surabaya
                 'longitude' => 112.7521,
-                'jurusan' => 'Rekayasa Perangkat Lunak',
-                'tahun_lulus' => '2021',
+                'major' => 'Rekayasa Perangkat Lunak',
+                'graduation_year' => '2021',
             ],
             [
                 'name' => 'Alumni Internasional',
@@ -68,8 +84,8 @@ class DatabaseSeeder extends Seeder
                 'status' => 'approved',
                 'latitude' => 35.6762, // Tokyo
                 'longitude' => 139.6503,
-                'jurusan' => 'Multimedia',
-                'tahun_lulus' => '2019',
+                'major' => 'Multimedia',
+                'graduation_year' => '2019',
             ],
         ];
 

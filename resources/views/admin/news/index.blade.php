@@ -1,7 +1,8 @@
-@extends('layouts.app')
-@section('content')
-<div class="container py-4">
+@extends('layouts.admin')
+
+@section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h2 class="section-title mb-0">Kelola Berita & Cerita</h2>
         <a href="/admin/news/create" class="btn btn-alumni_smkn2 shadow-sm rounded-0 px-4">
             <i class="bi bi-plus-lg me-2"></i>Tulis Berita
@@ -36,28 +37,33 @@
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <div class="dropdown">
-                                <button class="btn btn-link link-dark shadow-none" data-bs-toggle="dropdown">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                                    @if($item->status === 'draft')
-                                    <li>
-                                        <form action="{{ route('admin.news.publish', $item->id) }}" method="POST">
-                                            @csrf
-                                            <button class="dropdown-item fw-bold text-success"><i class="bi bi-cloud-upload me-2"></i>Terbitkan</button>
-                                        </form>
-                                    </li>
-                                    @endif
-                                    <li><a class="dropdown-item" href="/news/{{ $item->slug }}" target="_blank">Lihat</a></li>
-                                    <li><a class="dropdown-item" href="/admin/news/{{ $item->id }}/edit">Edit</a></li>
-                                    <li>
-                                        <form action="/admin/news/{{ $item->id }}" method="POST" onsubmit="return confirm('Hapus berita ini?')">
-                                            @csrf @method('DELETE')
-                                            <button class="dropdown-item text-danger">Hapus</button>
-                                        </form>
-                                    </li>
-                                </ul>
+                            <div class="d-flex justify-content-end gap-2">
+                                <form action="{{ route('admin.news.toggle', $item->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-light border shadow-sm rounded-pill px-3" 
+                                            title="{{ $item->status === 'published' ? 'Kembalikan ke Draft' : 'Terbitkan' }}">
+                                        @if($item->status === 'published')
+                                            <i class="bi bi-eye-slash text-secondary me-1"></i> Draft
+                                        @else
+                                            <i class="bi bi-cloud-upload text-success me-1"></i> Publish
+                                        @endif
+                                    </button>
+                                </form>
+
+                                <a href="{{ route('admin.news.edit', $item->id) }}" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Edit">
+                                    <i class="bi bi-pencil-square text-primary"></i>
+                                </a>
+
+                                <form action="{{ route('admin.news.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus berita ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Hapus">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                </form>
+
+                                <a href="/news/{{ $item->slug }}" target="_blank" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Lihat">
+                                    <i class="bi bi-box-arrow-up-right text-dark"></i>
+                                </a>
                             </div>
                         </td>
                     @empty

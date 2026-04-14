@@ -143,20 +143,20 @@ class JobController extends Controller
         }
 
         // Matching Logic (Simplistic AI/Preference)
-        if ($user && $user->jurusan && $request->get('tab') === 'recommended') {
-            $query->where('description', 'like', '%' . $user->jurusan . '%')
-                  ->orWhere('title', 'like', '%' . $user->jurusan . '%');
+        if ($user && $user->major && $request->get('tab') === 'recommended') {
+            $query->where('description', 'like', '%' . $user->major . '%')
+                  ->orWhere('title', 'like', '%' . $user->major . '%');
         }
 
         $jobs = $query->latest()->paginate(12)->withQueryString();
         
         // Count matches for badge
         $matchCount = 0;
-        if ($user && $user->jurusan) {
+        if ($user && $user->major) {
             $matchCount = JobVacancy::where('status', 'active')
                 ->where(function($q) use ($user) {
-                    $q->where('description', 'like', '%' . $user->jurusan . '%')
-                      ->orWhere('title', 'like', '%' . $user->jurusan . '%');
+                    $q->where('description', 'like', '%' . $user->major . '%')
+                      ->orWhere('title', 'like', '%' . $user->major . '%');
                 })->count();
         }
 

@@ -5,10 +5,10 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
                 <div class="bg-warning p-5 text-center">
-                    <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=000&color=fff&size=200' }}" 
+                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=000&color=fff&size=200' }}" 
                          class="rounded-circle border border-4 border-white shadow-sm mb-3" width="180" height="180" style="object-fit: cover;">
                     <h2 class="fw-bold mb-1">{{ $user->name }}</h2>
-                    <p class="lead opacity-75 mb-2 text-uppercase small fw-bold">{{ $user->jurusan }} | Angkatan {{ $user->tahun_lulus }}</p>
+                    <p class="lead opacity-75 mb-2 text-uppercase small fw-bold">{{ $user->major }} | Angkatan {{ $user->graduation_year }}</p>
                     <div class="d-inline-flex align-items-center bg-dark text-white px-3 py-1 rounded-pill small shadow-sm">
                         <i class="bi bi-shield-check me-2" style="color: #ffcc00;"></i>
                         <span class="fw-bold" style="font-size: 0.75rem;">Verified Member</span>
@@ -50,9 +50,9 @@
                             <p class="text-dark mb-0" style="white-space: pre-line;">{{ $user->mentor_bio }}</p>
                         </div>
                         @endif
-                        @if($user->nomor_telepon)
+                        @if($user->phone_number)
                         <div class="mt-3">
-                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $user->nomor_telepon) }}" target="_blank" class="btn btn-success rounded-pill fw-bold px-4">
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $user->phone_number) }}" target="_blank" class="btn btn-success rounded-pill fw-bold px-4">
                                 <i class="bi bi-whatsapp me-2"></i> Hubungi via WhatsApp
                             </a>
                         </div>
@@ -65,18 +65,18 @@
                             <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Informasi Pekerjaan</h6>
                             <div class="mb-4">
                                 <label class="text-muted d-block small">Pekerjaan Sekarang</label>
-                                <span class="fw-bold text-dark">{{ $user->pekerjaan_sekarang ?? 'Belum ditentukan' }}</span>
+                                <span class="fw-bold text-dark">{{ $user->current_job ?? 'Belum ditentukan' }}</span>
                             </div>
                             <div class="mb-4">
                                 <label class="text-muted d-block small">Instansi / Perusahaan</label>
-                                <span class="fw-bold text-dark text-uppercase small">{{ $user->perusahaan_universitas ?? '-' }}</span>
+                                <span class="fw-bold text-dark text-uppercase small">{{ $user->company_university ?? '-' }}</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Kontak</h6>
                             <div class="mb-4">
-                                <label class="text-muted d-block small">Alamat</label>
-                                <span class="text-dark">{{ $user->alamat ?? '-' }}</span>
+                                <label class="text-muted d-block small">address</label>
+                                <span class="text-dark">{{ $user->address ?? '-' }}</span>
                             </div>
                             <div class="mb-4">
                                 <label class="text-muted d-block small">Email</label>

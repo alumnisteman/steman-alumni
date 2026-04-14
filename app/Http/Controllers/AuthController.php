@@ -21,6 +21,9 @@ class AuthController extends Controller
     }
 
     public function showLogin() {
+        if (Auth::check()) {
+            return redirect()->intended(Auth::user()->dashboardUrl());
+        }
         try {
             $num1 = rand(1, 10);
             $num2 = rand(1, 10);
@@ -43,7 +46,7 @@ class AuthController extends Controller
         Log::info('Login attempt for: ' . $request->email);
 
         // --- Production Hardening: Anti-Brute Force Rate Limiting ---
-        if (RateLimiter::tooManyAttempts('login:' . $request->ip(), 5)) {
+        if (RateLimiter::tooManyAttempts('login:' . $request->ip(), 15)) {
             Log::warning('Login throttled for IP: ' . $request->ip());
             return back()->with('error', 'Terlalu banyak percobaan login. Silakan tunggu 60 detik.');
         }
@@ -71,8 +74,7 @@ class AuthController extends Controller
             );
 
             $request->session()->regenerate();
-            if (Auth::user()->role === 'admin') return redirect()->intended('/admin/dashboard');
-            return redirect()->intended('/alumni/dashboard');
+            return redirect()->intended(Auth::user()->dashboardUrl());
         }
 
         LogActivity::dispatch(
@@ -89,6 +91,9 @@ class AuthController extends Controller
     }
 
     public function showRegister() { 
+        if (Auth::check()) {
+            return redirect()->intended(Auth::user()->dashboardUrl());
+        }
         try {
             $majors = Major::orderBy('name')->get(); 
             $num1 = rand(1, 10);
@@ -119,8 +124,8 @@ class AuthController extends Controller
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:4|confirmed',
                 'nisn' => 'nullable|string',
-                'tahun_lulus' => 'nullable|integer',
-                'jurusan' => 'nullable|string',
+                'graduation_year' => 'nullable|integer',
+                'major' => 'nullable|string',
                 'captcha' => ['required', 'numeric', function ($attribute, $value, $fail) {
                     if ($value != session('captcha_answer')) {
                         $fail('Jawaban Captcha salah.');
@@ -135,8 +140,8 @@ class AuthController extends Controller
                 'password' => $data['password'],
                 'role' => 'alumni',
                 'nisn' => $data['nisn'] ?? null,
-                'tahun_lulus' => $data['tahun_lulus'] ?? null,
-                'jurusan' => $data['jurusan'] ?? null,
+                'graduation_year' => $data['graduation_year'] ?? null,
+                'major' => $data['major'] ?? null,
             ]);
             Log::info('User created: ID ' . $user->id);
 
@@ -149,7 +154,7 @@ class AuthController extends Controller
             );
 
             Auth::login($user);
-            return redirect('/alumni/dashboard');
+            return redirect()->intended($user->dashboardUrl());
         } catch (\Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
             return back()->with('error', 'Gagal mendaftar: ' . $e->getMessage())->withInput();

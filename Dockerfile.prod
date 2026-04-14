@@ -8,6 +8,7 @@ LABEL maintainer="Ikatan Alumni STEMAN"
 
 # Install runtime system dependencies
 RUN apk add --no-cache \
+    $PHPIZE_DEPS \
     libpng-dev \
     oniguruma-dev \
     libxml2-dev \
@@ -18,6 +19,7 @@ RUN apk add --no-cache \
     unzip \
     libjpeg-turbo-dev \
     freetype-dev
+
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -41,6 +43,7 @@ WORKDIR /var/www
 # Copy PHP config
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+COPY docker/php/fpm-pool.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Copy ALL files (including locally built vendor and public/build)
 COPY . /var/www/

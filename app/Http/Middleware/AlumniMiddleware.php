@@ -8,15 +8,12 @@ class AlumniMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        try {
-            if (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->role === 'alumni') {
-                return $next($request);
-            }
-            return redirect()->route('login')->with('error', 'Silakan login sebagai Alumni.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('AlumniMiddleware Error: ' . $e->getMessage());
-            // Fail safe: redirect to login if DB/Auth fails
-            return redirect()->route('login')->with('error', 'Sistem sedang sibuk, silakan coba lagi nanti.');
+        // Explicit role checking for Alumni features
+        if (\Illuminate\Support\Facades\Auth::check() && in_array(\Illuminate\Support\Facades\Auth::user()->role, ['alumni', 'admin', 'editor'])) {
+            return $next($request);
         }
+
+        // Redirect to login only if auth/role fails
+        return redirect()->route('login')->with('error', 'Akses terbatas. Silakan login sebagai Alumni.');
     }
 }

@@ -35,7 +35,7 @@ class MajorController extends Controller
             $request->header('User-Agent')
         );
 
-        return back()->with('success', 'Jurusan berhasil ditambahkan.');
+        return back()->with('success', 'major berhasil ditambahkan.');
     }
 
     // Admin: Update
@@ -57,7 +57,7 @@ class MajorController extends Controller
             $request->header('User-Agent')
         );
 
-        return back()->with('success', 'Jurusan berhasil diperbarui.');
+        return back()->with('success', 'major berhasil diperbarui.');
     }
 
     // Admin: Delete
@@ -74,6 +74,6 @@ class MajorController extends Controller
             request()->header('User-Agent')
         );
 
-        return back()->with('success', 'Jurusan berhasil dihapus.');
+        return back()->with('success', 'major berhasil dihapus.');
     }
 }

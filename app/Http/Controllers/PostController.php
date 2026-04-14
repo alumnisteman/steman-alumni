@@ -26,13 +26,13 @@ class PostController extends Controller
         // Filter by angkatan if requested
         if ($request->has('angkatan') && $request->angkatan != '') {
             $query->whereHas('user', function ($q) use ($request) {
-                $q->where('tahun_lulus', $request->angkatan);
+                $q->where('graduation_year', $request->angkatan);
             });
         }
 
         $posts = $query->paginate(10);
         $userPostsCount = Post::where('user_id', Auth::id())->count();
-        $angkatanList = User::distinct()->whereNotNull('tahun_lulus')->orderBy('tahun_lulus', 'desc')->pluck('tahun_lulus');
+        $angkatanList = User::distinct()->whereNotNull('graduation_year')->orderBy('graduation_year', 'desc')->pluck('graduation_year');
 
         return view('alumni.nostalgia', compact('posts', 'userPostsCount', 'angkatanList'));
     }
@@ -53,9 +53,13 @@ class PostController extends Controller
             $imageUrl = Storage::url($path);
         }
 
+        if (!\App\Services\ContentModerationService::isClean($request->content)) {
+            return back()->withInput()->withErrors(['content' => '⚠️ PERINGATAN ADMIN: Postingan Anda telah diblokir karena mengandung kata-kata terlarang/SARA.']);
+        }
+
         $post = Post::create([
             'user_id' => Auth::id(),
-            'content' => $request->content,
+            'content' => strip_tags($request->content),
             'image_url' => $imageUrl,
             'type' => $request->type,
         ]);
@@ -152,12 +156,19 @@ class PostController extends Controller
             'content' => 'required|string',
         ]);
 
-        $post->comments()->create([
+        if (!\App\Services\ContentModerationService::isClean($request->content)) {
+            return back()->withInput()->withErrors(['content' => '⚠️ TEGURAN ADMIN: Komentar Anda melanggar aturan penggunaan kata-kata di portal ini.']);
+        }
+
+        $comment = $post->comments()->create([
             'user_id' => Auth::id(),
-            'content' => $request->content,
+            'content' => strip_tags($request->content),
         ]);
 
         $post->increment('comments_count');
+
+        // AI Moderation
+        \App\Jobs\ModerateContentWithAI::dispatch($comment);
 
         // Award Points
         Auth::user()->awardPoints(5);
@@ -172,7 +183,7 @@ class PostController extends Controller
             ->where('role', 'alumni')
             ->where('id', '!=', Auth::id())
             ->limit(10)
-            ->get(['id', 'name', 'tahun_lulus']);
+            ->get(['id', 'name', 'graduation_year']);
 
         return response()->json($alumni);
     }

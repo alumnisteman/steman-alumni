@@ -60,10 +60,10 @@ return new class extends Migration
         if (!Schema::hasTable('messages')) {
             Schema::create('messages', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('pengirim_id')->nullable()->constrained('users')->onDelete('set null');
-                $table->foreignId('penerima_id')->nullable()->constrained('users')->onDelete('set null');
-                $table->year('angkatan_tujuan')->nullable()->index();
-                $table->text('pesan');
+                $table->foreignId('sender_id')->nullable()->constrained('users')->onDelete('set null');
+                $table->foreignId('receiver_id')->nullable()->constrained('users')->onDelete('set null');
+                $table->year('target_year')->nullable()->index();
+                $table->text('message');
                 $table->boolean('is_read')->default(false);
                 $table->timestamps();
                 $table->softDeletes();

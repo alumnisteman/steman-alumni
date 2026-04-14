@@ -1,7 +1,8 @@
-@extends('layouts.app')
-@section('content')
-<div class="container py-4">
+@extends('layouts.admin')
+
+@section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h2 class="section-title mb-0">Kelola Galeri</h2>
         <button class="btn btn-alumni_smkn2" data-bs-toggle="modal" data-bs-target="#uploadModal">
             <i class="bi bi-plus-lg me-2"></i>Tambah Media

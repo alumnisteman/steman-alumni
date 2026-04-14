@@ -8,7 +8,7 @@ param (
 
 $ServerIP = "103.175.219.57"
 $Password = "M4ruw4h3@"
-$Container = "steman-alumni-app-1"
+$Container = "steman_app"
 $RemoteBase = "/var/www"
 $TempBase = "/var/www/steman-alumni/deploy_temp_bulk"
 
@@ -42,6 +42,6 @@ foreach ($file in $Files) {
 
 # 4. Final Cache Flush & Cleanup
 Write-Host "[4/4] Finalizing and flushing caches..."
-plink -batch -no-antispoof -pw $Password "root@$ServerIP" "docker exec $Container php artisan optimize:clear && docker exec $Container php artisan view:clear && rm -rf $TempBase"
+plink -batch -no-antispoof -pw $Password "root@$ServerIP" "docker exec $Container php artisan optimize:clear && docker exec $Container php artisan view:clear && rm -rf $TempBase && docker restart $Container steman_queue"
 
 Write-Host "=== BATCH DEPLOYMENT SUCCESSFUL ===" -ForegroundColor Green

@@ -21,13 +21,13 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'name' => 'required|string|max:255',
             'password' => 'nullable|string|min:8|confirmed',
-            'jurusan' => 'nullable|string',
-            'tahun_lulus' => 'nullable|integer',
-            'pekerjaan_sekarang' => 'nullable|string',
-            'alamat' => 'nullable|string',
+            'major' => 'nullable|string',
+            'graduation_year' => 'nullable|integer',
+            'current_job' => 'nullable|string',
+            'address' => 'nullable|string',
             'bio' => 'nullable|string',
             'mentor_bio' => 'nullable|string',
             'mentor_expertise' => 'nullable|string|max:255',

@@ -43,7 +43,7 @@ class SocialController extends Controller
 
             Auth::login($user);
 
-            return redirect()->intended('/alumni/dashboard');
+            return redirect()->intended($user->dashboardUrl());
             
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'Gagal login via ' . $provider . ': ' . $e->getMessage());

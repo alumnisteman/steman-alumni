@@ -11,13 +11,24 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    /**
+     * SINGLE SOURCE OF TRUTH FOR ROLES
+     * Tambahkan role baru hanya di sini. Controller & View otomatis mengikuti.
+     */
+    const ROLES = ['admin', 'editor', 'alumni'];
+
+    /**
+     * Roles yang boleh mengakses panel admin (dashboard, news, gallery, dll)
+     */
+    const ADMIN_PANEL_ROLES = ['admin', 'editor'];
+
     protected $fillable = [
         'name', 'email', 'password',
         'role', 'status',
-        'nisn', 'tahun_lulus', 'jurusan',
-        'pekerjaan_sekarang', 'perusahaan_universitas',
-        'nomor_telepon', 'foto_profil',
-        'alamat', 'bio',
+        'nisn', 'graduation_year', 'major',
+        'current_job', 'company_university',
+        'phone_number', 'profile_picture',
+        'address', 'bio',
         'mentoring', 'mentor_expertise', 'mentor_bio', 'points',
         'linkedin_url', 'instagram_url', 'twitter_url',
         'latitude', 'longitude',
@@ -53,7 +64,7 @@ class User extends Authenticatable
         $alumniLocations = static::where('role', 'alumni')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->get(['name', 'latitude', 'longitude', 'jurusan', 'tahun_lulus']);
+            ->get(['name', 'latitude', 'longitude', 'major', 'graduation_year']);
 
         // Demo data with International presence if empty
         if ($alumniLocations->isEmpty()) {
@@ -73,8 +84,8 @@ class User extends Authenticatable
                     'name' => 'Alumni ' . $city['name'],
                     'latitude' => $city['lat'],
                     'longitude' => $city['lng'],
-                    'jurusan' => 'TKJ',
-                    'tahun_lulus' => '2022',
+                    'major' => 'TKJ',
+                    'graduation_year' => '2022',
                     'is_international' => $city['is_int']
                 ];
             });
@@ -136,5 +147,23 @@ class User extends Authenticatable
             return in_array($this->role, $roles);
         }
         return $this->role === $roles;
+    }
+
+    public function canAccessAdminPanel(): bool
+    {
+        return in_array($this->role, self::ADMIN_PANEL_ROLES);
+    }
+
+    public function dashboardUrl(): string
+    {
+        return $this->canAccessAdminPanel() ? '/admin/dashboard' : '/alumni/dashboard';
+    }
+
+    /**
+     * Relationship with Program Registrations
+     */
+    public function programRegistrations()
+    {
+        return $this->hasMany(ProgramRegistration::class);
     }
 }

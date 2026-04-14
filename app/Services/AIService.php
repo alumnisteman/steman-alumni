@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 class AIService
 {
     protected ?string $apiKey;
-    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
     public function __construct(?string $apiKey = null)
     {
@@ -30,7 +30,7 @@ class AIService
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post("{$this->baseUrl}?key={$this->apiKey}", [
+            ])->timeout(10)->post("{$this->baseUrl}?key={$this->apiKey}", [
                 'contents' => [
                     [
                         'parts' => [
@@ -52,6 +52,12 @@ class AIService
                 return $text;
             }
 
+            // Circuit Breaker: Handle High Demand (503) or Other API Issues
+            if ($response->status() === 503) {
+                Log::notice('AIService: Gemini is currently unavailable (High Demand/503). Skipping AI processing.');
+                return null;
+            }
+
             Log::error('Gemini API Error', [
                 'status' => $response->status(),
                 'body' => $response->body()
@@ -59,6 +65,9 @@ class AIService
 
             return null;
 
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::notice('AIService: Connection Timeout/Issue with Gemini API. Skipping.');
+            return null;
         } catch (\Exception $e) {
             Log::error('AIService Exception: ' . $e->getMessage());
             return null;
@@ -89,11 +98,11 @@ class AIService
      */
     public function recommendAlumni(array $userProfile, array $candidates): array
     {
-        $candidateData = collect($candidates)->map(fn($c) => "[ID: {$c['id']}, Name: {$c['name']}, Major: {$c['jurusan']}, Job: {$c['pekerjaan_sekarang']}]")->join("\n");
+        $candidateData = collect($candidates)->map(fn($c) => "[ID: {$c['id']}, Name: {$c['name']}, Major: {$c['major']}, Job: {$c['current_job']}]")->join("\n");
         
         $prompt = "You are a professional networking assistant. Based on this user profile:
         Name: {$userProfile['name']}
-        Major: {$userProfile['jurusan']}
+        Major: {$userProfile['major']}
         Bio: {$userProfile['bio']}
         
         Recommend the top 3 best matching alumni from this list for professional networking:

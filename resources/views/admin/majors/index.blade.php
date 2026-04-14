@@ -4,11 +4,11 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="section-title mb-0">Manajemen Jurusan</h2>
-            <p class="text-muted small">Kelola daftar jurusan dan kompetensi keahlian</p>
+            <h2 class="section-title mb-0">Manajemen major</h2>
+            <p class="text-muted small">Kelola daftar major dan kompetensi keahlian</p>
         </div>
         <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addMajorModal">
-            <i class="bi bi-plus-lg me-2"></i>Tambah Jurusan
+            <i class="bi bi-plus-lg me-2"></i>Tambah major
         </button>
     </div>
 
@@ -24,7 +24,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th class="ps-4">Nama Jurusan</th>
+                        <th class="ps-4">Nama major</th>
                         <th>Kelompok/Grup</th>
                         <th>Status</th>
                         <th class="text-end pe-4">Aksi</th>
@@ -55,7 +55,7 @@
                                 <form action="{{ route('admin.majors.destroy', $major) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus jurusan ini?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus major ini?')">
                                         <i class="bi bi-trash me-1"></i> Hapus
                                     </button>
                                 </form>
@@ -63,7 +63,7 @@
                         </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">Belum ada jurusan yang ditambahkan.</td>
+                        <td colspan="4" class="text-center py-5 text-muted">Belum ada major yang ditambahkan.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -81,12 +81,12 @@
             @csrf
             @method('PUT')
             <div class="modal-header border-0 pb-0">
-                <h5 class="fw-bold">Edit Jurusan</h5>
+                <h5 class="fw-bold">Edit major</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Nama Jurusan</label>
+                    <label class="form-label fw-bold">Nama major</label>
                     <input type="text" name="name" class="form-control" value="{{ $major->name }}" required>
                 </div>
                 <div class="mb-3">
@@ -119,12 +119,12 @@
         <form action="{{ route('admin.majors.store') }}" method="POST" class="modal-content border-0 shadow rounded-4">
             @csrf
             <div class="modal-header border-0 pb-0">
-                <h5 class="fw-bold">Tambah Jurusan Baru</h5>
+                <h5 class="fw-bold">Tambah major Baru</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Nama Jurusan</label>
+                    <label class="form-label fw-bold">Nama major</label>
                     <input type="text" name="name" class="form-control" required placeholder="Contoh: Teknik Mesin">
                 </div>
                 <div class="mb-3">
@@ -137,7 +137,7 @@
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Simpan Jurusan</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Simpan major</button>
             </div>
         </form>
     </div>

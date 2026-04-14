@@ -30,7 +30,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small text-uppercase">Jurusan & Angkatan</label>
+                            <label class="form-label fw-bold small text-uppercase">major & Angkatan</label>
                             <input type="text" name="major_year" class="form-control rounded-3 @error('major_year') is-invalid @enderror" value="{{ old('major_year', $successStory->major_year) }}" required>
                             @error('major_year') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -58,7 +58,7 @@
                             <select name="user_id" class="form-select rounded-3">
                                 <option value="">-- Hubungkan dengan User Alumni (Jika ada) --</option>
                                 @foreach($alumni as $a)
-                                    <option value="{{ $a->id }}" {{ old('user_id', $successStory->user_id) == $a->id ? 'selected' : '' }}>{{ $a->name }} ({{ $a->jurusan }})</option>
+                                    <option value="{{ $a->id }}" {{ old('user_id', $successStory->user_id) == $a->id ? 'selected' : '' }}>{{ $a->name }} ({{ $a->major }})</option>
                                 @endforeach
                             </select>
                             <small class="text-muted">Jika dihubungkan, klik pada kartu akan mengarah ke profil alumni tersebut.</small>

@@ -10,7 +10,7 @@
             <form action="/alumni" method="GET" class="glass-effect p-3 rounded-4 shadow-sm">
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0 ps-0 shadow-none bg-transparent" placeholder="Cari berdasarkan nama, jurusan, atau angkatan..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control border-start-0 ps-0 shadow-none bg-transparent" placeholder="Cari berdasarkan nama, major, atau angkatan..." value="{{ request('search') }}">
                     <button type="submit" class="btn btn-primary px-4 rounded-3 h-100">Cari Alumni</button>
                 </div>
             </form>
@@ -23,7 +23,7 @@
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
                     <div class="card-header border-0 bg-transparent py-4 text-center">
                         <div class="position-relative d-inline-block">
-                            <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=6366f1&color=fff' }}" 
+                            <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=6366f1&color=fff' }}" 
                                  class="rounded-circle border border-4 border-white shadow-sm" 
                                  style="width: 100px; height: 100px; object-fit: cover;" 
                                  alt="{{ $user->name }}">
@@ -34,21 +34,21 @@
                             @endif
                         </div>
                         <h5 class="fw-bold mt-3 mb-1"><a href="/alumni/{{ $user->username ?? $user->id }}" class="text-dark text-decoration-none hover-text-primary">{{ $user->name }}</a></h5>
-                        <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ $user->jurusan ?? 'Umum' }}</div>
+                        <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ $user->major ?? 'Umum' }}</div>
                     </div>
                     <div class="card-body pt-0 px-4">
                         <div class="d-flex flex-column gap-2">
                             <div class="d-flex align-items-center text-muted small">
                                 <i class="bi bi-award me-2 text-primary"></i>
-                                <span>Angkatan {{ $user->tahun_lulus ?? '-' }}</span>
+                                <span>Angkatan {{ $user->graduation_year ?? '-' }}</span>
                             </div>
                             <div class="d-flex align-items-center text-muted small">
                                 <i class="bi bi-briefcase me-2 text-primary"></i>
-                                <span class="text-truncate">{{ $user->pekerjaan_sekarang ?? 'Belum terisi' }}</span>
+                                <span class="text-truncate">{{ $user->current_job ?? 'Belum terisi' }}</span>
                             </div>
                             <div class="d-flex align-items-center text-muted small">
                                 <i class="bi bi-geo-alt me-2 text-primary"></i>
-                                <span class="text-truncate">{{ $user->alamat ?? 'Lokasi' }}</span>
+                                <span class="text-truncate">{{ $user->address ?? 'Lokasi' }}</span>
                             </div>
                         </div>
                     </div>
@@ -79,5 +79,4 @@
         {{ $alumni->links() }}
     </div>
 </div>
-@endsection
 @endsection

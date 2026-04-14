@@ -17,8 +17,8 @@ class AIPredictionService
         if ($totalAlumni == 0) return $this->getEmptyInsights();
 
         $topMajors = User::where('role', 'alumni')
-            ->select('jurusan', \DB::raw('count(*) as total'))
-            ->groupBy('jurusan')
+            ->select('major', \DB::raw('count(*) as total'))
+            ->groupBy('major')
             ->orderBy('total', 'desc')
             ->take(3)
             ->get();
@@ -27,13 +27,13 @@ class AIPredictionService
         
         // Predict Reunion based on graduation peaks
         $gradPeaks = User::where('role', 'alumni')
-            ->select('tahun_lulus', \DB::raw('count(*) as total'))
-            ->groupBy('tahun_lulus')
+            ->select('graduation_year', \DB::raw('count(*) as total'))
+            ->groupBy('graduation_year')
             ->orderBy('total', 'desc')
             ->take(1)
             ->first();
 
-        $peakYear = $gradPeaks ? $gradPeaks->tahun_lulus : $currentYear - 5;
+        $peakYear = $gradPeaks ? $gradPeaks->graduation_year : $currentYear - 5;
         $reunionYear = $peakYear + 10; // 10 Year Milestone
         if ($reunionYear <= $currentYear) $reunionYear = $currentYear + 1;
 
@@ -46,7 +46,7 @@ class AIPredictionService
             ],
             'random_event' => [
                 'title' => 'Workshop Teknologi & Karir',
-                'description' => "Banyaknya alumni dari jurusan " . ($topMajors->first()->jurusan ?? 'Teknik') . " menunjukkan minat tinggi pada sinkronisasi industri tahun depan.",
+                'description' => "Banyaknya alumni dari major " . ($topMajors->first()->major ?? 'Teknik') . " menunjukkan minat tinggi pada sinkronisasi industri tahun depan.",
                 'confidence' => '92%',
                 'icon' => 'bi-lightbulb-fill'
             ],
@@ -64,29 +64,36 @@ class AIPredictionService
      */
     public function getUserPrediction(User $user)
     {
-        if (!$user->tahun_lulus) return null;
+        if (!$user->graduation_year) return null;
 
-        $yearsSinceGrad = date('Y') - $user->tahun_lulus;
+        $yearsSinceGrad = date('Y') - $user->graduation_year;
         $nextMilestone = ceil(($yearsSinceGrad + 1) / 5) * 5;
-        $reunionYear = $user->tahun_lulus + $nextMilestone;
+        $reunionYear = $user->graduation_year + $nextMilestone;
 
         return [
             'reunion_year' => $reunionYear,
             'milestone' => $nextMilestone,
-            'suggestion' => $this->getSuggestionByMajor($user->jurusan)
+            'suggestion' => $this->getSuggestionByMajor($user->major)
         ];
     }
 
     private function getSuggestionByMajor($major)
     {
-        $suggestions = [
-            'TKJ' => 'Networking Night & Update Sertifikasi Mikrotik',
-            'RPL' => 'Developer Meetup: Masa Depan AI di Indonesia',
-            'Multimedia' => 'Gath Design: Kreativitas Digital 2026',
-            'Akuntansi' => 'Workshop: Fintech & Financial Planning for Alumni',
-        ];
+        $major = strtoupper($major);
+        if (str_contains($major, 'TKJ') || str_contains($major, 'KOMPUTER') || str_contains($major, 'JARINGAN')) {
+            return 'Networking Night & Update Sertifikasi Mikrotik';
+        }
+        if (str_contains($major, 'RPL') || str_contains($major, 'REKAYASA') || str_contains($major, 'PERANGKAT LUNAK')) {
+            return 'Developer Meetup: Masa Depan AI di Indonesia';
+        }
+        if (str_contains($major, 'MM') || str_contains($major, 'MULTIMEDIA') || str_contains($major, 'DESAIN')) {
+            return 'Gath Design: Kreativitas Digital 2026';
+        }
+        if (str_contains($major, 'AK') || str_contains($major, 'AKUNTANSI')) {
+            return 'Workshop: Fintech & Financial Planning for Alumni';
+        }
 
-        return $suggestions[$major] ?? 'Temu Kangen & Sinergi Lintas Profesi';
+        return 'Temu Kangen & Sinergi Lintas Profesi';
     }
 
     private function getEmptyInsights()

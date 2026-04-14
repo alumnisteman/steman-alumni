@@ -84,11 +84,11 @@
             <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden post-card" id="post-{{ $post->id }}">
                 <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-start">
                     <div class="d-flex align-items-center">
-                        <img src="{{ ($post->user && $post->user->foto_profil) ? $post->user->foto_profil : 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? 'Alumni') }}" class="rounded-circle me-3" width="45" height="45" style="object-fit: cover;">
+                        <img src="{{ ($post->user && $post->user->profile_picture) ? $post->user->profile_picture : 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? 'Alumni') }}" class="rounded-circle me-3" width="45" height="45" style="object-fit: cover;">
                         <div>
                             <h6 class="fw-bold mb-0">{{ $post->user->name ?? 'Alumni' }}</h6>
                             <small class="text-muted">
-                                {{ ($post->user && $post->user->tahun_lulus) ? 'Angkatan ' . $post->user->tahun_lulus : 'Alumni' }} 
+                                {{ ($post->user && $post->user->graduation_year) ? 'Angkatan ' . $post->user->graduation_year : 'Alumni' }} 
                                 &bull; {{ $post->created_at->diffForHumans() }}
                                 @if($post->type == 'story')
                                     <span class="badge bg-info-subtle text-info rounded-pill ms-1">Cerita Lucu</span>
@@ -151,7 +151,7 @@
                     <div class="comments-section mb-3">
                         @foreach($post->comments->take(3) as $comment)
                         <div class="d-flex mb-2">
-                            <img src="{{ $comment->user->foto_profil ? $comment->user->foto_profil : 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name) }}" class="rounded-circle me-2" width="28" height="28">
+                            <img src="{{ $comment->user->profile_picture ? $comment->user->profile_picture : 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name) }}" class="rounded-circle me-2" width="28" height="28">
                             <div class="bg-light rounded-3 px-3 py-2 flex-grow-1">
                                 <div class="d-flex justify-content-between">
                                     <span class="fw-bold small">{{ $comment->user->name ?? 'Alumni' }}</span>
@@ -189,9 +189,9 @@
         <div class="col-lg-3 d-none d-lg-block">
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body p-4 text-center">
-                    <img src="{{ Auth::user()->foto_profil ? Auth::user()->foto_profil : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" class="rounded-circle mb-3 border border-3 border-primary p-1" width="80" height="80">
+                    <img src="{{ Auth::user()->profile_picture ? Auth::user()->profile_picture : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" class="rounded-circle mb-3 border border-3 border-primary p-1" width="80" height="80">
                     <h6 class="fw-bold mb-0">{{ Auth::user()->name }}</h6>
-                    <p class="text-muted small mb-3">Angkatan {{ Auth::user()->tahun_lulus }}</p>
+                    <p class="text-muted small mb-3">Angkatan {{ Auth::user()->graduation_year }}</p>
                     <div class="d-flex justify-content-around">
                         <div>
                             <div class="fw-bold">{{ Auth::user()->points }}</div>
@@ -296,7 +296,7 @@
                 
                 const item = document.createElement('div');
                 item.className = 'p-2 border-bottom small hover-bg-light cursor-pointer';
-                item.innerHTML = `<strong>${person.name}</strong> <span class="text-muted">(Agt ${person.tahun_lulus})</span>`;
+                item.innerHTML = `<strong>${person.name}</strong> <span class="text-muted">(Agt ${person.graduation_year})</span>`;
                 item.onclick = () => selectAlumni(person);
                 resultsDiv.appendChild(item);
             });

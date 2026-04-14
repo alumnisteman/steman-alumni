@@ -13,13 +13,13 @@ return new class extends Migration
     {
         try {
             Schema::table('users', function (Blueprint $table) {
-                $table->index('tahun_lulus');
+                $table->index('graduation_year');
             });
         } catch (\Exception $e) {}
 
         try {
             Schema::table('users', function (Blueprint $table) {
-                $table->index('jurusan');
+                $table->index('major');
             });
         } catch (\Exception $e) {}
 
@@ -43,13 +43,13 @@ return new class extends Migration
     {
         try {
             Schema::table('users', function (Blueprint $table) {
-                $table->dropIndex(['tahun_lulus']);
+                $table->dropIndex(['graduation_year']);
             });
         } catch (\Exception $e) {}
 
         try {
             Schema::table('users', function (Blueprint $table) {
-                $table->dropIndex(['jurusan']);
+                $table->dropIndex(['major']);
             });
         } catch (\Exception $e) {}
 

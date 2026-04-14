@@ -76,7 +76,7 @@
                     <div class="p-1" style="min-width: 150px;">
                         <div class="badge ${isInt ? 'bg-primary' : 'bg-danger'} mb-2" style="font-size: 0.6rem;">${isInt ? 'Internasional' : 'Nasional'}</div>
                         <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">${alumni.name}</h6>
-                        <div class="small text-muted mb-2">${alumni.jurusan} - ${alumni.tahun_lulus}</div>
+                        <div class="small text-muted mb-2">${alumni.major} - ${alumni.graduation_year}</div>
                         <button class="btn btn-sm btn-light w-100 py-1 fw-bold" style="font-size:0.65rem;">Profil Lengkap</button>
                     </div>
                  `);

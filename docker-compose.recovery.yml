@@ -1,0 +1,78 @@
+# Steman Alumni - PRODUCTION Docker Compose (TEMPORARY RECOVERY MODE)
+services:
+  app:
+    image: steman-alumni-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    restart: always
+    working_dir: /var/www
+    env_file: .env
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - SESSION_SECURE_COOKIE=true
+      - SESSION_HTTP_ONLY=true
+    deploy:
+      replicas: 1
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+      - app_public:/var/www/public
+      - ./app:/var/www/app
+      - ./resources:/var/www/resources
+      - ./routes:/var/www/routes
+      - ./config:/var/www/config
+      - ./database:/var/www/database
+    networks:
+      - steman-network
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: steman_redis
+    restart: always
+    networks:
+      - steman-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: steman_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - app_public:/var/www/public
+      - ./storage:/var/www/storage:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - app
+    networks:
+      - steman-network
+
+  db:
+    image: mariadb:10.6
+    container_name: steman_db
+    command: ["--skip-grant-tables", "--user=mysql"]
+    restart: always
+    env_file: .env
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - steman-network
+
+networks:
+  steman-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+  certbot_certs:
+  certbot_www:
+  app_public:

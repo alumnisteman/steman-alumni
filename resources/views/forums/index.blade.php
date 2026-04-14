@@ -18,19 +18,19 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100 transition-all shadow-hover p-3">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
-                            <img src="{{ $forum->user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($forum->user->name) }}" class="rounded-circle me-3" width="40" height="40">
+                            <img src="{{ $forum->user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($forum->user->name) }}" class="rounded-circle me-3" width="40" height="40">
                             <div>
                                 <h6 class="fw-bold mb-0 text-dark">{{ $forum->user->name }}</h6>
                                 <span class="text-muted small">{{ $forum->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
-                        <h5 class="fw-bold mb-3">{{ $forum->judul_diskusi }}</h5>
+                        <h5 class="fw-bold mb-3">{{ $forum->title }}</h5>
                         <p class="text-muted small mb-4 text-truncate-2">
-                            {{ Str::limit($forum->deskripsi_masalah, 150) }}
+                            {{ Str::limit($forum->content, 150) }}
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-light text-dark rounded-pill px-3 py-2">
-                                <i class="bi bi-chat-left-text me-2"></i> {{ $forum->jumlah_komentar }} Komentar
+                                <i class="bi bi-chat-left-text me-2"></i> {{ $forum->comments_count }} Komentar
                             </span>
                             <a href="{{ route('forums.show', $forum->id) }}" class="btn btn-outline-primary rounded-pill fw-bold btn-sm px-4">
                                 Ikut Diskusi <i class="bi bi-arrow-right ms-1"></i>
@@ -60,6 +60,15 @@
                 <h5 class="modal-title fw-bold">Mulai Diskusi Baru</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
             </div>
+            @if($errors->any())
+                <div class="alert alert-danger mx-3 mt-3 rounded-3">
+                    <ul class="mb-0 small">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <form action="{{ route('forums.store') }}" method="POST">
                 @csrf
                 <div class="modal-body py-4">

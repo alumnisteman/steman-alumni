@@ -45,4 +45,12 @@ class Program extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Relationship with Program Registrations
+     */
+    public function registrations()
+    {
+        return $this->hasMany(ProgramRegistration::class);
+    }
 }

@@ -26,7 +26,7 @@
                     SEMUA LOWONGAN
                 </a>
                 <a href="{{ request()->fullUrlWithQuery(['tab' => 'recommended']) }}" class="btn {{ request('tab') === 'recommended' ? 'btn-primary' : 'btn-light border-0' }} rounded-pill px-4 py-2 fw-bold transition-all position-relative">
-                    REKOMENDASI JURUSAN
+                    REKOMENDASI major
                     @if($matchCount > 0)
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white">
                             {{ $matchCount }}
@@ -41,7 +41,7 @@
                         <i class="bi bi-robot fs-2 text-primary me-3"></i>
                         <div>
                             <h6 class="fw-bold mb-1">AI Recommendation Active</h6>
-                            <p class="small mb-0 opacity-75">Menampilkan lowongan yang relevan dengan keahlian Anda sebagai alumni <strong>{{ auth()->user()->jurusan }}</strong>.</p>
+                            <p class="small mb-0 opacity-75">Menampilkan lowongan yang relevan dengan keahlian Anda sebagai alumni <strong>{{ auth()->user()->major }}</strong>.</p>
                         </div>
                     </div>
                 </div>
@@ -76,9 +76,9 @@
                             <span class="badge bg-light text-dark rounded-pill px-3 py-2 small me-1">
                                 <i class="bi bi-clock me-1"></i> {{ $job->type }}
                             </span>
-                            @if(auth()->check() && auth()->user()->jurusan && (Str::contains(strtolower($job->description), strtolower(auth()->user()->jurusan)) || Str::contains(strtolower($job->title), strtolower(auth()->user()->jurusan))))
+                            @if(auth()->check() && auth()->user()->major && (Str::contains(strtolower($job->description), strtolower(auth()->user()->major)) || Str::contains(strtolower($job->title), strtolower(auth()->user()->major))))
                                 <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 small mt-2 d-inline-block">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Major Match: {{ auth()->user()->jurusan }}
+                                    <i class="bi bi-check-circle-fill me-1"></i> Major Match: {{ auth()->user()->major }}
                                 </span>
                             @endif
                         </div>

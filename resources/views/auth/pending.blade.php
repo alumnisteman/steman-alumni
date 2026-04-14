@@ -17,7 +17,7 @@
                     <div class="alert alert-info border-0 shadow-sm text-start" style="border-radius: 15px;">
                         <i class="bi bi-info-circle-fill me-2"></i> <strong>Apa yang bisa Anda lakukan sekarang?</strong>
                         <ul class="mb-0 mt-2 small">
-                            <li>Memperbarui profil dan melengkapi info jurusan/kelulusan.</li>
+                            <li>Memperbarui profil dan melengkapi info major/kelulusan.</li>
                             <li>Mengakses halaman dasbor utama terbatas.</li>
                             <li>Tunggu 1x24 jam untuk proses moderasi.</li>
                         </ul>

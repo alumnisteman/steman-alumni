@@ -6,17 +6,18 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm text-center p-4 bg-white" style="border-top: 5px solid #ffcc00; border-radius: 15px;">
                 <div class="position-relative d-inline-block mx-auto mb-3">
-                    <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=ffcc00&color=000&size=200' }}" 
+                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=ffcc00&color=000&size=200' }}" 
                          class="rounded-circle border border-4 border-light shadow-sm" width="120" height="120" style="object-fit: cover;">
                 </div>
                 <h4 class="fw-bold mb-1">{{ $user->name }}</h4>
-                <p class="text-muted small mb-3">Angkatan {{ $user->tahun_lulus }} • {{ $user->jurusan }}</p>
+                <p class="text-muted small mb-3">Angkatan {{ $user->graduation_year }} • {{ $user->major }}</p>
                 <hr class="opacity-10">
                 <div class="d-grid gap-2">
                     <a href="/alumni/profile" class="btn btn-outline-dark rounded-0 fw-bold py-2"><i class="bi bi-person-gear me-2"></i>EDIT PROFIL</a>
                     <a href="{{ route('alumni.card') }}" class="btn btn-warning rounded-0 fw-bold py-2 shadow-sm"><i class="bi bi-qr-code-scan me-2"></i>KARTU DIGITAL SAYA</a>
                     <a href="/alumni" class="btn btn-outline-dark rounded-0 fw-bold py-2"><i class="bi bi-person-lines-fill me-2"></i>DIREKTORI REKAN</a>
                     <a href="/alumni/messages" class="btn btn-outline-dark rounded-0 fw-bold py-2"><i class="bi bi-envelope me-2"></i>PESAN SAYA</a>
+                    <a href="{{ route('alumni.business.index') }}" class="btn btn-primary rounded-0 fw-bold py-2 shadow-sm text-white mt-1"><i class="bi bi-shop me-2"></i>BISNIS ALUMNI</a>
                 </div>
             </div>
             
@@ -118,19 +119,19 @@
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
                         <div class="text-muted small text-uppercase fw-bold mb-2">Pekerjaan</div>
-                        <div class="h6 fw-bold mb-0 text-primary">{{ $user->pekerjaan_sekarang ?? 'Belum Diatur' }}</div>
+                        <div class="h6 fw-bold mb-0 text-primary">{{ $user->current_job ?? 'Belum Diatur' }}</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
-                        <div class="text-muted small text-uppercase fw-bold mb-2">Jurusan</div>
-                        <div class="h6 fw-bold mb-0">{{ $user->jurusan }}</div>
+                        <div class="text-muted small text-uppercase fw-bold mb-2">major</div>
+                        <div class="h6 fw-bold mb-0">{{ $user->major }}</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
                         <div class="text-muted small text-uppercase fw-bold mb-2">Tahun Lulus</div>
-                        <div class="h6 fw-bold mb-0">{{ $user->tahun_lulus }}</div>
+                        <div class="h6 fw-bold mb-0">{{ $user->graduation_year }}</div>
                     </div>
                 </div>
             </div>
@@ -182,7 +183,7 @@
             @if($recommendedJobs->isNotEmpty())
             <div class="card border-0 shadow-sm mb-5 overflow-hidden" style="border-radius: 15px;">
                 <div class="card-header bg-primary text-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0 text-uppercase tracking-wider"><i class="bi bi-stars me-2"></i> Lowongan Sesuai Jurusan {{ $user->jurusan }}</h6>
+                    <h6 class="fw-bold mb-0 text-uppercase tracking-wider"><i class="bi bi-stars me-2"></i> Lowongan Sesuai major {{ $user->major }}</h6>
                     <a href="/jobs?tab=recommended" class="text-white small fw-bold text-decoration-none">LIHAT SEMUA <i class="bi bi-chevron-right small"></i></a>
                 </div>
                 <div class="card-body p-0">
@@ -255,14 +256,14 @@
                         <div class="position-absolute bg-primary rounded-circle" style="width: 12px; height: 12px; left: -27px; top: 6px; border: 3px solid #fff;"></div>
                         <h6 class="fw-bold mb-1">Sekarang</h6>
                         <p class="small text-muted mb-0">
-                            {{ $user->pekerjaan_sekarang ?? 'Belum ada data pekerjaan' }}
-                            @if($user->perusahaan_universitas) at {{ $user->perusahaan_universitas }} @endif
+                            {{ $user->current_job ?? 'Belum ada data pekerjaan' }}
+                            @if($user->company_university) at {{ $user->company_university }} @endif
                         </p>
                     </div>
                     <div class="timeline-item position-relative">
                         <div class="position-absolute bg-secondary bg-opacity-50 rounded-circle" style="width: 12px; height: 12px; left: -27px; top: 6px; border: 3px solid #fff;"></div>
-                        <h6 class="fw-bold mb-1">Tahun Lulus ({{ $user->tahun_lulus }})</h6>
-                        <p class="small text-muted mb-0">Lulus dari SMKN 2 Ternate - Jurusan {{ $user->jurusan }}</p>
+                        <h6 class="fw-bold mb-1">Tahun Lulus ({{ $user->graduation_year }})</h6>
+                        <p class="small text-muted mb-0">Lulus dari SMKN 2 Ternate - major {{ $user->major }}</p>
                     </div>
                 </div>
             </div>
@@ -286,13 +287,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.aiPrediction) {
                 predictionContent.innerHTML = `<p class="small opacity-75 mb-0">${data.aiPrediction}</p>`;
             } else {
-                predictionContent.innerHTML = `<p class="small opacity-75 mb-0">Berdasarkan data profil, Anda memiliki potensi besar di bidang {{ $user->jurusan }}. Rekomendasi: Ambil sertifikasi keahlian tambahan.</p>`;
+                predictionContent.innerHTML = `<p class="small opacity-75 mb-0">Berdasarkan data profil, Anda memiliki potensi besar di bidang {{ $user->major }}. Rekomendasi: Ambil sertifikasi keahlian tambahan.</p>`;
             }
 
             // 2. Update Career Snippet
             if (data.careerSnippet) {
                 document.getElementById('career-snippet-content').classList.remove('d-none');
-                document.getElementById('career-snippet-text').innerHTML = `Mayoritas alumni {{ $user->jurusan }} kini sukses sebagai <b>${data.careerSnippet.pekerjaan}</b>`;
+                document.getElementById('career-snippet-text').innerHTML = `Mayoritas alumni {{ $user->major }} kini sukses sebagai <b>${data.careerSnippet.pekerjaan}</b>`;
             }
 
             // 3. Update Recommendations
@@ -307,10 +308,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm p-3 position-relative overflow-hidden transition-all hover-translate-y" style="border-radius: 20px; background: white;">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="${rec.foto_profil}" class="rounded-circle me-3" width="50" height="50" style="object-fit: cover;">
+                                <img src="${rec.profile_picture}" class="rounded-circle me-3" width="50" height="50" style="object-fit: cover;">
                                 <div>
                                     <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${rec.name}</h6>
-                                    <p class="text-muted mb-0" style="font-size: 0.7rem;">${rec.jurusan}</p>
+                                    <p class="text-muted mb-0" style="font-size: 0.7rem;">${rec.major}</p>
                                 </div>
                             </div>
                             <div class="p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-10 mb-3">

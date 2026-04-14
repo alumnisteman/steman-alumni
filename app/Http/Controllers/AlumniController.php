@@ -67,7 +67,7 @@ class AlumniController extends Controller
         if (!auth()->user() || auth()->user()->role !== 'admin') {
             $alumni->getCollection()->transform(function($user) {
                 $user->email = PrivacyService::maskEmail($user->email);
-                $user->nomor_telepon = PrivacyService::maskPhone($user->nomor_telepon);
+                $user->phone_number = PrivacyService::maskPhone($user->phone_number);
                 return $user;
             });
         }
@@ -86,7 +86,7 @@ class AlumniController extends Controller
         // Apply masking for privacy (unless admin)
         if (!auth()->user() || auth()->user()->role !== 'admin') {
             $user->email = PrivacyService::maskEmail($user->email);
-            $user->nomor_telepon = PrivacyService::maskPhone($user->nomor_telepon);
+            $user->phone_number = PrivacyService::maskPhone($user->phone_number);
         }
 
         return view('alumni.show', compact('user'));

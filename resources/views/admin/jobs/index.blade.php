@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
-<div class="container py-4">
+@section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
             <h2 class="section-title mb-0">Manajemen Lowongan Kerja</h2>
             <p class="text-muted small">Kelola info loker internal dan eksternal</p>

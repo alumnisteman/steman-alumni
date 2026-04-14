@@ -8,7 +8,23 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->role === 'admin') return $next($request);
-        return redirect()->route('login')->with('error', 'Akses ditolak. Anda bukan Admin.');
+        // Not logged in → go to login
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Silakan login sebagai Admin.');
+        }
+
+        $user = auth()->user();
+
+        // Editor role → allowed into admin panel (content management only)
+        if ($user->role === 'editor') {
+            return $next($request);
+        }
+
+        // Admin role → allowed into admin panel
+        if ($user->role === 'admin') {
+            return $next($request);
+        }
+
+        return abort(403, 'Akses ditolak.');
     }
 }

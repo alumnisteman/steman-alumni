@@ -67,6 +67,7 @@ class NewsController extends Controller
             if (class_exists(\Intervention\Image\ImageManager::class)) {
                 $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
                 $image = $manager->read($file->getRealPath());
+                $image->scale(width: 1200); // Scale down news photos to 1200px
                 $encoded = $image->toWebp(70); // 70% quality compresses it < 200kb usually
                 Storage::disk('public')->put('news/' . $imageName, (string) $encoded);
             } else {
@@ -123,6 +124,7 @@ class NewsController extends Controller
             if (class_exists(\Intervention\Image\ImageManager::class)) {
                 $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
                 $image = $manager->read($file->getRealPath());
+                $image->scale(width: 1200); 
                 $encoded = $image->toWebp(70);
                 Storage::disk('public')->put('news/' . $imageName, (string) $encoded);
             } else {
@@ -174,19 +176,21 @@ class NewsController extends Controller
         return back()->with('success', 'Berita berhasil dihapus.');
     }
 
-    public function quickPublish(News $news)
+    public function togglePublish(News $news)
     {
-        $news->update(['status' => 'published']);
+        $newStatus = ($news->status === 'published') ? 'draft' : 'published';
+        $news->update(['status' => $newStatus]);
         
         LogActivity::dispatch(
             Auth::id(),
-            'Publish News',
-            'Published news: ' . $news->title,
+            ($newStatus === 'published' ? 'Publish' : 'Unpublish') . ' News',
+            ($newStatus === 'published' ? 'Published' : 'Unpublished') . ' news: ' . $news->title,
             request()->ip(),
             request()->header('User-Agent')
         );
         Cache::forget('welcome_data');
         
-        return back()->with('success', 'Berita berhasil diterbitkan!');
+        $message = ($newStatus === 'published' ? 'Berita berhasil diterbitkan!' : 'Berita berhasil dikembalikan ke draft.');
+        return back()->with('success', $message);
     }
 }

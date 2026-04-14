@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
-<div class="container py-4">
+@section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
             <h2 class="fw-black mb-1"> VERIFIKASI ALUMNI</h2>
             <p class="text-muted">Tinjau dan setujui pendaftaran alumni baru untuk memberikan akses penuh.</p>
@@ -34,7 +34,7 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=6366f1&color=fff' }}" 
+                                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=6366f1&color=fff' }}" 
                                          class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;">
                                     <div>
                                         <div class="fw-bold text-dark">{{ $user->name }}</div>
@@ -44,10 +44,10 @@
                             </td>
                             <td>
                                 <div class="d-flex flex-column">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary mb-1" style="width: fit-content;">{{ $user->jurusan ?? '-' }}</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary mb-1" style="width: fit-content;">{{ $user->major ?? '-' }}</span>
                                     <div class="small">
                                         <span class="text-muted">NISN:</span> {{ $user->nisn ?? '-' }} 
-                                        <span class="text-muted ms-2">Lulus:</span> {{ $user->tahun_lulus ?? '-' }}
+                                        <span class="text-muted ms-2">Lulus:</span> {{ $user->graduation_year ?? '-' }}
                                     </div>
                                 </div>
                             </td>

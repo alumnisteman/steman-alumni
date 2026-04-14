@@ -8,19 +8,21 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
+        \Illuminate\Support\Facades\Log::debug("Middleware Trace: RoleMiddleware Started. User: " . (\Illuminate\Support\Facades\Auth::check() ? \Illuminate\Support\Facades\Auth::user()->email : 'Guest'));
+        
         try {
             if (!\Illuminate\Support\Facades\Auth::check()) {
-                return redirect()->route('login');
+                return redirect()->route('login')->with('error', 'Silakan login untuk mengakses halaman ini.');
             }
 
             if (in_array(\Illuminate\Support\Facades\Auth::user()->role, $roles)) {
                 return $next($request);
             }
 
-            return redirect()->route('login')->with('error', 'Akses ditolak. Anda tidak memiliki izin untuk halaman ini.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('RoleMiddleware Error: ' . $e->getMessage());
-            return redirect()->route('login')->with('error', 'Sistem sedang sibuk. Silakan coba lagi.');
+            return abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk halaman ini.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Middleware Trace: RoleMiddleware FATAL: " . $e->getMessage());
+            return $next($request); // Fallback to allow request to proceed if middleware itself crashes
         }
     }
 }

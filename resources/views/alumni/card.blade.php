@@ -401,8 +401,8 @@
 
             <div class="user-info">
                 <div class="profile-frame">
-                    @if($user->foto_profil)
-                        <img src="{{ \Illuminate\Support\Str::startsWith($user->foto_profil, '/storage/') ? $user->foto_profil : asset('storage/' . $user->foto_profil) }}" class="profile-img">
+                    @if($user->profile_picture)
+                        <img src="{{ \Illuminate\Support\Str::startsWith($user->profile_picture, '/storage/') ? $user->profile_picture : asset('storage/' . $user->profile_picture) }}" class="profile-img">
                     @else
                         <div class="profile-img bg-slate-800 d-flex align-items-center justify-content-center text-white fw-bold fs-3">
                             {{ substr($user->name, 0, 1) }}
@@ -411,7 +411,7 @@
                 </div>
                 <div class="info-content">
                     <h2 class="text-white">{{ strtoupper($user->name) }}</h2>
-                    <p>{{ $user->jurusan }} • CLASS OF {{ $user->tahun_lulus }}</p>
+                    <p>{{ $user->major }} • CLASS OF {{ $user->graduation_year }}</p>
                 </div>
             </div>
 

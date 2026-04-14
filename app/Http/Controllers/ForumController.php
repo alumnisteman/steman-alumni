@@ -25,14 +25,19 @@ class ForumController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'judul_diskusi' => 'required|string|max:255',
+            'deskripsi_masalah' => 'required|string',
         ]);
+
+        if (!\App\Services\ContentModerationService::isClean($request->judul_diskusi) || 
+            !\App\Services\ContentModerationService::isClean($request->deskripsi_masalah)) {
+            return back()->withInput()->withErrors(['judul_diskusi' => '⚠️ PERINGATAN ADMIN: Konten Anda mengandung kata-kata yang melanggar aturan komunitas (Makian/SARA). Mohon tetap menjaga kesantunan.']);
+        }
 
         $forum = Forum::create([
             'user_id' => Auth::id(),
-            'title' => $request->title,
-            'content' => $request->content,
+            'title' => strip_tags($request->judul_diskusi),
+            'content' => strip_tags($request->deskripsi_masalah),
         ]);
 
         // Award Points
@@ -46,6 +51,9 @@ class ForumController extends Controller
             $request->header('User-Agent')
         );
 
+        // AI Moderation (Background)
+        \App\Jobs\ModerateContentWithAI::dispatch($forum);
+
         return back()->with('success', 'Diskusi berhasil dibuat dan Anda mendapatkan 10 poin!');
     }
 
@@ -55,12 +63,19 @@ class ForumController extends Controller
             'content' => 'required|string',
         ]);
 
-        $forum->comments()->create([
+        if (!\App\Services\ContentModerationService::isClean($request->content)) {
+            return back()->withInput()->withErrors(['content' => '⚠️ TEGURAN ADMIN: Komentar Anda tidak diperbolehkan karena mengandung kata-kata tidak pantas.']);
+        }
+
+        $comment = $forum->comments()->create([
             'user_id' => Auth::id(),
-            'content' => $request->content,
+            'content' => strip_tags($request->content),
         ]);
 
         $forum->increment('comments_count');
+
+        // AI Moderation
+        \App\Jobs\ModerateContentWithAI::dispatch($comment);
 
         // Award Points
         Auth::user()->awardPoints(10);

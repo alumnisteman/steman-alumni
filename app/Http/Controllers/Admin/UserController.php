@@ -16,16 +16,21 @@ class UserController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
-                'role' => 'required|in:admin,alumni',
-                'jurusan' => 'nullable|string|max:255',
+                'role' => 'required|in:' . implode(',', User::ROLES),
+                'major' => 'nullable|string|max:255',
                 'password' => 'required|string|min:4|confirmed',
             ]);
+
+            // Security check: Editor cannot create Admin
+            if (Auth::user()->role === 'editor' && $request->role === 'admin') {
+                return back()->with('error', 'Editor tidak diperbolehkan membuat akun Admin.')->withInput();
+            }
 
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'role' => $request->role,
-                'jurusan' => $request->jurusan,
+                'major' => $request->major,
                 'status' => 'approved',
                 'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             ]);
@@ -59,28 +64,28 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
                 'nisn' => 'nullable|string|max:20',
-                'jurusan' => 'nullable|string|max:255',
-                'tahun_lulus' => 'nullable|integer',
-                'nomor_telepon' => 'nullable|string|max:20',
-                'alamat' => 'nullable|string',
+                'major' => 'nullable|string|max:255',
+                'graduation_year' => 'nullable|integer',
+                'phone_number' => 'nullable|string|max:20',
+                'address' => 'nullable|string',
                 'bio' => 'nullable|string',
                 'password' => 'nullable|string|min:4|confirmed',
-                'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             $user->name = $request->name;
             $user->email = $request->email;
             $user->nisn = $request->nisn;
-            $user->jurusan = $request->jurusan;
-            $user->tahun_lulus = $request->tahun_lulus;
-            $user->nomor_telepon = $request->nomor_telepon;
-            $user->alamat = $request->alamat;
+            $user->major = $request->major;
+            $user->graduation_year = $request->graduation_year;
+            $user->phone_number = $request->phone_number;
+            $user->address = $request->address;
             $user->bio = $request->bio;
 
-            if ($request->hasFile('foto_profil')) {
+            if ($request->hasFile('profile_picture')) {
                 // Disk cleanup removed for simplicity in this hardened version
-                $path = $request->file('foto_profil')->store('avatars', 'public');
-                $user->foto_profil = '/storage/' . $path;
+                $path = $request->file('profile_picture')->store('avatars', 'public');
+                $user->profile_picture = '/storage/' . $path;
             }
 
             if ($request->filled('password')) {
@@ -107,8 +112,18 @@ class UserController extends Controller
     public function updateRole(Request $request, User $user)
     {
         $request->validate([
-            'role' => 'required|in:admin,alumni',
+            'role' => 'required|in:' . implode(',', User::ROLES),
         ]);
+
+        // Security check: Editor cannot promote to Admin
+        if (Auth::user()->role === 'editor' && $request->role === 'admin') {
+            return back()->with('error', 'Editor tidak diperbolehkan menaikkan role menjadi Admin.');
+        }
+
+        // Security check: Editor cannot demote Admin
+        if (Auth::user()->role === 'editor' && $user->role === 'admin') {
+            return back()->with('error', 'Editor tidak diperbolehkan mengubah role Admin.');
+        }
 
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Anda tidak bisa mengubah role Anda sendiri.');

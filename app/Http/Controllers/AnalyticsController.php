@@ -18,42 +18,42 @@ class AnalyticsController extends Controller
             $totalAlumni = User::where('role', 'alumni')->count();
             
             $alumniByMajor = User::where('role', 'alumni')
-                ->selectRaw('jurusan as major_name, count(*) as total')
-                ->groupBy('jurusan')
+                ->selectRaw('major as major_name, count(*) as total')
+                ->groupBy('major')
                 ->get()
                 ->map(function($item) {
                     return (object) [
-                        'jurusan' => $item->major_name ?: 'Tidak Terisi',
+                        'major' => $item->major_name ?: 'Tidak Terisi',
                         'total' => $item->total
                     ];
                 });
 
             $alumniByYear = User::where('role', 'alumni')
-                ->selectRaw('tahun_lulus as graduation_year, count(*) as total')
-                ->groupBy('tahun_lulus')
-                ->orderBy('tahun_lulus')
+                ->selectRaw('graduation_year as graduation_year, count(*) as total')
+                ->groupBy('graduation_year')
+                ->orderBy('graduation_year')
                 ->get()
                 ->map(function($item) {
                     return (object) [
-                        'tahun_lulus' => $item->graduation_year ?: '?',
+                        'graduation_year' => $item->graduation_year ?: '?',
                         'total' => $item->total
                     ];
                 });
 
             $employmentStats = User::where('role', 'alumni')
                 ->selectRaw('COUNT(*) as total')
-                ->selectRaw('CASE WHEN pekerjaan_sekarang IS NOT NULL AND pekerjaan_sekarang != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END as status')
-                ->groupByRaw('CASE WHEN pekerjaan_sekarang IS NOT NULL AND pekerjaan_sekarang != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END')
+                ->selectRaw('CASE WHEN current_job IS NOT NULL AND current_job != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END as status')
+                ->groupByRaw('CASE WHEN current_job IS NOT NULL AND current_job != "" THEN "Bekerja / Studi Lanjut" ELSE "Lainnya" END')
                 ->get();
 
             $careerPaths = User::where('role', 'alumni')
-                ->whereNotNull('pekerjaan_sekarang')
-                ->where('pekerjaan_sekarang', '!=', '')
-                ->selectRaw('jurusan, pekerjaan_sekarang, count(*) as total')
-                ->groupBy('jurusan', 'pekerjaan_sekarang')
+                ->whereNotNull('current_job')
+                ->where('current_job', '!=', '')
+                ->selectRaw('major, current_job, count(*) as total')
+                ->groupBy('major', 'current_job')
                 ->orderBy('total', 'desc')
                 ->get()
-                ->groupBy('jurusan')
+                ->groupBy('major')
                 ->map(function($items) {
                     return $items->take(3); // Top 3 career paths per major
                 });

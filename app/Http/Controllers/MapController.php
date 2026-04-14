@@ -24,18 +24,18 @@ class MapController extends Controller
             return User::where('role', 'alumni')
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->select('id', 'name', 'jurusan', 'tahun_lulus', 'latitude', 'longitude', 'city_name', 'foto_profil')
+                ->select('id', 'name', 'major', 'graduation_year', 'latitude', 'longitude', 'city_name', 'profile_picture')
                 ->get()
                 ->map(function ($user) {
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
-                        'major' => $user->jurusan,
-                        'year' => $user->tahun_lulus,
+                        'major' => $user->major,
+                        'year' => $user->graduation_year,
                         'lat' => (float) $user->latitude,
                         'lng' => (float) $user->longitude,
                         'city' => $user->city_name,
-                        'avatar' => $user->foto_profil ? asset('storage/' . $user->foto_profil) : asset('assets/images/default-avatar.png'),
+                        'avatar' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('assets/images/default-avatar.png'),
                     ];
                 });
         });

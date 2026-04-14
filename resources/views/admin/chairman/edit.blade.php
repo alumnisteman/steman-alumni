@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
-<div class="container py-4">
+@section('admin-content')
     <div class="mb-4">
+
         <h2 class="section-title">Manajemen Sambutan</h2>
         <p class="text-muted">Kelola sambutan dari Ketua Iluni dan Ketua Panitia Acara.</p>
     </div>
@@ -45,9 +45,9 @@
                             <textarea name="alumni_message" class="form-control border-primary border-opacity-25" rows="4" id="a_message" placeholder="Pesan inspiratif untuk seluruh alumni di halaman profil...">{{ setting('alumni_message') }}</textarea>
                             <div class="form-text small">Pesan ini akan muncul secara eksklusif di halaman Profil Organisasi.</div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 d-none">
                             <label class="form-label small fw-bold">Upload Foto Ketua Umum</label>
-                            <input type="file" name="chairman_photo" class="form-control" id="c_photo">
+                            <input type="file" name="chairman_photo_unused" class="form-control">
                         </div>
 
                         <!-- Mini Preview -->
@@ -68,7 +68,7 @@
                                     
                                     <div class="mb-2 p-2 bg-warning bg-opacity-10 rounded-3 border border-warning border-opacity-25">
                                         <label class="form-label small fw-bold text-dark mb-1">UNGGAH FOTO KETUA UMUM:</label>
-                                        <input type="file" name="chairman_photo" class="form-control form-control-sm border-warning border-opacity-50 shadow-sm" id="c_photo_input" style="border-radius: 8px;">
+                                        <input type="file" name="chairman_photo" class="form-control form-control-sm border-warning border-opacity-50 shadow-sm" id="c_photo" style="border-radius: 8px;">
                                     </div>
                                     <div class="form-text x-small text-muted">Format: JPG, PNG, WEBP (Maks 5MB)</div>
                                 </div>
@@ -100,9 +100,9 @@
                             <label class="form-label small fw-bold">Sambutan Ketua Panitia</label>
                             <textarea name="event_chairman_message" class="form-control" rows="8" id="e_message" placeholder="Teks lengkap sambutan ketua panitia...">{{ setting('event_chairman_message') }}</textarea>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 d-none">
                             <label class="form-label small fw-bold">Upload Foto Ketua Panitia</label>
-                            <input type="file" name="event_chairman_photo" class="form-control" id="e_photo">
+                            <input type="file" name="event_chairman_photo_unused" class="form-control">
                         </div>
 
                         <!-- Mini Preview -->
@@ -126,7 +126,7 @@
                                     
                                     <div class="mb-2 p-2 bg-primary bg-opacity-10 rounded-3 border border-primary border-opacity-25">
                                         <label class="form-label small fw-bold text-dark mb-1">UNGGAH FOTO KETUA PANITIA:</label>
-                                        <input type="file" name="event_chairman_photo" class="form-control form-control-sm border-primary border-opacity-50 shadow-sm" id="e_photo_input" style="border-radius: 8px;">
+                                        <input type="file" name="event_chairman_photo" class="form-control form-control-sm border-primary border-opacity-50 shadow-sm" id="e_photo" style="border-radius: 8px;">
                                     </div>
                                 </div>
                             </div>

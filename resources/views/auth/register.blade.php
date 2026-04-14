@@ -44,13 +44,13 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Tahun Lulus</label>
-                            <input type="number" name="tahun_lulus" class="form-control" value="{{ old('tahun_lulus') }}">
+                            <input type="number" name="graduation_year" class="form-control" value="{{ old('graduation_year') }}">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Jurusan</label>
-                        <select name="jurusan" class="form-select">
-                            <option value="" selected disabled>Pilih Jurusan</option>
+                        <label class="form-label">major</label>
+                        <select name="major" class="form-select">
+                            <option value="" selected disabled>Pilih major</option>
                             @foreach($majors as $major)
                                 <option value="{{ $major->name }}">{{ $major->name }}</option>
                             @endforeach</select>

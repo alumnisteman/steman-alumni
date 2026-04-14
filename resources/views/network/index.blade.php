@@ -156,8 +156,8 @@
                                 ${isInt ? '<i class="bi bi-globe-americas me-1"></i> Luar Negeri' : '<i class="bi bi-geo-alt-fill me-1"></i> Dalam Negeri'}
                             </div>
                             <h6 class="fw-bold text-white mb-1" style="font-size: 0.95rem;">${alumni.name}</h6>
-                            <div class="small text-light opacity-75 mb-1">${alumni.jurusan}</div>
-                            <div class="small text-light opacity-75">Angkatan ${alumni.tahun_lulus}</div>
+                            <div class="small text-light opacity-75 mb-1">${alumni.major}</div>
+                            <div class="small text-light opacity-75">Angkatan ${alumni.graduation_year}</div>
                         </div>
                      `);
                 }

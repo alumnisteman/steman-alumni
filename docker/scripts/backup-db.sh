@@ -1,19 +1,16 @@
 #!/bin/bash
 # ============================================================
 # Script Backup Database Otomatis - Steman Alumni Portal
-# Versi: 1.0 | Diupdate: April 2026
+# Versi: 1.1 | Diupdate: April 2026
 # ============================================================
 
 # ── Konfigurasi ──────────────────────────────────────────────
-PROJECT_DIR="/opt/steman-alumni"
-BACKUP_DIR="/opt/steman-alumni/backups/database"
+PROJECT_DIR="/var/www/steman-alumni"
+BACKUP_DIR="$PROJECT_DIR/backups/database"
 COMPOSE_FILE="docker-compose.prod.yml"
 DB_CONTAINER="steman_db"
-DB_NAME="steman_alumni"
-DB_USER="app_user"
-DB_PASS="strongpassword"
 RETENTION_DAYS=30   # Hapus backup yang lebih lama dari N hari
-LOG_FILE="/opt/steman-alumni/backups/backup.log"
+LOG_FILE="$PROJECT_DIR/backups/backup.log"
 
 # ── Fungsi Log ───────────────────────────────────────────────
 log() {
@@ -21,9 +18,24 @@ log() {
 }
 
 # ── Persiapan ────────────────────────────────────────────────
+if [ ! -d "$PROJECT_DIR" ]; then
+    echo "ERROR: Folder project tidak ditemukan: $PROJECT_DIR"
+    exit 1
+fi
+
 mkdir -p "$BACKUP_DIR"
 touch "$LOG_FILE"
-cd "$PROJECT_DIR" || { log "ERROR: Folder project tidak ditemukan: $PROJECT_DIR"; exit 1; }
+cd "$PROJECT_DIR" || exit 1
+
+# Load Database Credentials from .env
+if [ -f .env ]; then
+    DB_NAME=$(grep '^DB_DATABASE=' .env | cut -d '=' -f2)
+    DB_USER=$(grep '^DB_USERNAME=' .env | cut -d '=' -f2)
+    DB_PASS=$(grep '^DB_PASSWORD=' .env | cut -d '=' -f2)
+else
+    log "ERROR: File .env tidak ditemukan di $PROJECT_DIR"
+    exit 1
+fi
 
 log "======================================================"
 log "  MEMULAI PROSES BACKUP DATABASE: $DB_NAME"
@@ -67,8 +79,8 @@ DELETED_COUNT=$(find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -pri
 log "Total backup lama yang dihapus: $DELETED_COUNT file."
 
 # ── Tampilkan Daftar Backup yang Ada ─────────────────────────
-log "Daftar backup tersedia saat ini:"
-ls -lh "$BACKUP_DIR"/*.sql.gz 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}' | tee -a "$LOG_FILE"
+log "Daftar backup tersedia saat ini (3 terakhir):"
+ls -lh "$BACKUP_DIR"/*.sql.gz 2>/dev/null | tail -n 3 | awk '{print "  " $9 " (" $5 ")"}' | tee -a "$LOG_FILE"
 
 log "======================================================"
 log "  BACKUP SELESAI"

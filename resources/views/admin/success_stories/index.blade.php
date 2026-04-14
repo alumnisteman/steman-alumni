@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
-<div class="container py-5">
+@section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
             <h2 class="fw-bold mb-0">Manajemen Jejak Sukses Alumni</h2>
             <p class="text-muted">Kelola cerita inspiratif yang muncul di halaman utama.</p>
@@ -25,7 +25,7 @@
                     <tr>
                         <th class="ps-4">Foto</th>
                         <th>Nama & Gelar</th>
-                        <th>Jurusan & Angkatan</th>
+                        <th>major & Angkatan</th>
                         <th>Status</th>
                         <th>Urutan</th>
                         <th class="text-end pe-4">Aksi</th>

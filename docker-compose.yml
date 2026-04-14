@@ -16,8 +16,14 @@ services:
       retries: 3
     volumes:
       - ./storage:/var/www/storage
+      - ./bootstrap/app.php:/var/www/bootstrap/app.php
       - ./bootstrap/cache:/var/www/bootstrap/cache
-      - app_public:/var/www/public
+      - ./public:/var/www/public
+      - ./app:/var/www/app
+      - ./resources:/var/www/resources
+      - ./routes:/var/www/routes
+      - ./config:/var/www/config
+      - ./database:/var/www/database
     networks:
       - steman-network
     depends_on:
@@ -59,10 +65,10 @@ services:
     container_name: steman_nginx
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-8000}:80"
-      - "${SSL_PORT:-8443}:443"
+      - "80:80"
+      - "443:443"
     volumes:
-      - app_public:/var/www/public
+      - ./public:/var/www/public
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
       - certbot_certs:/etc/letsencrypt
       - certbot_www:/var/www/certbot
@@ -102,6 +108,8 @@ networks:
 
 volumes:
   dbdata:
+    name: steman-alumni_dbdata
   certbot_certs:
+    name: steman-alumni_certbot_certs
   certbot_www:
-  app_public:
+    name: steman-alumni_certbot_www

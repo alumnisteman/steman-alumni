@@ -23,6 +23,7 @@ use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\ProgramRegistrationController;
 use App\Services\AIPredictionService;
 
 // --- 1. Global Public Routes (Rate Limited) ---
@@ -96,9 +97,28 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
             Route::get('/alumni/messages', [AlumniController::class, 'messages'])->name('alumni.messages');
             Route::get('/api/dashboard/ai-data', [\App\Http\Controllers\Api\DashboardApiController::class, 'getAIData'])->name('dashboard.ai.data');
             Route::get('/alumni/card', [CardController::class, 'index'])->name('alumni.card');
+            
+            // Programs Registration (Alumni)
+            Route::post('/programs/{program}/register', [ProgramRegistrationController::class, 'store'])->name('programs.register');
         });
 
-        // Wildcard Profile Route (Last in the alumni group)
+        // Business Directory Routes - Secured by standard Role Middleware
+        Route::middleware(['role:admin,editor,alumni'])->group(function () {
+            Route::get('/alumni/business', [\App\Http\Controllers\BusinessController::class, 'index'])->name('alumni.business.index');
+            Route::get('/alumni/business/create', [\App\Http\Controllers\BusinessController::class, 'create'])->name('alumni.business.create');
+            Route::post('/alumni/business', [\App\Http\Controllers\BusinessController::class, 'store'])->name('alumni.business.store');
+            Route::get('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'show'])->name('alumni.business.show');
+            Route::get('/alumni/business/{business}/edit', [\App\Http\Controllers\BusinessController::class, 'edit'])->name('alumni.business.edit');
+            Route::put('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'update'])->name('alumni.business.update');
+            Route::delete('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'destroy'])->name('alumni.business.destroy');
+            Route::delete('/alumni/business-photo/{photo}', [\App\Http\Controllers\BusinessController::class, 'deletePhoto'])->name('alumni.business.photo.delete');
+        });
+
+        // Shared Profile
+        Route::get('/alumni/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/alumni/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+        // Wildcard Profile Route (MUST BE LAST in the /alumni/ group)
         Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
 
         // Nostalgia Feed Routes
@@ -109,17 +129,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::post('/nostalgia/{post}/comment', [\App\Http\Controllers\PostController::class, 'storeComment'])->name('nostalgia.comment.store');
         Route::get('/api/alumni/search', [\App\Http\Controllers\PostController::class, 'searchAlumni'])->name('api.alumni.search');
 
-    // Business Directory Routes - Secured by standard Role Middleware
-    Route::middleware(['role:admin,editor,alumni'])->group(function () {
-        Route::get('/alumni/business', [\App\Http\Controllers\BusinessController::class, 'index'])->name('alumni.business.index');
-        Route::get('/alumni/business/create', [\App\Http\Controllers\BusinessController::class, 'create'])->name('alumni.business.create');
-        Route::post('/alumni/business', [\App\Http\Controllers\BusinessController::class, 'store'])->name('alumni.business.store');
-        Route::get('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'show'])->name('alumni.business.show');
-        Route::get('/alumni/business/{business}/edit', [\App\Http\Controllers\BusinessController::class, 'edit'])->name('alumni.business.edit');
-        Route::put('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'update'])->name('alumni.business.update');
-        Route::delete('/alumni/business/{business}', [\App\Http\Controllers\BusinessController::class, 'destroy'])->name('alumni.business.destroy');
-        Route::delete('/alumni/business-photo/{photo}', [\App\Http\Controllers\BusinessController::class, 'deletePhoto'])->name('alumni.business.photo.delete');
-    });
+
 
     // Mentoring
     Route::get('/mentors', function() {
@@ -127,9 +137,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         return view('mentors.index', compact('mentors'));
     })->name('mentors.index');
 
-    // Shared Profile
-    Route::get('/alumni/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/alumni/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     
     // Forums
     Route::get('/forums', [\App\Http\Controllers\ForumController::class, 'index'])->name('forums.index');
@@ -152,7 +160,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
         Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
         Route::get('/admin/users/verification', [UserController::class, 'verification'])->name('admin.users.verification');
-        Route::resource('/admin/success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class)->names('admin.success-stories');
+        Route::resource('/admin/success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class)->except(['show'])->names('admin.success-stories');
 
             Route::get('/admin/export', [\App\Http\Controllers\Admin\AlumniExportController::class, 'export'])->name('admin.export');
 
@@ -164,7 +172,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/admin/news/{news}/edit', [NewsController::class, 'edit'])->name('admin.news.edit');
         Route::put('/admin/news/{news}', [NewsController::class, 'update'])->name('admin.news.update');
         Route::delete('/admin/news/{news}', [NewsController::class, 'destroy'])->name('admin.news.destroy');
-        Route::post('/admin/news/{news}/publish', [NewsController::class, 'quickPublish'])->name('admin.news.publish');
+        Route::post('/admin/news/{news}/toggle', [NewsController::class, 'togglePublish'])->name('admin.news.toggle');
 
         // Gallery Management
         Route::get('/admin/gallery', [GalleryController::class, 'adminIndex'])->name('admin.gallery.index');
@@ -205,6 +213,11 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/admin/programs/{program}/edit', [ProgramController::class, 'edit'])->name('admin.programs.edit');
         Route::put('/admin/programs/{program}', [ProgramController::class, 'update'])->name('admin.programs.update');
         Route::delete('/admin/programs/{program}', [ProgramController::class, 'destroy'])->name('admin.programs.destroy');
+
+        // Programs Registrations Management
+        Route::get('/admin/registrations', [ProgramRegistrationController::class, 'adminIndex'])->name('admin.registrations.index');
+        Route::put('/admin/registrations/{registration}', [ProgramRegistrationController::class, 'updateStatus'])->name('admin.registrations.update');
+        Route::delete('/admin/registrations/{registration}', [ProgramRegistrationController::class, 'destroy'])->name('admin.registrations.destroy');
         // Jobs Management
         Route::get('/admin/jobs', [JobController::class, 'adminIndex'])->name('admin.jobs.index');
         Route::get('/admin/jobs/create', [JobController::class, 'create'])->name('admin.jobs.create');

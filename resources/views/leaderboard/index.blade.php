@@ -17,10 +17,10 @@
         <div class="col-md-3 text-center order-2 order-md-1">
             <div class="podium-card silver p-4 mb-3 border-0 shadow-lg position-relative">
                 <div class="rank-badge silver">2</div>
-                <img src="{{ $podium[1]->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($podium[1]->name).'&background=cbd5e1&color=0f172a' }}" 
+                <img src="{{ $podium[1]->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($podium[1]->name).'&background=cbd5e1&color=0f172a' }}" 
                      class="rounded-circle border border-4 border-white shadow-sm mb-3" width="80" height="80" style="object-fit: cover;">
                 <h5 class="fw-bold mb-1">{{ $podium[1]->name }}</h5>
-                <p class="text-muted small mb-3">{{ $podium[1]->jurusan }} '{{ $podium[1]->tahun_lulus }}</p>
+                <p class="text-muted small mb-3">{{ $podium[1]->major }} '{{ $podium[1]->graduation_year }}</p>
                 <div class="points-badge py-1 px-3 rounded-pill bg-light fw-bold text-secondary">{{ number_format($podium[1]->points) }} PTS</div>
             </div>
             <div class="podium-step silver" style="height: 120px;"></div>
@@ -33,10 +33,10 @@
             <div class="podium-card gold p-4 mb-3 border-0 shadow-lg position-relative">
                 <div class="rank-badge gold"><i class="bi bi-trophy-fill"></i></div>
                 <div class="crown-icon"><i class="bi bi-award-fill text-warning"></i></div>
-                <img src="{{ $podium[0]->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($podium[0]->name).'&background=fef08a&color=a16207' }}" 
+                <img src="{{ $podium[0]->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($podium[0]->name).'&background=fef08a&color=a16207' }}" 
                      class="rounded-circle border border-5 border-warning shadow-sm mb-3" width="120" height="120" style="object-fit: cover;">
                 <h4 class="fw-bold mb-1">{{ $podium[0]->name }}</h4>
-                <p class="text-muted mb-3">{{ $podium[0]->jurusan }} '{{ $podium[0]->tahun_lulus }}</p>
+                <p class="text-muted mb-3">{{ $podium[0]->major }} '{{ $podium[0]->graduation_year }}</p>
                 <div class="points-badge py-2 px-4 rounded-pill bg-warning text-dark fw-bold shadow-sm" style="font-size: 1.1rem;">{{ number_format($podium[0]->points) }} PTS</div>
             </div>
             <div class="podium-step gold" style="height: 180px;"></div>
@@ -48,10 +48,10 @@
         <div class="col-md-3 text-center order-3 order-md-3">
             <div class="podium-card bronze p-4 mb-3 border-0 shadow-lg position-relative">
                 <div class="rank-badge bronze">3</div>
-                <img src="{{ $podium[2]->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($podium[2]->name).'&background=fed7aa&color=9a3412' }}" 
+                <img src="{{ $podium[2]->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($podium[2]->name).'&background=fed7aa&color=9a3412' }}" 
                      class="rounded-circle border border-4 border-white shadow-sm mb-3" width="80" height="80" style="object-fit: cover;">
                 <h5 class="fw-bold mb-1">{{ $podium[2]->name }}</h5>
-                <p class="text-muted small mb-3">{{ $podium[2]->jurusan }} '{{ $podium[2]->tahun_lulus }}</p>
+                <p class="text-muted small mb-3">{{ $podium[2]->major }} '{{ $podium[2]->graduation_year }}</p>
                 <div class="points-badge py-1 px-3 rounded-pill bg-light fw-bold text-secondary">{{ number_format($podium[2]->points) }} PTS</div>
             </div>
             <div class="podium-step bronze" style="height: 80px;"></div>
@@ -71,7 +71,7 @@
                     <tr>
                         <th class="ps-4" width="80">RANK</th>
                         <th>ALUMNI</th>
-                        <th>JURUSAN</th>
+                        <th>major</th>
                         <th class="text-end pe-4">SKOR POIN</th>
                     </tr>
                 </thead>
@@ -81,15 +81,15 @@
                         <td class="ps-4 fw-bold text-muted">#{{ $index + 4 }}</td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <img src="{{ $user->foto_profil ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
+                                <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
                                      class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
                                 <div>
                                     <span class="fw-bold d-block">{{ $user->name }}</span>
-                                    <small class="text-muted">Angkatan {{ $user->tahun_lulus }}</small>
+                                    <small class="text-muted">Angkatan {{ $user->graduation_year }}</small>
                                 </div>
                             </div>
                         </td>
-                        <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ $user->jurusan }}</span></td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ $user->major }}</span></td>
                         <td class="text-end pe-4">
                             <span class="fw-black text-dark fs-5">{{ number_format($user->points) }}</span>
                             <small class="text-muted ms-1">PTS</small>

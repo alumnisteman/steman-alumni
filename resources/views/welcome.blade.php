@@ -24,26 +24,14 @@
     }
 
     .hero-main-img {
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-        object-fit: contain !important;
-        object-position: center center !important; /* KUNCI: Selalu di tengah */
-        position: relative;
-        z-index: 2;
-        display: block;
-    }
-
-    .hero-blur-bg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover !important;
+        object-position: center center !important;
         position: absolute;
-        inset: -50px;
-        width: calc(100% + 100px);
-        height: calc(100% + 100px);
-        object-fit: cover;
-        filter: brightness(0.3);
+        inset: 0;
         z-index: 1;
-        opacity: 0.8;
+        display: block;
     }
 
     .hero-content-overlay {
@@ -67,13 +55,11 @@
 
 <!-- Hero Section -->
 <div class="hero-section text-center text-white hero-banner-bg">
-    <!-- Layer 1: Blur Background -->
-    <img src="{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}" class="hero-blur-bg" alt="Blur Background">
     
-    <!-- Layer 2: Main Image (Flyer) - Mengatur Tinggi Kontainer secara Otomatis -->
+    <!-- Layer 1: Main Image Cover -->
     <img src="{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}" class="hero-main-img" alt="Hero Banner">
 
-    <!-- Layer 3: Konten Text Overlay -->
+    <!-- Layer 2: Konten Text Overlay -->
     <div class="hero-content-overlay">
         <div class="container py-4">
             <div class="glass-hero-card animate__animated animate__fadeInUp">
@@ -401,7 +387,7 @@
         <div class="row g-4">
             @forelse($successStories as $story)
             <div class="col-md-4">
-                <a href="{{ \Illuminate\Support\Facades\Route::has('success-stories.show') ? route('success-stories.show', $story->id) : '#' }}" class="text-decoration-none card-link h-100">
+                <a href="{{ route('success-stories.show', $story->id) }}" class="text-decoration-none card-link h-100">
                     <div class="card h-100 border-0 shadow-lg rounded-4 overflow-hidden hover-lift success-card">
                         <div class="success-img-wrapper">
                             <img src="{{ $story->image_path ? asset('storage/'.$story->image_path) : 'https://ui-avatars.com/api/?name='.urlencode($story->name).'&background=ffcc00&color=000&size=500' }}" 

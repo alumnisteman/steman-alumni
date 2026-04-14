@@ -33,7 +33,7 @@
             <div class="value">{{ $senderName }}</div>
         </div>
         <div class="field">
-            <label>Alamat Email</label>
+            <label>address Email</label>
             <div class="value">{{ $senderEmail }}</div>
         </div>
         <div class="field">

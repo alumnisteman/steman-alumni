@@ -5,7 +5,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="section-title text-uppercase">KONTAK & SEKRETARIAT</h2>
-                <p class="text-muted fw-bold">Perbarui Alamat, Email dan Nomor Telepon resmi di sini.</p>
+                <p class="text-muted fw-bold">Perbarui address, Email dan Nomor Telepon resmi di sini.</p>
             </div>
             <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addFieldModal">
                 <i class="bi bi-plus-lg me-2"></i>TAMBAH FIELD BARU

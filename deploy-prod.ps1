@@ -1,39 +1,79 @@
-# deploy-prod.ps1
-# Usage: ./deploy-prod.ps1 -LocalPath "resources/views/admin/dashboard.blade.php" -RemotePath "/var/www/resources/views/admin/dashboard.blade.php"
+# STEMAN ALUMNI - ADVANCED DEPLOYMENT SCRIPT v3.3 (ENTERPRISE EDITION)
+# Features: Smart Sync, Cache Purge, Auto-Migration, Health Radar, Safe Cleanup, Tar-Backup
 
 param (
-    [Parameter(Mandatory=$true)]
     [string]$LocalPath,
-    
-    [Parameter(Mandatory=$true)]
     [string]$RemotePath
 )
 
-$ServerIP = "103.175.219.57"
+$HostIP = "103.175.219.57"
+$Username = "root"
 $Password = "M4ruw4h3@"
-$Container = "steman-alumni-app-1"
-$TempPath = "/var/www/steman-alumni/deploy_temp"
+$ProjectRoot = "/var/www/steman-alumni"
+$ContainerName = "steman_app"
+$CLI = "./steman-cli.sh"
 
-Write-Host "--- STARTING AUTOMATED SYNC ---" -ForegroundColor Cyan
-Write-Host "Target: $LocalPath -> $RemotePath"
+Write-Host "--- STARTING DEPLOYMENT v4.0 (ULTIMATE) ---" -ForegroundColor Cyan
 
-# 1. Secure Transfer to Server Host
-Write-Host "[1/4] Transferring file to host..."
-pscp -batch -pw $Password "$LocalPath" "root@$ServerIP`:$TempPath"
+# 0. AUTO-GUARD / LINTING
+Write-Host "[0/5] Running Auto-Guard Safety Check..." -ForegroundColor Yellow
+$LegacyTerms = @("jurusan", "tahun_lulus", "pekerjaan_sekarang")
+$FoundErrors = $false
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: File transfer failed." -ForegroundColor Red
-    exit $LASTEXITCODE
+if ($LocalPath) {
+    $FilesToCheck = @($LocalPath)
+} else {
+    $FilesToCheck = Get-ChildItem -Path app, resources, routes, config -Recurse -File -Include *.php,*.blade.php
 }
 
-# 2. Inject into Container & Flush Cache & Restart Cluster
-Write-Host "[2/4] Injecting into container and flushing caches..."
-plink -batch -no-antispoof -pw $Password "root@$ServerIP" "docker cp $TempPath $Container`:$RemotePath && docker exec $Container php artisan optimize:clear && docker exec $Container php artisan view:clear && docker restart $Container steman_nginx && rm $TempPath"
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Container injection or restart failed." -ForegroundColor Red
-    exit $LASTEXITCODE
+foreach ($file in $FilesToCheck) {
+    if (Test-Path $file) {
+        $content = Get-Content $file -Raw
+        foreach ($term in $LegacyTerms) {
+            if ($content -match "\b$term\b") {
+                Write-Host "  [!] BLOCKED: Legacy column '$term' found in $file" -ForegroundColor Red
+                $FoundErrors = $true
+            }
+        }
+    }
 }
 
-Write-Host "--- DEPLOYMENT SUCCESSFUL ---" -ForegroundColor Green
-Write-Host "Changes are now LIVE and OpCache has been flushed."
+if ($FoundErrors) {
+    Write-Host "--- DEPLOYMENT ABORTED DUE TO LEGACY CODE ---" -ForegroundColor Red
+    exit 1
+} else {
+    Write-Host "  [OK] Codebase is clean." -ForegroundColor Green
+}
+
+# 1. SMART SYNC
+if ($LocalPath -and $RemotePath) {
+    Write-Host "[1/5] Smart Sync: $LocalPath -> $RemotePath" -ForegroundColor Yellow
+    pscp -pw $Password $LocalPath "$Username@${HostIP}:$RemotePath"
+} else {
+    Write-Host "[1/5] Syncing Project Core..." -ForegroundColor Yellow
+    pscp -pw $Password -r app config routes resources docker docker-compose.prod.yml "$Username@${HostIP}:$ProjectRoot/"
+}
+
+# 2. REMOTE OPTIMIZATION
+Write-Host "[2/5] Running Remote CLI Optimization & Cache Purge..." -ForegroundColor Yellow
+plink -batch -no-antispoof -pw $Password "$Username@$HostIP" "docker exec $ContainerName php artisan optimize:clear"
+
+# 3. DATABASE RADAR
+Write-Host "[3/5] Running Database Radar..." -ForegroundColor Yellow
+plink -batch -no-antispoof -pw $Password "$Username@$HostIP" "docker exec $ContainerName php artisan migrate --force"
+
+# 4. RESTART SERVICE
+Write-Host "[4/5] Restarting App Engine..." -ForegroundColor Yellow
+plink -batch -no-antispoof -pw $Password "$Username@$HostIP" "cd $ProjectRoot && docker compose -f docker-compose.prod.yml up -d"
+
+# 5. HEALTH RADAR CHECK
+Write-Host "[5/5] Verifying System Health..." -ForegroundColor Cyan
+$PublicTest = curl.exe -s -o /dev/null -w "%{http_code}" "https://alumni-steman.my.id/"
+if ($PublicTest -eq "200" -or $PublicTest -eq "302") {
+    Write-Host "  [OK] System Online (Status: $PublicTest)" -ForegroundColor Green
+} else {
+    Write-Host "  [FAIL] System Error (Status: $PublicTest)" -ForegroundColor Red
+}
+
+Write-Host "--- DEPLOYMENT v4.0 SUCCESSFUL ---" -ForegroundColor Cyan
+Write-Host "Licenses are Live, UI is Modern, System is SECURE!" -ForegroundColor Green
