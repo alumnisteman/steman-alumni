@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'verified_alumni' => \App\Http\Middleware\EnsureUserIsVerified::class,
         ]);
+        // Exempt /logout from CSRF: forcing a logout is not a harmful CSRF attack
+        $middleware->validateCsrfTokens(except: ['/logout']);
         $middleware->appendToGroup('web', 'throttle:global');
         $middleware->trustProxies(at: '*');
         //
