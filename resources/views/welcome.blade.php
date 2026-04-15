@@ -61,7 +61,15 @@
 <div class="hero-section text-center text-white hero-banner-bg">
     
     <!-- Layer 1: Main Image Cover -->
-    <img src="{{ setting('hero_background', '/storage/uploads/settings/hero.webp') }}" class="hero-main-img" alt="Hero Banner" loading="eager">
+    <img
+        src="{{ setting('hero_background', '/storage/uploads/settings/hero.webp') }}"
+        width="1200"
+        height="600"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        class="hero-main-img"
+        alt="Alumni Steman">
 
     <!-- Layer 2: Konten Text Overlay -->
     <div class="hero-content-overlay">

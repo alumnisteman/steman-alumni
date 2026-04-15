@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }} - {{ setting('school_name', 'SMKN 2 TERNATE') }}</title>
     <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="preload" as="image" href="/storage/uploads/settings/hero.webp" type="image/webp">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" media="print" onload="this.media='all'">
     <link rel="manifest" href="/assets/manifest.json">
@@ -293,11 +294,15 @@
         @endauth
     </script>
     <script>
-        // Global Lazy Load for Images and iFrames
+        // Global Lazy Load for Images and iFrames (skips hero & pre-attributed images)
         document.addEventListener("DOMContentLoaded", function() {
-            var lazyMedia = document.querySelectorAll('img:not([loading]), iframe:not([loading])');
-            lazyMedia.forEach(function(media) {
-                media.setAttribute('loading', 'lazy');
+            document.querySelectorAll("img:not([loading])").forEach(function(img) {
+                if (!img.closest(".hero-section") && !img.closest(".hero")) {
+                    img.setAttribute("loading", "lazy");
+                }
+            });
+            document.querySelectorAll("iframe:not([loading])").forEach(function(iframe) {
+                iframe.setAttribute("loading", "lazy");
             });
         });
     </script>
