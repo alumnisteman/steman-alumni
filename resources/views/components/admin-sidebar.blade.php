@@ -3,7 +3,12 @@
         <h5 class="fw-black mb-0 tracking-wider">ADMIN PANEL</h5>
         <small class="text-warning opacity-75">STEMAN ALUMNI v4.2</small>
     </div>
-    <div class="sidebar-nav p-3 mt-2">
+    <div class="p-3 pb-0">
+        <a href="/" class="btn btn-primary w-100 fw-bold shadow-sm rounded-3">
+            <i class="bi bi-globe me-2"></i> Lihat Website
+        </a>
+    </div>
+    <div class="sidebar-nav p-3 mt-0">
         <p class="text-muted small fw-bold mb-2 ps-3 opacity-50">UTAMA</p>
         <a href="{{ route('admin.dashboard') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.dashboard') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-speedometer2 me-3"></i> Dashboard
