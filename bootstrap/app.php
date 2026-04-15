@@ -49,4 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 error_log("Laravel Critical Error: " . $e->getMessage());
             }
         });
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            return redirect()->guest('/login')->with('error', 'Sesi login Anda telah berakhir karena batas waktu tidak ada aktivitas. Silakan masuk kembali.');
+        });
     })->create();
