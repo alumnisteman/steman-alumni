@@ -27,6 +27,11 @@ use App\Http\Controllers\ProgramRegistrationController;
 use App\Services\AIPredictionService;
 
 // --- 1. Global Public Routes (Rate Limited) ---
+// Fallback GET route for /logout to prevent 405 errors if users manually type the URL
+Route::get('/logout', function () {
+    return redirect('/')->with('error', 'Silakan gunakan tombol Logout pada menu resmi untuk keluar demi alasan keamanan.');
+});
+
 Route::middleware(['throttle:global'])->group(function () {
     
     // Public Home
