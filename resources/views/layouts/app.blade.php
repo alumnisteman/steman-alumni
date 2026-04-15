@@ -138,10 +138,7 @@
                         </li>
                         <li class="nav-item"><a class="nav-link" href="{{ auth()->user()->dashboardUrl() }}">DASHBOARD</a></li>
                         <li class="nav-item">
-                            <form action="/logout" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-dark btn-sm rounded-0 ms-lg-3 px-4 py-2">LOGOUT</button>
-                            </form>
+                            <a href="/logout" class="btn btn-dark btn-sm rounded-0 ms-lg-3 px-4 py-2">LOGOUT</a>
                         </li>
                     @else
                         <li class="nav-item"><a class="nav-link" href="/login">LOGIN</a></li>
