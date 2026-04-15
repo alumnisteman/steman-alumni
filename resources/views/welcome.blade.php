@@ -53,11 +53,15 @@
     }
 </style>
 
+@push('styles')
+    <link rel="preload" as="image" href="{{ setting('hero_background', asset('/assets/images/hero_iluni.webp')) }}">
+@endpush
+
 <!-- Hero Section -->
 <div class="hero-section text-center text-white hero-banner-bg">
     
     <!-- Layer 1: Main Image Cover -->
-    <img src="{{ setting('hero_background', asset('/assets/images/hero_iluni.png')) }}" class="hero-main-img" alt="Hero Banner">
+    <img src="{{ setting('hero_background', asset('/assets/images/hero_iluni.webp')) }}" class="hero-main-img" alt="Hero Banner">
 
     <!-- Layer 2: Konten Text Overlay -->
     <div class="hero-content-overlay">
