@@ -61,7 +61,7 @@
 <div class="hero-section text-center text-white hero-banner-bg">
     
     <!-- Layer 1: Main Image Cover -->
-    <img src="{{ setting('hero_background', '/storage/uploads/settings/hero.webp') }}" class="hero-main-img" alt="Hero Banner">
+    <img src="{{ setting('hero_background', '/storage/uploads/settings/hero.webp') }}" class="hero-main-img" alt="Hero Banner" loading="eager">
 
     <!-- Layer 2: Konten Text Overlay -->
     <div class="hero-content-overlay">

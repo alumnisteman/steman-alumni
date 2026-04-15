@@ -295,7 +295,7 @@
     <script>
         // Global Lazy Load for Images and iFrames
         document.addEventListener("DOMContentLoaded", function() {
-            var lazyMedia = document.querySelectorAll('img:not([loading="lazy"]), iframe:not([loading="lazy"])');
+            var lazyMedia = document.querySelectorAll('img:not([loading]), iframe:not([loading])');
             lazyMedia.forEach(function(media) {
                 media.setAttribute('loading', 'lazy');
             });
