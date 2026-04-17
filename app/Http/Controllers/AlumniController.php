@@ -72,7 +72,9 @@ class AlumniController extends Controller
             });
         }
 
-        $majors = Major::orderBy('name')->get(); 
+        $majors = \Illuminate\Support\Facades\Cache::remember('active_majors_list', 3600, function() {
+            return Major::where('status', 'active')->orderBy('name')->get();
+        }); 
         $years = $this->alumniService->getCachedGraduationYears();
 
         return view('alumni.index', compact('alumni', 'majors', 'years'));

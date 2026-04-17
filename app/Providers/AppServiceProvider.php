@@ -33,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
+        // Activate Laravel's Strict Mode (Fail-Fast) in non-production environments
+        // This catches: Lazy Loading (N+1), Missing Attributes (image vs image_desktop), and Silent Mass Assignment errors.
+        \Illuminate\Database\Eloquent\Model::shouldBeStrict(!app()->isProduction());
+
         if (config('app.env') === 'production') {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
@@ -69,5 +73,8 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('settings', []);
             }
         });
+
+        // Use dedicated Composer class for ads
+        View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);
     }
 }

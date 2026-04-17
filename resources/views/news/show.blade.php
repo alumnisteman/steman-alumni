@@ -10,7 +10,7 @@
 <div class="news-detail-wrapper py-5">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8 mx-auto">
+            <div class="col-lg-8">
                 <nav aria-label="breadcrumb" class="mb-4">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/" class="text-dark">Beranda</a></li>
@@ -32,19 +32,40 @@
                     <img src="{{ Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="img-fluid w-100 rounded-0 mb-5 shadow-sm" alt="{{ $item->title }}">
                 @endif
 
-                <div class="news-content fs-5 lh-lg mb-5">
+                <div class="news-content fs-5 lh-lg mb-4">
                     {!! $item->content !!}
+                </div>
+
+                <!-- Content Ad Slot -->
+                <div class="my-5">
+                    <x-ad-slot position="content" aspectRatio="1280/200" mobileAspectRatio="400/150" />
                 </div>
 
                 <hr class="my-5 opacity-25">
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
                     <a href="/news" class="btn btn-outline-dark rounded-0 px-4">KEMBALI KE DAFTAR BERITA</a>
                     <div class="share-buttons mt-4 mt-md-0">
                         <span class="small fw-bold text-muted me-3">BAGIKAN:</span>
                         <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="text-dark me-3" title="Bagikan ke Facebook"><i class="bi bi-facebook"></i></a>
                         <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($item->title) }}" target="_blank" class="text-dark me-3" title="Bagikan ke X"><i class="bi bi-twitter-x"></i></a>
                         <a href="https://wa.me/?text={{ urlencode($item->title . ' - ' . url()->current()) }}" target="_blank" class="text-dark" title="Bagikan ke WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 100px; z-index: 1;">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                        <h6 class="fw-bold mb-3 text-uppercase small text-muted">Informasi Sponsor</h6>
+                        <x-ad-slot position="sidebar" aspectRatio="1/1" />
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h6 class="fw-bold mb-3 text-uppercase small text-muted">Berita Populer</h6>
+                        <!-- Placeholder for related/popular news if needed -->
+                        <p class="text-muted small">Cek berita menarik lainnya di direktori kami.</p>
+                        <a href="/news" class="btn btn-link text-primary p-0 text-decoration-none fw-bold small">Cek Semua <i class="bi bi-arrow-right ms-1"></i></a>
                     </div>
                 </div>
             </div>

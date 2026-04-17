@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 class AIService
 {
     protected ?string $apiKey;
-    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
     public function __construct(?string $apiKey = null)
     {
@@ -20,7 +20,7 @@ class AIService
     /**
      * General method to prompt Gemini
      */
-    public function ask(string $prompt, float $temperature = 0.7): ?string
+    public function ask(string $prompt, float $temperature = 0.7, string $model = 'gemini-1.5-flash-latest'): ?string
     {
         if (empty($this->apiKey)) {
             Log::warning('AIService: GEMINI_API_KEY is not configured.');
@@ -28,9 +28,12 @@ class AIService
         }
 
         try {
+            // Versioning and Model Handling
+            $url = "{$this->baseUrl}/models/{$model}:generateContent?key={$this->apiKey}";
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->timeout(10)->post("{$this->baseUrl}?key={$this->apiKey}", [
+            ])->timeout(12)->post($url, [
                 'contents' => [
                     [
                         'parts' => [
@@ -52,16 +55,20 @@ class AIService
                 return $text;
             }
 
-            // Circuit Breaker: Handle High Demand (503) or Other API Issues
-            if ($response->status() === 503) {
-                Log::notice('AIService: Gemini is currently unavailable (High Demand/503). Skipping AI processing.');
-                return null;
-            }
+            // Enhanced Error Reporting
+            $status = $response->status();
+            $body = $response->body();
 
-            Log::error('Gemini API Error', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
+            if ($status === 404) {
+                Log::error('AIService: Model not found (404). Check model name or API version.', ['model' => $model]);
+            } elseif ($status === 503 || $status === 429) {
+                Log::notice("AIService: API temporary unavailable ($status). Skipping.");
+            } else {
+                Log::error('AIService: Gemini API Error', [
+                    'status' => $status,
+                    'body' => $body
+                ]);
+            }
 
             return null;
 

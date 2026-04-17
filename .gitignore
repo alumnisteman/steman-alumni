@@ -4,9 +4,8 @@
 /public/storage
 /storage/*.key
 /vendor
-.env
-.env.backup
-.env.production
+.env*
+!.env.example
 .phpunit.result.cache
 docker-compose.override.yml
 docker-compose.yml.bak
@@ -27,3 +26,11 @@ Thumbs.db
 .phpunit.result.cache
 steman_deploy.zip
 laravel_remote.log
+
+# Debug & diagnostic files
+diag_*.php
+test_*.php
+fix_*.sh
+*_dump.html
+homepage.html
+scratch/

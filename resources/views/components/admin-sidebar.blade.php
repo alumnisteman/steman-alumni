@@ -1,7 +1,7 @@
 <aside class="admin-sidebar bg-white shadow-sm d-none d-lg-block" style="width: 280px; z-index: 1000; height: 100vh; position: sticky; top: 0; overflow-y: auto;">
     <div class="p-4 border-bottom bg-dark text-white text-center">
         <h5 class="fw-black mb-0 tracking-wider">ADMIN PANEL</h5>
-        <small class="text-warning opacity-75">STEMAN ALUMNI v4.2</small>
+        <small class="text-warning opacity-75">STEMAN ALUMNI v4.2-ADS</small>
     </div>
     <div class="p-3 pb-0">
         <a href="/" class="btn btn-primary w-100 fw-bold shadow-sm rounded-3">
@@ -27,6 +27,9 @@
         <p class="text-muted small fw-bold mb-2 ps-3 opacity-50 mt-4">MANAJEMEN KONTEN</p>
         <a href="{{ route('admin.news.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.news.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-newspaper me-3 text-primary"></i> Berita & Info
+        </a>
+        <a href="{{ route('admin.ads.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.ads.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
+            <i class="bi bi-megaphone me-3 text-danger"></i> Manajemen Iklan
         </a>
         <a href="{{ route('admin.gallery.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.gallery.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-images me-3 text-success"></i> Galeri Foto

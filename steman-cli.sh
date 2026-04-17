@@ -4,7 +4,7 @@
 # Created by Antigravity AI
 
 PROJECT_DIR="/var/www/steman-alumni"
-APP_CONTAINER="steman_app"
+APP_CONTAINER="steman-alumni-app-1"
 NGINX_CONTAINER="steman_nginx"
 
 cd $PROJECT_DIR

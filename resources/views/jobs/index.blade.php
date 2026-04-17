@@ -49,62 +49,67 @@
         </div>
     </div>
 
-    <div class="row g-4">
-        @forelse($jobs as $job)
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden shadow-hover">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            @if($job->image)
-                                <div class="me-3">
-                                    <img src="{{ $job->image }}" class="rounded-3" style="width: 50px; height: 50px; object-fit: cover;" alt="{{ $job->company }}">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row g-4">
+                @forelse($jobs as $job)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden shadow-hover">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    @if($job->image)
+                                        <div class="me-3">
+                                            <img src="{{ $job->image }}" class="rounded-3" style="width: 50px; height: 50px; object-fit: cover;" alt="{{ $job->company }}">
+                                        </div>
+                                    @else
+                                        <div class="me-3 bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <i class="bi bi-briefcase text-primary"></i>
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <h5 class="fw-bold mb-1 text-dark">{{ Str::limit($job->title, 40) }}</h5>
+                                        <p class="text-primary small mb-0 fw-bold">{{ Str::limit($job->company, 25) }}</p>
+                                    </div>
                                 </div>
-                            @else
-                                <div class="me-3 bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                    <i class="bi bi-briefcase text-primary"></i>
+                                <div class="mb-3">
+                                    <span class="badge bg-light text-dark rounded-pill px-3 py-2 me-1 small">
+                                        <i class="bi bi-geo-alt me-1"></i> {{ $job->location ?? 'N/A' }}
+                                    </span>
                                 </div>
-                            @endif
-                            <div>
-                                <h5 class="fw-bold mb-1 text-dark">{{ $job->title }}</h5>
-                                <p class="text-primary small mb-0 fw-bold">{{ $job->company }}</p>
+                                <p class="text-muted small mb-4" style="height: 4.5em; overflow: hidden;">
+                                    {{ Str::limit($job->description, 120) }}
+                                </p>
+                                <div class="d-grid mt-auto">
+                                    @if($job->external_link)
+                                        <a href="{{ $job->external_link }}" target="_blank" class="btn btn-outline-primary rounded-pill fw-bold">
+                                            Apply <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('jobs.show', $job->slug) }}" class="btn btn-primary rounded-pill fw-bold">
+                                            Detail <i class="bi bi-arrow-right ms-1"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <span class="badge bg-light text-dark rounded-pill px-3 py-2 me-1 small">
-                                <i class="bi bi-geo-alt me-1"></i> {{ $job->location ?? 'N/A' }}
-                            </span>
-                            <span class="badge bg-light text-dark rounded-pill px-3 py-2 small me-1">
-                                <i class="bi bi-clock me-1"></i> {{ $job->type }}
-                            </span>
-                            @if(auth()->check() && auth()->user()->major && (Str::contains(strtolower($job->description), strtolower(auth()->user()->major)) || Str::contains(strtolower($job->title), strtolower(auth()->user()->major))))
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 small mt-2 d-inline-block">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Major Match: {{ auth()->user()->major }}
-                                </span>
-                            @endif
-                        </div>
-                        <p class="text-muted small mb-4" style="height: 4.5em; overflow: hidden;">
-                            {{ $job->description }}
-                        </p>
-                        <div class="d-grid">
-                            @if($job->external_link)
-                                <a href="{{ $job->external_link }}" target="_blank" class="btn btn-outline-primary rounded-pill fw-bold">
-                                    Apply on External Site <i class="bi bi-box-arrow-up-right ms-1"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('jobs.show', $job->slug) }}" class="btn btn-primary rounded-pill fw-bold">
-                                    Lihat Detail <i class="bi bi-arrow-right ms-1"></i>
-                                </a>
-                            @endif
-                        </div>
                     </div>
+                @empty
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-briefcase display-1 text-light"></i>
+                        <p class="lead mt-3 text-muted">Belum ada lowongan kerja tersedia saat ini.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="sticky-top" style="top: 100px; z-index: 1;">
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-primary bg-opacity-10">
+                    <h6 class="fw-bold mb-3 text-uppercase small text-primary">Karir & Peluang</h6>
+                    <p class="small text-muted">Jadilah bagian dari jaringan profesional alumni {{ setting('school_name', 'SMKN 2 Ternate') }}.</p>
                 </div>
+                <x-ad-slot position="sidebar" aspectRatio="1/1" />
             </div>
-        @empty
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-briefcase display-1 text-light"></i>
-                <p class="lead mt-3 text-muted">Belum ada lowongan kerja tersedia saat ini.</p>
-            </div>
-        @endforelse
+        </div>
     </div>
     
     <div class="d-flex justify-content-center mt-5">

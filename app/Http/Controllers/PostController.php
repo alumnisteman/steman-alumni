@@ -140,8 +140,10 @@ class PostController extends Controller
             $post->increment('likes_count');
             $status = 'liked';
             
-            // Award points for receiving a like
-            $post->user->awardPoints(1);
+            // Award points for receiving a like (only if user exists and is not self)
+            if ($post->user && $post->user->exists && $post->user->id !== Auth::id()) {
+                $post->user->awardPoints(1);
+            }
         }
 
         return response()->json([
@@ -179,10 +181,14 @@ class PostController extends Controller
     public function searchAlumni(Request $request)
     {
         $search = $request->get('q');
-        $alumni = User::where('name', 'LIKE', "%{$search}%")
+        
+        // Use Meilisearch for optimized, automated search if available
+        $alumni = User::search($search)
             ->where('role', 'alumni')
-            ->where('id', '!=', Auth::id())
-            ->limit(10)
+            ->query(function ($query) {
+                $query->where('id', '!=', Auth::id());
+            })
+            ->take(10)
             ->get(['id', 'name', 'graduation_year']);
 
         return response()->json($alumni);

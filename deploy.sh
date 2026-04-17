@@ -72,12 +72,22 @@ docker exec steman-alumni-app-1 php artisan route:cache
 docker exec steman-alumni-app-1 php artisan view:cache
 docker exec steman-alumni-app-1 php artisan event:cache
 
-# --- 7. Permissions ---
-echo "[8/9] Applying permissions..."
+# --- 8. POST-DEPLOYMENT VERIFICATION ---
+echo "[8/10] Menjalankan verifikasi sistem (Integrity & Tests)..."
+if ! docker exec steman-alumni-app-1 php artisan test --filter SystemIntegrityTest; then
+    echo "  [ERROR] Smoke Test Gagal! Memeriksa kesehatan sistem..."
+    docker exec steman-alumni-app-1 php artisan steman:check-integrity
+    echo "  !! PERHATIAN !! Aplikasi tetap dalam Maintenance Mode karena test gagal."
+    exit 1
+fi
+docker exec steman-alumni-app-1 php artisan steman:check-integrity
+
+# --- 9. Permissions ---
+echo "[9/10] Applying permissions..."
 docker exec steman-alumni-app-1 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 
-# --- 8. Up ---
-echo "[9/9] Menonaktifkan maintenance mode..."
+# --- 10. Up ---
+echo "[10/10] Menonaktifkan maintenance mode..."
 docker exec steman-alumni-app-1 php artisan up
 
 echo ""

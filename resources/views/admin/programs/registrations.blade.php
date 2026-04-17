@@ -40,16 +40,16 @@
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
                                     <div class="bg-primary text-white fw-bold rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                        {{ substr($reg->user->name, 0, 1) }}
+                                        {{ substr($reg->user?->name ?? '?', 0, 1) }}
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark">{{ $reg->user->name }}</div>
-                                        <div class="text-muted small">{{ $reg->user->email }}</div>
+                                        <div class="fw-bold text-dark">{{ $reg->user?->name ?? 'User Terhapus' }}</div>
+                                        <div class="text-muted small">{{ $reg->user?->email ?? '-' }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark border">{{ $reg->program->title }}</span>
+                                <span class="badge bg-light text-dark border">{{ $reg->program?->title ?? 'Program Terhapus' }}</span>
                             </td>
                             <td>{{ $reg->phone_number }}</td>
                             <td>
@@ -57,7 +57,7 @@
                                     {{ strtoupper($reg->status) }}
                                 </span>
                             </td>
-                            <td>{{ $reg->created_at->format('d/m/Y') }}</td>
+                            <td>{{ optional($reg->created_at)->format('d/m/Y') ?? '-' }}</td>
                             <td class="text-end pe-4">
                                 <button class="btn btn-sm btn-dark rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modal-{{ $reg->id }}">
                                     Review
@@ -70,18 +70,18 @@
                             <div class="modal-dialog modal-dialog-centered modal-lg">
                                 <div class="modal-content border-0 shadow-lg rounded-4">
                                     <div class="modal-header border-0 p-4">
-                                        <h5 class="fw-bold mb-0">Review Pendaftaran: {{ $reg->user->name }}</h5>
+                                        <h5 class="fw-bold mb-0">Review Pendaftaran: {{ $reg->user?->name ?? 'User Terhapus' }}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body p-4 pt-0">
                                         <div class="row g-4">
                                             <div class="col-md-6">
                                                 <p class="text-muted small fw-bold mb-1">PROGRAM</p>
-                                                <h6 class="fw-bold">{{ $reg->program->title }}</h6>
+                                                <h6 class="fw-bold">{{ $reg->program?->title ?? 'Program Terhapus' }}</h6>
                                             </div>
                                             <div class="col-md-6 text-md-end">
                                                 <p class="text-muted small fw-bold mb-1">TANGGAL DAFTAR</p>
-                                                <h6>{{ $reg->created_at->format('d F Y H:i') }}</h6>
+                                                <h6>{{ optional($reg->created_at)->format('d F Y H:i') ?? '-' }}</h6>
                                             </div>
                                             <div class="col-12">
                                                 <div class="p-3 bg-light rounded-4">

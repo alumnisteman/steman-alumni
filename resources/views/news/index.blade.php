@@ -18,30 +18,40 @@
         <p class="text-muted mt-2">Kumpulan berita, pengumuman, dan cerita inspiratif dari {{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }}.</p>
     </div>
 
-    <div class="row g-4">
-        @forelse($news as $item)
-            <div class="col-md-4">
-                <div class="news-card card h-100">
-                    @if($item->thumbnail)
-                        <img src="{{ Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="card-img-top" alt="{{ $item->title }}" loading="lazy">
-                    @else
-                        <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 200px;">
-                            <i class="bi bi-image display-4"></i>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row g-4">
+                @forelse($news as $item)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="news-card card h-100">
+                            @if($item->thumbnail)
+                                <img src="{{ Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="card-img-top" alt="{{ $item->title }}" loading="lazy">
+                            @else
+                                <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 200px;">
+                                    <i class="bi bi-image display-4"></i>
+                                </div>
+                            @endif
+                            <div class="card-body">
+                                <div class="date-tag mb-2">{{ $item->created_at->format('d M Y') }}</div>
+                                <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none">{{ Str::limit($item->title, 100) }}</a></h5>
+                                <p class="text-muted small mb-0">{{ Str::limit(strip_tags($item->content), 100) }}</p>
+                            </div>
                         </div>
-                    @endif
-                    <div class="card-body">
-                        <div class="date-tag mb-2">{{ $item->created_at->format('d M Y') }}</div>
-                        <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none">{{ Str::limit($item->title, 100) }}</a></h5>
-                        <p class="text-muted small mb-0">{{ Str::limit(strip_tags($item->content), 100) }}</p>
                     </div>
-                </div>
+                @empty
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-journal-x display-1 text-light"></i>
+                        <p class="lead mt-3">Belum ada berita yang diterbitkan.</p>
+                    </div>
+                @endforelse
             </div>
-        @empty
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-journal-x display-1 text-light"></i>
-                <p class="lead mt-3">Belum ada berita yang diterbitkan.</p>
+        </div>
+        <div class="col-lg-3">
+            <div class="sticky-top" style="top: 100px; z-index: 1;">
+                <h6 class="fw-bold mb-3 text-uppercase small text-muted">Sponsor</h6>
+                <x-ad-slot position="sidebar" aspectRatio="1/1" />
             </div>
-        @endforelse
+        </div>
     </div>
 
     <div class="mt-5 d-flex justify-content-center">

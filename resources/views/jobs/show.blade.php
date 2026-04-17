@@ -29,17 +29,22 @@
                     </div>
                 </div>
 
-                <div class="job-content">
+                <div class="job-content mb-5">
                     <h5 class="fw-bold mb-3">Deskripsi Pekerjaan</h5>
                     <div class="text-muted" style="white-space: pre-line;">
                         {{ $job->content ?? $job->description }}
                     </div>
                 </div>
+
+                <!-- Content Ad Slot -->
+                <div class="my-5">
+                    <x-ad-slot position="content" aspectRatio="1280/200" mobileAspectRatio="400/150" />
+                </div>
             </div>
         </div>
         
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 2rem;">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 sticky-top" style="top: 2rem;">
                 <h5 class="fw-bold mb-4">Informasi Lowongan</h5>
                 <div class="mb-3">
                     <p class="small text-muted mb-1">Tipe Pekerjaan</p>
@@ -65,6 +70,9 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Sidebar Ad Slot -->
+            <x-ad-slot position="sidebar" aspectRatio="1/1" />
         </div>
     </div>
 </div>

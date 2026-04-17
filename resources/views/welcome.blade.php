@@ -216,6 +216,10 @@
 
     </div>
 </div>
+<!-- Content Advertisement -->
+<div class="container py-4 text-center pb-0">
+    <x-ad-slot position="content" aspectRatio="1280/200" mobileAspectRatio="400/150" />
+</div>
 
 <!-- Global Alumni Network Map -->
 <div class="container py-4 py-md-5">
@@ -311,22 +315,32 @@
         <a href="/news" class="btn btn-primary btn-sm rounded-pill px-4">Lihat Semua</a>
     </div>
     <div class="row g-4">
-        @forelse($latestNews as $item)
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-lift">
-                    <img src="{{ $item->thumbnail ?? 'https://via.placeholder.com/400x250' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $item->title }}" loading="lazy">
-                    <div class="card-body p-4">
-                        <small class="text-primary fw-bold d-block mb-2">{{ $item->created_at->format('d M Y') }}</small>
-                        <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none hover-text-primary">{{ $item->title }}</a></h5>
-                        <p class="text-muted small mb-0">{{ \Illuminate\Support\Str::limit(strip_tags($item->content), 90) }}</p>
+        <div class="col-lg-9">
+            <div class="row g-4">
+                @forelse($latestNews as $item)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-lift">
+                            <img src="{{ $item->thumbnail ?? 'https://via.placeholder.com/400x250' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $item->title }}" loading="lazy">
+                            <div class="card-body p-4">
+                                <small class="text-primary fw-bold d-block mb-2">{{ $item->created_at->format('d M Y') }}</small>
+                                <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none hover-text-primary">{{ $item->title }}</a></h5>
+                                <p class="text-muted small mb-0">{{ \Illuminate\Support\Str::limit(strip_tags($item->content), 90) }}</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                @empty
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">Belum ada berita terbaru.</p>
+                    </div>
+                @endforelse
             </div>
-        @empty
-            <div class="col-12 text-center py-5">
-                <p class="text-muted">Belum ada berita terbaru.</p>
+        </div>
+        <div class="col-lg-3">
+            <div class="sticky-top" style="top: 100px; z-index: 1;">
+                <h6 class="fw-bold mb-3 text-uppercase small text-muted">Sponsor</h6>
+                <x-ad-slot position="sidebar" aspectRatio="1/1" />
             </div>
-        @endforelse
+        </div>
     </div>
 </div>
 

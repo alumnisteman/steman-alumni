@@ -24,6 +24,7 @@ use App\Http\Controllers\CardController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProgramRegistrationController;
+use App\Http\Controllers\Admin\AdController;
 use App\Services\AIPredictionService;
 
 // --- 1. Global Public Routes (Rate Limited) ---
@@ -63,6 +64,13 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::get('/news', [NewsController::class, 'index'])->name('news.index');
     Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
     Route::get('/jejak-sukses/{successStory}', [\App\Http\Controllers\AlumniController::class, 'successStoryDetail'])->name('success-stories.show');
+
+    // Advertisement Click Tracker
+    Route::get('/ads/click/{id}', function ($id) {
+        $ad = \App\Models\Ad::findOrFail($id);
+        $ad->increment('click');
+        return redirect($ad->link ?: '/');
+    })->name('ads.click');
 
     // --- Public Content (Articles, Programs, Jobs) ---
     Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
@@ -181,6 +189,15 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::put('/admin/news/{news}', [NewsController::class, 'update'])->name('admin.news.update');
         Route::delete('/admin/news/{news}', [NewsController::class, 'destroy'])->name('admin.news.destroy');
         Route::post('/admin/news/{news}/toggle', [NewsController::class, 'togglePublish'])->name('admin.news.toggle');
+
+        // Ads Management
+        Route::get('/admin/ads', [AdController::class, 'index'])->name('admin.ads.index');
+        Route::get('/admin/ads/create', [AdController::class, 'create'])->name('admin.ads.create');
+        Route::post('/admin/ads', [AdController::class, 'store'])->name('admin.ads.store');
+        Route::get('/admin/ads/{ad}', [AdController::class, 'show'])->name('admin.ads.show');
+        Route::get('/admin/ads/{ad}/edit', [AdController::class, 'edit'])->name('admin.ads.edit');
+        Route::put('/admin/ads/{ad}', [AdController::class, 'update'])->name('admin.ads.update');
+        Route::delete('/admin/ads/{ad}', [AdController::class, 'destroy'])->name('admin.ads.destroy');
 
         // Gallery Management
         Route::get('/admin/gallery', [GalleryController::class, 'adminIndex'])->name('admin.gallery.index');

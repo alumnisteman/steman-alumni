@@ -1,0 +1,46 @@
+name: Static Code Analysis
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  phpstan:
+    name: Code Quality Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          extensions: mbstring, pdo, curl, exif, intl, pdo_mysql, bcmath, redis, gd, zip
+          coverage: none
+
+      - name: Install Core Dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
+
+      - name: Run Code Style Check (Laravel Pint)
+        run: vendor/bin/pint --test
+
+      - name: Inject Static Analysis Tool (Larastan)
+        run: composer require --dev "larastan/larastan:^3.0" -W --ignore-platform-reqs
+
+      - name: Run Master Static Analysis (PHPStan)
+        run: vendor/bin/phpstan analyse --level=5 --error-format=github
+
+      - name: Run Global Legacy Detector
+        run: |
+          echo "Scanning for legacy terms: 'clicks', 'mobile_image', 'jurusan'..."
+          if grep -rE "->clicks|'clicks'|->mobile_image|'mobile_image'|'jurusan'" app resources routes; then
+            echo "ERROR: Legacy database terms found! Build failed to prevent regressions."
+            exit 1
+          else
+            echo "SUCCESS: No legacy terms found."
+          fi

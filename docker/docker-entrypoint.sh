@@ -47,6 +47,12 @@ chmod -R 755 /var/www 2>/dev/null || true
 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 
-# --- 6. Start PHP-FPM or Custom Command ---
+# --- 6. Laravel Scheduler (Cron) ---
+echo "Setting up Laravel Scheduler..."
+echo "* * * * * cd /var/www && php artisan schedule:run >> /var/www/storage/logs/scheduler.log 2>&1" | crontab -
+crond -b -l 8
+echo "Scheduler cron is active."
+
+# --- 7. Start PHP-FPM or Custom Command ---
 echo "Steman Alumni Portal is ready! Executing: $@"
 exec "$@"

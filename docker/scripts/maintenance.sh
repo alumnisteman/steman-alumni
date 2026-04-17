@@ -54,22 +54,26 @@ docker exec steman-alumni-app-1 php artisan optimize:clear > /dev/null
 docker exec steman-alumni-app-1 php artisan view:clear > /dev/null
 log "Laravel cache cleared."
 
-# 5. Log Rotation
-log "Performing log rotation..."
+# 5. Advanced Log Rotation (Zipping)
+log "Performing advanced log rotation..."
 for logfile in $LOG_DIR/*.log; do
     if [ -f "$logfile" ]; then
         filesize=$(du -k "$logfile" | cut -f1)
         if [ "$filesize" -gt "$MAX_LOG_SIZE" ]; then
-            log "Truncating large log file: $(basename $logfile) (${filesize}KB)"
-            tail -n 5000 "$logfile" > "$logfile.tmp" && mv "$logfile.tmp" "$logfile"
+            log "Archiving large log file: $(basename $logfile) (${filesize}KB)"
+            ZIP_NAME="$LOG_DIR/archives/$(basename $logfile)-$(date +%Y%m%d%H%M).gz"
+            mkdir -p "$LOG_DIR/archives"
+            gzip -c "$logfile" > "$ZIP_NAME"
+            echo "" > "$logfile" # Truncate after zipping
         fi
     fi
 done
 
-# 6. Legacy Cleanup
-log "Cleaning up stale files..."
+# 6. Proactive Fixes (Garbage & Links)
+log "Cleaning up stale sessions and ensuring storage links..."
 find "$PROJECT_DIR/storage/framework/sessions" -type f -mtime +1 -delete
-log "Cleanup selesai."
+docker exec steman-alumni-app-1 php artisan storage:link > /dev/null 2>&1
+log "Cleanup and links verified."
 
 # 7. Permission Guard
 log "Applying permission reinforcement..."
@@ -77,5 +81,5 @@ chown -R www-data:www-data "$PROJECT_DIR/storage" "$PROJECT_DIR/bootstrap/cache"
 chmod -R 775 "$PROJECT_DIR/storage" "$PROJECT_DIR/bootstrap/cache" 2>/dev/null
 log "Permissions enforced."
 
-log "Maintenance v2.0 selesai."
+log "Maintenance v3.0 selesai."
 log "---------------------------------"

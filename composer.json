@@ -15,15 +15,20 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.16.0",
         "laravel/tinker": "^2.10.1",
-        "simplesoftwareio/simple-qrcode": "^4.2"
+        "laravel/scout": "^10.0",
+        "meilisearch/meilisearch-php": "^1.11",
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "intervention/image": "^3.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5.50"
     },
     "autoload": {
@@ -58,6 +63,13 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "lint": "vendor/bin/pint",
+        "analyze": "vendor/bin/phpstan analyse --level=5",
+        "check": [
+            "@lint --test",
+            "@analyze"
+        ],
+        "health": "php artisan steman:check-integrity",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

@@ -179,17 +179,17 @@
                                 <h6 class="fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Info Pengusaha</h6>
                                 <div class="d-flex align-items-center gap-3 mb-4">
                                     <div class="rounded-circle overflow-hidden bg-light" style="width: 50px; height: 50px;">
-                                        @if($business->owner->avatar)
+                                        @if($business->owner?->avatar)
                                             <img src="{{ asset('storage/'.$business->owner->avatar) }}" class="w-100 h-100" style="object-fit: cover;">
                                         @else
                                             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted fw-bold">
-                                                {{ substr($business->owner->name, 0, 1) }}
+                                                {{ substr($business->owner?->name ?? '?', 0, 1) }}
                                             </div>
                                         @endif
                                     </div>
                                     <div>
-                                        <div class="fw-bold" style="color: #0f172a;">{{ $business->owner->name }}</div>
-                                        <div class="text-muted small">Alumni Angkatan {{ $business->owner->graduation_year ?? '-' }}</div>
+                                        <div class="fw-bold" style="color: #0f172a;">{{ $business->owner?->name ?? 'Pemilik Tidak Tersedia' }}</div>
+                                        <div class="text-muted small">Alumni Angkatan {{ $business->owner?->graduation_year ?? '-' }}</div>
                                     </div>
                                 </div>
                                 <hr class="opacity-10 mb-4">

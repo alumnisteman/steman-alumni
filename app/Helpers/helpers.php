@@ -11,3 +11,14 @@ if (! function_exists('setting')) {
         }
     }
 }
+
+if (! function_exists('getAds')) {
+    function getAds($position)
+    {
+        return \App\Models\Ad::active()
+            ->where('position', $position)
+            ->inRandomOrder()
+            ->select('id','title','image_desktop','image_mobile','link')
+            ->get();
+    }
+}

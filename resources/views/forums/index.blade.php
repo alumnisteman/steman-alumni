@@ -18,10 +18,10 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100 transition-all shadow-hover p-3">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
-                            <img src="{{ $forum->user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($forum->user->name) }}" class="rounded-circle me-3" width="40" height="40">
+                            <img src="{{ $forum->user?->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($forum->user?->name ?? 'User') }}" class="rounded-circle me-3" width="40" height="40">
                             <div>
-                                <h6 class="fw-bold mb-0 text-dark">{{ $forum->user->name }}</h6>
-                                <span class="text-muted small">{{ $forum->created_at->diffForHumans() }}</span>
+                                <h6 class="fw-bold mb-0 text-dark">{{ $forum->user?->name ?? 'User Terhapus' }}</h6>
+                                <span class="text-muted small">{{ optional($forum->created_at)->diffForHumans() ?? '-' }}</span>
                             </div>
                         </div>
                         <h5 class="fw-bold mb-3">{{ $forum->title }}</h5>

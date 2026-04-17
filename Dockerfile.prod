@@ -18,11 +18,13 @@ RUN apk add --no-cache \
     netcat-openbsd \
     unzip \
     libjpeg-turbo-dev \
-    freetype-dev
+    freetype-dev \
+    tzdata
 
 
 # Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+
     && docker-php-ext-install \
     pdo_mysql \
     mbstring \
@@ -60,6 +62,7 @@ RUN chmod -R 755 /var/www \
 # Environment configuration
 ENV APP_ENV=production
 ENV APP_DEBUG=false
+ENV TZ=Asia/Jakarta
 
 # Expose PHP-FPM port
 EXPOSE 9000

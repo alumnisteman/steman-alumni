@@ -155,7 +155,19 @@
         </div>
     </nav>
 
+    <div class="header-ad-wrapper py-3">
+        <div class="container text-center">
+            <x-ad-slot position="header" />
+        </div>
+    </div>
+
     @yield('content')
+
+    <div class="footer-ad-wrapper py-5">
+        <div class="container text-center">
+            <x-ad-slot position="footer" />
+        </div>
+    </div>
 
     <footer id="contact-section" class="pt-5 pb-3 mt-5">
         <div class="container">
