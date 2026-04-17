@@ -35,7 +35,7 @@ class MapController extends Controller
                         'lat' => (float) $user->latitude,
                         'lng' => (float) $user->longitude,
                         'city' => $user->city_name,
-                        'avatar' => $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('assets/images/default-avatar.png'),
+                        'avatar' => $user->profile_picture_url,
                     ];
                 });
         });
@@ -48,6 +48,26 @@ class MapController extends Controller
                 'lng' => 127.3719
             ],
             'alumni' => $alumni
+        ]);
+    }
+
+    /**
+     * Get AI Insight for a specific location
+     */
+    public function aiInsight(Request $request)
+    {
+        $city = $request->get('city', 'Unknown');
+        $count = $request->get('count', 0);
+        $majors = $request->get('majors', '');
+
+        $prompt = "Buatkan 1 kalimat narasi intelijen analitik tentang kekuatan alumni di {$city}. Terdapat {$count} alumni, mayoritas dari jurusan {$majors}. Beri kesan futuristik/high-tech bahwa daerah ini adalah hub penting. Gunakan bahasa Indonesia profesional. Jangan pakai bullet points.";
+
+        $aiService = app(\App\Services\AIService::class);
+        $insight = $aiService->ask($prompt, 0.7) ?? "Intelijen satelit mengonfirmasi {$count} alumni aktif di {$city}, menandakan wilayah ini sebagai titik kumpul strategis.";
+
+        return response()->json([
+            'success' => true,
+            'insight' => $insight
         ]);
     }
 }

@@ -5,7 +5,7 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
                 <div class="bg-warning p-5 text-center">
-                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=000&color=fff&size=200' }}" 
+                    <img src="{{ $user->profile_picture_url }}" 
                          class="rounded-circle border border-4 border-white shadow-sm mb-3" width="180" height="180" style="object-fit: cover;">
                     <h2 class="fw-bold mb-1">{{ $user->name }}</h2>
                     <p class="lead opacity-75 mb-2 text-uppercase small fw-bold">{{ $user->major }} | Angkatan {{ $user->graduation_year }}</p>
@@ -86,25 +86,15 @@
                     </div>
 
                     {{-- Social Links --}}
-                    @if($user->linkedin_url || $user->instagram_url || $user->twitter_url)
+                    @if($user->show_social && $user->socialLinks->count() > 0)
                     <div class="mt-2 mb-4">
-                        <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Media Sosial</h6>
-                        <div class="d-flex gap-2">
-                            @if($user->linkedin_url)
-                            <a href="{{ $user->linkedin_url }}" target="_blank" class="btn btn-outline-primary rounded-pill px-3 small">
-                                <i class="bi bi-linkedin me-1"></i> LinkedIn
+                        <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Jejaring Sosial</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($user->socialLinks as $link)
+                            <a href="{{ $link->url }}" target="_blank" class="btn btn-outline-{{ $link->platform == 'instagram' ? 'danger' : ($link->platform == 'facebook' ? 'primary' : 'dark') }} rounded-pill px-3 py-2 small shadow-sm">
+                                <i class="{{ $link->icon }} me-1"></i> {{ ucfirst($link->platform) }}
                             </a>
-                            @endif
-                            @if($user->instagram_url)
-                            <a href="{{ $user->instagram_url }}" target="_blank" class="btn btn-outline-danger rounded-pill px-3 small">
-                                <i class="bi bi-instagram me-1"></i> Instagram
-                            </a>
-                            @endif
-                            @if($user->twitter_url)
-                            <a href="{{ $user->twitter_url }}" target="_blank" class="btn btn-outline-dark rounded-pill px-3 small">
-                                <i class="bi bi-twitter-x me-1"></i> Twitter
-                            </a>
-                            @endif
+                            @endforeach
                         </div>
                     </div>
                     @endif

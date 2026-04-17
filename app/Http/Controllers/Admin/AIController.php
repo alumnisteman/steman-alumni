@@ -49,15 +49,19 @@ class AIController extends Controller
     {
         $news->update(['status' => 'published']);
 
+        // Award points to the admin for publishing content
+        $admin = Auth::user();
+        $admin->awardPoints(50);
+
         LogActivity::dispatch(
-            Auth::id(),
+            $admin->id,
             'Publish AI News',
-            'Published AI news: ' . $news->title,
+            'Published AI news: ' . $news->title . ' (Earned 50 points)',
             request()->ip(),
             request()->header('User-Agent')
         );
         Cache::forget('welcome_data');
 
-        return back()->with('success', 'Berita kebanggaan alumni berhasil diterbitkan!');
+        return back()->with('success', 'Berita kebanggaan alumni berhasil diterbitkan! Anda mendapatkan 50 poin otoritas.');
     }
 }

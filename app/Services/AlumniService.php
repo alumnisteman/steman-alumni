@@ -38,6 +38,7 @@ class AlumniService
     public function clearCache()
     {
         Cache::forget('alumni_map_analytics');
+        Cache::forget('global_network_data');
         Cache::forget('alumni_graduation_years');
         Cache::forget('welcome_data');
     }
@@ -96,14 +97,26 @@ class AlumniService
             // 1. Career Advice
             $aiPrediction = $aiService->ask("Profile: Major {$user->major}, Job {$user->current_job}. Give 1 short encouraging sentence of career advice in Indonesian.", 0.6);
 
-            // 2. Networking Recommendations
-            $candidates = User::where('role', 'alumni')
-                ->where('id', '!=', $user->id)
-                ->where('status', 'approved')
-                ->inRandomOrder()
-                ->take(10)
-                ->get(['id', 'name', 'major', 'current_job', 'bio'])
-                ->toArray();
+            // 2. Networking Recommendations (Powered by Meilisearch, Eloquent fallback)
+            try {
+                $candidates = User::search($user->major ?? '')
+                    ->where('id', '!=', $user->id)
+                    ->take(15)
+                    ->get()
+                    ->map(fn($u) => $u->only(['id', 'name', 'major', 'current_job', 'bio']))
+                    ->toArray();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Meilisearch unavailable in AlumniService, using Eloquent: ' . $e->getMessage());
+                $candidates = User::where('id', '!=', $user->id)
+                    ->where('status', 'approved')
+                    ->where('role', 'alumni')
+                    ->where('major', $user->major)
+                    ->inRandomOrder()
+                    ->take(15)
+                    ->get()
+                    ->map(fn($u) => $u->only(['id', 'name', 'major', 'current_job', 'bio']))
+                    ->toArray();
+            }
             
             $recs = $aiService->recommendAlumni($user->only(['name', 'major', 'bio']), $candidates);
             
@@ -128,9 +141,20 @@ class AlumniService
                 ->orderBy('total', 'desc')
                 ->first();
 
+            // 4. Profile Optimization Suggestion (Social Connect Enhancement)
+            $socialLinks = $user->socialLinks;
+            $profileSuggestion = $aiService->suggestProfileOptimizations([
+                'major' => $user->major,
+                'current_job' => $user->current_job,
+                'bio' => $user->bio,
+                'social_count' => $socialLinks->count(),
+                'has_linkedin' => $socialLinks->where('platform', 'linkedin')->isNotEmpty(),
+            ]);
+
             return [
                 'aiPrediction' => $aiPrediction,
                 'aiRecommendations' => $aiRecommendations,
+                'profileSuggestion' => $profileSuggestion,
                 'careerSnippet' => $careerSnippet ? [
                     'pekerjaan' => $careerSnippet->current_job,
                     'total' => $careerSnippet->total
@@ -153,6 +177,7 @@ class AlumniService
             'internationalCount' => 0,
             'aiPrediction' => null,
             'careerSnippet' => null,
+            'profileSuggestion' => null,
             'aiRecommendations' => collect()
         ];
     }

@@ -27,7 +27,10 @@ class Gallery extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withDefault([
+            'name' => 'System/Deleted User',
+            'profile_picture' => null
+        ]);
     }
 
     // Extract TikTok video ID from various TikTok URL formats

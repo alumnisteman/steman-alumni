@@ -54,56 +54,89 @@
     <div class="row g-4">
         @forelse($businesses as $biz)
         <div class="col-lg-4 col-md-6">
-            <div class="card h-100 border-0 shadow-sm overflow-hidden transition-all hover-translate-y" style="border-radius: 20px; background: white;">
+            <div class="card h-100 border-0 shadow-lg overflow-hidden transition-all hover-translate-y position-relative" style="border-radius: 25px; background: white;">
+                <!-- Discount Badge -->
+                @if($biz->discount_info)
+                <div class="position-absolute start-0 top-0 m-3 z-3">
+                    <div class="bg-danger text-white px-3 py-1 rounded-pill fw-black small shadow-lg animate-pulse">
+                        <i class="bi bi-tag-fill me-1"></i> {{ strtoupper($biz->discount_info) }}
+                    </div>
+                </div>
+                @endif
+
                 <div class="position-relative">
                     @if($biz->logo_url)
-                        <img src="{{ $biz->logo_url }}" class="card-img-top" alt="{{ $biz->name }}" style="height: 200px; object-fit: cover;">
+                        <img src="{{ $biz->logo_url }}" class="card-img-top" alt="{{ $biz->name }}" style="height: 240px; object-fit: cover;">
                     @else
-                        <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 200px;">
-                            <i class="bi bi-shop display-4"></i>
+                        <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 240px;">
+                            <i class="bi bi-shop display-1 opacity-25"></i>
                         </div>
                     @endif
-                    <div class="position-absolute top-0 end-0 p-3 d-flex flex-column gap-2">
-                        <span class="badge bg-white text-primary rounded-pill fw-bold shadow-sm" style="font-size: 0.7rem;">{{ $biz->category }}</span>
-                        @if(auth()->id() == $biz->user_id)
-                            <a href="{{ route('alumni.business.edit', $biz->id) }}" class="badge bg-warning text-dark rounded-pill fw-bold shadow-sm text-decoration-none border-0">
-                                <i class="bi bi-pencil-square me-1"></i> KELOLA
-                            </a>
-                        @endif
+                    <div class="position-absolute bottom-0 start-0 w-100 p-4" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                        <span class="badge bg-primary rounded-pill px-3 py-2 mb-2" style="font-size: 0.65rem; border: 1px solid rgba(255,255,255,0.2);">{{ strtoupper($biz->category) }}</span>
+                        <h4 class="fw-black text-white mb-0">{{ $biz->name }}</h4>
                     </div>
-                </div>
-                <div class="card-body p-4">
-                    <h5 class="fw-bold mb-2 text-dark">{{ $biz->name }}</h5>
-                    <p class="text-muted small mb-4 line-clamp-2" style="min-height: 40px;">{{ $biz->description }}</p>
                     
-                    <div class="d-flex align-items-center mb-4 gap-2">
-                        <i class="bi bi-geo-alt-fill text-danger"></i>
-                        <span class="small text-muted fw-medium">{{ $biz->location }}</span>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('alumni.business.show', $biz->id) }}" class="btn btn-outline-dark rounded-pill fw-bold btn-sm py-2">DETAIL USAHA</a>
-                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $biz->whatsapp) }}?text={{ urlencode('Halo, saya melihat usaha Anda di Portal Alumni Steman. Saya tertarik dengan...') }}" 
-                           target="_blank" class="btn btn-success rounded-pill fw-bold btn-sm py-2 shadow-sm">
-                            <i class="bi bi-whatsapp me-2"></i> HUBUNGI PEMILIK
+                    @if(auth()->id() == $biz->user_id)
+                    <div class="position-absolute top-0 end-0 p-3">
+                        <a href="{{ route('alumni.business.edit', $biz->id) }}" class="btn btn-warning btn-sm rounded-circle shadow-sm" title="Edit Usaha">
+                            <i class="bi bi-pencil-fill"></i>
                         </a>
                     </div>
+                    @endif
                 </div>
-                <div class="card-footer bg-transparent border-0 px-4 pb-4 pt-0">
-                    <hr class="opacity-10 mt-0">
-                    <div class="d-flex align-items-center gap-2">
-                        <img src="{{ $biz->owner->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($biz->owner->name) }}" class="rounded-circle" width="24" height="24">
-                        <span class="text-muted" style="font-size: 0.7rem;">Pemilik: <b class="text-dark">{{ $biz->owner->name }}</b></span>
+
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-4 line-clamp-3" style="min-height: 60px;">{{ $biz->description }}</p>
+                    
+                    <div class="d-flex align-items-center mb-4 gap-2">
+                        <div class="bg-danger bg-opacity-10 p-2 rounded-circle">
+                            <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+                        </div>
+                        <span class="small text-dark fw-bold">{{ $biz->location }}</span>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{{ route('alumni.business.show', $biz->id) }}" class="btn btn-light w-100 rounded-pill fw-bold btn-sm py-2">DETAIL</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $biz->whatsapp) }}" target="_blank" class="btn btn-success w-100 rounded-pill fw-bold btn-sm py-2">
+                                <i class="bi bi-whatsapp"></i> CHAT
+                            </a>
+                        </div>
+                    </div>
+                    
+                    @if($biz->website_url)
+                    <div class="mt-2">
+                        <a href="{{ $biz->website_url }}" target="_blank" class="btn btn-outline-primary w-100 rounded-pill fw-bold btn-sm py-2 border-2">
+                            <i class="bi bi-globe me-2"></i> KUNJUNGI WEBSITE
+                        </a>
+                    </div>
+                    @endif
+                </div>
+                
+                <div class="card-footer bg-light border-0 px-4 py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ $biz->owner->profile_picture ? asset('storage/'.$biz->owner->profile_picture) : 'https://ui-avatars.com/api/?name='.urlencode($biz->owner->name) }}" class="rounded-circle border border-2 border-white shadow-sm" width="30" height="30">
+                            <div class="lh-1">
+                                <div class="text-muted" style="font-size: 0.6rem;">PEMILIK</div>
+                                <div class="fw-bold small text-dark">{{ explode(' ', $biz->owner->name)[0] }}</div>
+                            </div>
+                        </div>
+                        <i class="bi bi-patch-check-fill text-primary ms-auto" title="Verified Alumni Business"></i>
                     </div>
                 </div>
             </div>
         </div>
         @empty
         <div class="col-12 py-5 text-center">
-            <div class="bg-light p-5 rounded-4 d-inline-block border-2 border-dashed border-muted">
-                <i class="bi bi-inbox display-1 text-muted opacity-25 d-block mb-3"></i>
-                <h4 class="fw-bold text-muted">Belum ada usaha terdaftar</h4>
-                <p class="text-muted mb-0">Jadilah yang pertama mempromosikan usaha Anda!</p>
+            <div class="bg-white p-5 rounded-5 shadow-sm d-inline-block border-2 border-dashed">
+                <i class="bi bi-shop-window display-1 text-muted opacity-10 d-block mb-3"></i>
+                <h4 class="fw-black text-dark">WAKTUNYA BERBISNIS!</h4>
+                <p class="text-muted mb-4 px-lg-5">Belum ada usaha alumni di kategori ini. Jadilah pelopor dan daftarkan usaha Anda sekarang juga.</p>
+                <a href="{{ route('alumni.business.create') }}" class="btn btn-primary rounded-pill px-5 fw-bold">MULAI SEKARANG</a>
             </div>
         </div>
         @endforelse

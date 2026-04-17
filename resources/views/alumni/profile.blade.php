@@ -16,7 +16,7 @@
                 @csrf @method('PUT')
                 
                 <div class="text-center mb-4">
-                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name) }}" 
+                    <img src="{{ $user->profile_picture_url }}" 
                          class="rounded-circle border" width="150" height="150" style="object-fit: cover;">
                     <div class="mt-3">
                         <label class="btn btn-sm btn-outline-primary shadow-none">
@@ -104,6 +104,43 @@
                         <div class="mb-0">
                             <label class="form-label fw-bold small">Pesan Kesediaan Program Mentoring</label>
                             <textarea name="mentor_bio" class="form-control" rows="3" placeholder="Jelaskan bagaimana Anda bisa membantu adik-adik atau sesama alumni...">{{ $user->mentor_bio }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-share"></i> Jejaring Sosial</h5>
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" name="show_social" id="showSocialSwitch" {{ $user->show_social ? 'checked' : '' }} value="1">
+                        <label class="form-check-label fw-bold" for="showSocialSwitch">
+                            Tampilkan Link Sosial Media di Profil Publik
+                        </label>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-instagram"></i> Instagram</label>
+                            <input type="text" name="socials[instagram]" class="form-control" value="{{ $user->getSocialUrl('instagram') }}" placeholder="@username atau URL">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-facebook"></i> Facebook</label>
+                            <input type="text" name="socials[facebook]" class="form-control" value="{{ $user->getSocialUrl('facebook') }}" placeholder="URL Profil">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-tiktok"></i> TikTok</label>
+                            <input type="text" name="socials[tiktok]" class="form-control" value="{{ $user->getSocialUrl('tiktok') }}" placeholder="@username">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-linkedin"></i> LinkedIn</label>
+                            <input type="text" name="socials[linkedin]" class="form-control" value="{{ $user->getSocialUrl('linkedin') }}" placeholder="URL Profil">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-github"></i> GitHub</label>
+                            <input type="text" name="socials[github]" class="form-control" value="{{ $user->getSocialUrl('github') }}" placeholder="Username">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-globe"></i> Website Personal</label>
+                            <input type="text" name="socials[website]" class="form-control" value="{{ $user->getSocialUrl('website') }}" placeholder="https://...">
                         </div>
                     </div>
                 </div>

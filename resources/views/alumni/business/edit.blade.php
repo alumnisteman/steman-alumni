@@ -72,6 +72,16 @@
                                     <textarea name="description" rows="5" class="form-control bg-light border-0 py-3 px-4 rounded-3" required>{{ old('description', $business->description) }}</textarea>
                                 </div>
 
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold mb-2 text-dark"><i class="bi bi-tag-fill me-2 text-danger"></i>Info Diskon</label>
+                                    <input type="text" name="discount_info" class="form-control bg-light border-0 py-3 px-4 rounded-3" value="{{ old('discount_info', $business->discount_info) }}" placeholder="Contoh: Diskon 10%">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold mb-2 text-dark"><i class="bi bi-globe me-2 text-primary"></i>Website/Link</label>
+                                    <input type="url" name="website_url" class="form-control bg-light border-0 py-3 px-4 rounded-3" value="{{ old('website_url', $business->website_url) }}" placeholder="https://...">
+                                </div>
+
                                 <!-- Add More Photos -->
                                 <div class="col-12 mt-4">
                                     <label class="form-label fw-bold mb-2 text-dark"><i class="bi bi-images me-2 text-primary"></i>Tambah Foto Produk Baru</label>

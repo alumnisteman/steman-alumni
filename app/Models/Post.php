@@ -22,7 +22,10 @@ class Post extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withDefault([
+            'name' => 'Anonymous Alumni',
+            'profile_picture' => null
+        ]);
     }
 
     public function likes()

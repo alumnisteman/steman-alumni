@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
         RateLimiter::for('global', function (Request $request) {
-            return Limit::perMinute(100)->by($request->ip());
+            return Limit::perMinute(300)->by($request->ip());
         });
 
         RateLimiter::for('login', function (Request $request) {

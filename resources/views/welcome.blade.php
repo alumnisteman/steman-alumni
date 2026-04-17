@@ -6,10 +6,10 @@
     .hero-section.hero-banner-bg {
         position: relative;
         width: 100%;
-        min-height: 450px;
+        min-height: 500px;
         overflow: hidden;
-        background-color: #000;
-        display: flex; /* Gunakan Flexbox untuk centering */
+        background-color: #0f172a; /* Slate dark background */
+        display: flex;
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
@@ -18,7 +18,7 @@
     /* Penjaga Rasio 1280x670 */
     @media (min-width: 992px) {
         .hero-section.hero-banner-bg {
-            aspect-ratio: 1280 / 670 !important;
+            aspect-ratio: 1280 / 600 !important;
             min-height: auto;
         }
     }
@@ -32,6 +32,8 @@
         inset: 0;
         z-index: 1;
         display: block;
+        filter: brightness(0.7) contrast(1.1); /* Auto-enhance image */
+        transition: transform 0.5s ease-out;
     }
 
     .hero-content-overlay {
@@ -41,15 +43,24 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%);
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.8) 100%);
     }
 
     .glass-hero-card {
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 3rem;
-        border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px); /* Efek Kaca Premium */
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 3.5rem;
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        animation: float 6s ease-in-out infinite; /* Animasi Melayang */
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
     }
 </style>
 
@@ -221,23 +232,167 @@
     <x-ad-slot position="content" aspectRatio="1280/200" mobileAspectRatio="400/150" />
 </div>
 
-<!-- Global Alumni Network Map -->
-<div class="container py-4 py-md-5">
-    <div class="text-center mb-5">
-        <h6 class="text-primary fw-bold text-uppercase mb-2">Jejaring Global</h6>
-        <h2 class="fw-black mb-0">PERSEBARAN ALUMNI</h2>
-        <div class="section-divider mx-auto mt-3"></div>
-        <p class="text-muted mx-auto" style="max-width: 600px;">Lulusan kami telah tersebar di berbagai instansi nasional maupun perusahaan internasional, membangun masa depan yang cerah di seluruh dunia.</p>
+<!-- Global Alumni Network Map - THE NEURAL NETWORK -->
+<div class="neural-network-section py-5 position-relative overflow-hidden">
+    <!-- Cyber Background Elements -->
+    <div class="cyber-grid"></div>
+    <div class="glow-orb"></div>
+
+    <div class="container py-4 py-md-5 position-relative" style="z-index: 2;">
+        <div class="text-center mb-5">
+            <div class="d-inline-flex align-items-center mb-3 bg-primary bg-opacity-10 px-4 py-2 rounded-pill border border-primary border-opacity-25">
+                <span class="ai-pulse me-2"></span>
+                <h6 class="text-primary fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">Live Network Feed</h6>
+            </div>
+            <h2 class="fw-black mb-3 display-5 text-dark">EKSOSISTEM GLOBAL ALUMNI</h2>
+            <div class="section-divider mx-auto mt-2"></div>
+            <p class="text-muted mx-auto lead" style="max-width: 800px;">
+                Algoritma kami memetakan jejak digital alumni di <span class="text-primary fw-bold">berbagai benua</span>. Dari instansi nasional hingga korporasi internasional, membangun <span class="text-dark fw-bold">Neural Network karir</span> terkuat di dunia.
+            </p>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="stat-glass-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary"><i class="bi bi-geo-alt-fill"></i></div>
+                        <div>
+                            <h3 class="fw-black mb-0">{{ $nationalCount + $internationalCount }}+</h3>
+                            <small class="text-muted text-uppercase">Nodes Terverifikasi</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-glass-card border-warning">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning"><i class="bi bi-globe2"></i></div>
+                        <div>
+                            <h3 class="fw-black mb-0">{{ $internationalCount }}+</h3>
+                            <small class="text-muted text-uppercase">Global Reach (Intl)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-glass-card border-success">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success"><i class="bi bi-cpu"></i></div>
+                        <div>
+                            <h3 class="fw-black mb-0">98%</h3>
+                            <small class="text-muted text-uppercase">Career Match Rate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container-premium shadow-lg border border-4 border-white">
+            <x-alumni-map 
+                id="home-global-map" 
+                :locations="$alumniLocations" 
+                :nationalCount="$nationalCount" 
+                :internationalCount="$internationalCount" 
+                height="550px"
+            />
+            <div class="map-scanner"></div>
+        </div>
     </div>
-    
-    <x-alumni-map 
-        id="home-global-map" 
-        :locations="$alumniLocations" 
-        :nationalCount="$nationalCount" 
-        :internationalCount="$internationalCount" 
-        height="500px"
-    />
 </div>
+
+<style>
+    .neural-network-section {
+        background-color: #f8fafc;
+    }
+
+    /* Cyber Grid Background */
+    .cyber-grid {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        z-index: 1;
+    }
+
+    .glow-orb {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+    }
+
+    .stat-glass-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .stat-glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .map-container-premium {
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Scanner Effect */
+    .map-scanner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(to right, transparent, #3b82f6, transparent);
+        box-shadow: 0 0 20px #3b82f6;
+        animation: scan 4s linear infinite;
+        z-index: 20;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    @keyframes scan {
+        0% { top: 0; opacity: 0; }
+        10% { opacity: 0.5; }
+        90% { opacity: 0.5; }
+        100% { top: 100%; opacity: 0; }
+    }
+
+    .ai-pulse {
+        width: 10px;
+        height: 10px;
+        background-color: #3b82f6;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+        animation: ai-pulse 2s infinite;
+    }
+
+    @keyframes ai-pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+</style>
 
 <!-- AI Insights Section -->
 <div class="py-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
@@ -453,13 +608,37 @@
 </style>
 
 <!-- Join Section -->
-<div class="bg-dark text-white py-5 mt-5">
+<div class="join-section text-white py-5 mt-5">
     <div class="container py-5 text-center">
-        <h2 class="display-5 fw-black mb-4" style="color: #ffcc00;">BELUM TERGABUNG?</h2>
+        <h2 class="display-5 fw-black mb-4" style="color: #ffcc00; text-shadow: 0 10px 20px rgba(0,0,0,0.3);">BELUM TERGABUNG?</h2>
         <p class="lead mb-5 opacity-75 mx-auto" style="max-width: 800px;">Mari perkuat jaringan alumni {{ setting('school_name', 'SMKN 2 Ternate') }}. Daftarkan diri Anda sekarang untuk mendapatkan info lowongan kerja, networking, dan program pengembangan diri lainnya.</p>
-        <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-pill shadow-lg">GABUNG SEKARANG</a>
+        <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-pill shadow-lg hover-lift">GABUNG SEKARANG</a>
     </div>
 </div>
+
+<style>
+    .join-section {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        background-size: 200% 200%;
+        animation: gradient-shift 15s ease infinite;
+        position: relative;
+        overflow: hidden;
+    }
+
+    @keyframes gradient-shift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
+    }
+</style>
 
 <style>
     .fw-black { font-weight: 900; }

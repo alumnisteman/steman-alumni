@@ -21,10 +21,12 @@ use App\Http\Controllers\Admin\AIController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProgramRegistrationController;
 use App\Http\Controllers\Admin\AdController;
+use App\Http\Controllers\PublicVerificationController;
 use App\Services\AIPredictionService;
 
 // --- 1. Global Public Routes (Rate Limited) ---
@@ -43,6 +45,9 @@ Route::middleware(['throttle:global'])->group(function () {
         $data = $alumniService->getWelcomeData();
         return view('welcome', $data);
     })->name('home');
+
+    // Official Digital Verification (Premium)
+    Route::get('/v/{token}', [PublicVerificationController::class, 'verify'])->name('public.verification');
 
     Route::get('/profil', function () { return view('profil'); })->name('public.profile');
 
@@ -77,15 +82,27 @@ Route::middleware(['throttle:global'])->group(function () {
     // Global Network & Mesh Map (Leaflet)
     Route::get('/global-network', [MapController::class, 'index'])->name('global.network');
     Route::get('/api/v1/map-data', [MapController::class, 'data'])->name('api.map.data');
+    Route::get('/api/v1/map-ai-insight', [MapController::class, 'aiInsight'])->name('api.map.ai');
 });
 
 // --- 2. Authentication Routes (Stricter Rate Limiting) ---
-Route::middleware(['throttle:5,1'])->group(function () {
+Route::post('/api/v1/guardian/log-error', [\App\Http\Controllers\GuardianController::class, 'logError'])->name('guardian.log');
+
+Route::middleware(['throttle:30,1'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
+
+// Password Reset Routes (Moved for better stability)
+Route::get('password/reset', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [PasswordResetController::class, 'reset'])->name('password.update');
+
+// Magic QR Login Route
+Route::get('/auth/qr-login/{token}', [AuthController::class, 'qrLogin'])->name('auth.qr-login');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
@@ -109,6 +126,10 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         // Alumni-Only Features (Specific paths first)
         Route::middleware(['alumni'])->group(function () {
             Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
+            Route::get('/alumni/mentor', [\App\Http\Controllers\MentorController::class, 'index'])->name('alumni.mentor.index');
+            Route::post('/alumni/mentor/find', [\App\Http\Controllers\MentorController::class, 'find'])->name('alumni.mentor.find');
+            Route::get('/alumni/networking/recommendations', [\App\Http\Controllers\NetworkingController::class, 'getRecommendations'])->name('alumni.networking.recommendations');
+            Route::get('/alumni/networking/nearby', [\App\Http\Controllers\NetworkingController::class, 'nearby'])->name('alumni.networking.nearby');
             Route::get('/alumni/network', [AlumniController::class, 'network'])->name('alumni.network');
             Route::get('/alumni/messages', [AlumniController::class, 'messages'])->name('alumni.messages');
             Route::get('/api/dashboard/ai-data', [\App\Http\Controllers\Api\DashboardApiController::class, 'getAIData'])->name('dashboard.ai.data');
@@ -116,6 +137,12 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
             
             // Programs Registration (Alumni)
             Route::post('/programs/{program}/register', [ProgramRegistrationController::class, 'store'])->name('programs.register');
+            
+            // Health AI Features
+            Route::get('/alumni/health', [\App\Http\Controllers\HealthController::class, 'index'])->name('alumni.health.index');
+            Route::post('/alumni/health/lifestyle', [\App\Http\Controllers\HealthController::class, 'updateLifestyle'])->name('alumni.health.lifestyle');
+            Route::post('/alumni/health/symptoms', [\App\Http\Controllers\HealthController::class, 'checkSymptoms'])->name('alumni.health.symptoms');
+            Route::post('/alumni/health/chat', [\App\Http\Controllers\HealthController::class, 'chat'])->name('alumni.health.chat');
         });
 
         // Business Directory Routes - Secured by standard Role Middleware
@@ -206,6 +233,9 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/admin/gallery/{gallery}/edit', [GalleryController::class, 'edit'])->name('admin.gallery.edit');
         Route::put('/admin/gallery/{gallery}', [GalleryController::class, 'update'])->name('admin.gallery.update');
 
+        // Health Dashboard (Admin)
+        Route::get('/admin/health-trends', [\App\Http\Controllers\Admin\HealthDashboardController::class, 'index'])->name('admin.health.trends');
+
         // CMS / Settings (Admin & Editor)
         Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
         Route::post('/admin/settings/store', [SettingController::class, 'store'])->name('admin.settings.store');
@@ -265,6 +295,11 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         // SYSTEM LOGS (Admin & Editor Debug Tool)
         Route::get('/admin/system/logs', [\App\Http\Controllers\Admin\SystemController::class, 'logs'])->name('admin.system.logs');
         Route::post('/admin/system/logs/clear', [\App\Http\Controllers\Admin\SystemController::class, 'clearLogs'])->name('admin.system.logs.clear');
+
+        // NEW: QR Scanner & Point System
+        Route::get('/admin/scanner', [\App\Http\Controllers\Admin\ScannerController::class, 'index'])->name('admin.scanner');
+        Route::post('/admin/scanner/verify', [\App\Http\Controllers\Admin\ScannerController::class, 'verify'])->name('admin.scanner.verify');
+        Route::post('/admin/scanner/award', [\App\Http\Controllers\Admin\ScannerController::class, 'awardPoints'])->name('admin.scanner.award');
     });
 });
 

@@ -12,7 +12,7 @@ parameters:
     # Level 1 will look for possible method/function calls on variables that might be null,
     # and accessing properties on possible null. 
     # Level 5 is typical but might be too noisy for an existing codebase. Let's start with Level 2.
-    level: 2
+    level: 5
 
     ignoreErrors:
         # Ignore specific patterns if they are false positives, to be decided after first run

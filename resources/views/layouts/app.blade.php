@@ -22,6 +22,27 @@
             document.documentElement.classList.remove('dark');
             document.documentElement.setAttribute('data-bs-theme', 'light');
         }
+
+        // --- GLOBAL GUARDIAN SHIELD (Anti-Blank) ---
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('Guardian Shield intercepted error:', message);
+            // Non-blocking log to server
+            if (window.fetch) {
+                fetch('/api/v1/guardian/log-error', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ message, source, lineno, colno, url: window.location.href })
+                }).catch(() => {});
+            }
+            // Fail gracefully for critical components
+            if (message.includes('WebGL') || message.includes('Globe')) {
+                const mapContainer = document.getElementById('3d-globe-container');
+                if (mapContainer) {
+                    mapContainer.innerHTML = '<div class="alert alert-warning m-4">Peta 3D sedang memulihkan diri... Silakan refresh jika masalah berlanjut.</div>';
+                }
+            }
+            return false; // Let it log to console too
+        };
     </script>
 @stack('styles')
     <style>
@@ -71,12 +92,106 @@
             font-size: 0.75rem;
             box-shadow: 5px 0 15px rgba(0,0,0,0.3);
         }
+
+        /* Sindonews-Style Sticky Management */
+        :root {
+            --billboard-height: 250px;
+            --ad-wrapper-padding: 2.5rem; /* py-2 py-md-3 approx */
+            --total-ad-offset: calc(var(--billboard-height) + var(--ad-wrapper-padding));
+        }
+
+        .header-ad-wrapper {
+            position: relative; /* Changed from sticky to relative */
+            z-index: 1030;
+            background: #fff;
+            border-bottom: 2px solid #ffcc00;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.sticky-top {
+            top: 0; /* Changed from var(--total-ad-offset) to 0 for cleaner reading */
+            z-index: 1050;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .ad-close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: rgba(0,0,0,0.1);
+            color: #666;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .ad-close-btn:hover {
+            background: #ffcc00;
+            color: #000;
+        }
+
+        /* Ad Image Fix: Prevent distortion (Anti-Lonjong) */
+        .ad-slot-container {
+            width: 100%;
+            height: var(--billboard-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa; /* Light neutral bg for gaps */
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .ad-slot-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* The Magic: proportional scaling */
+            object-position: center;
+            transition: transform 0.3s ease;
+        }
+
+        .ad-slot-container:hover img {
+            transform: scale(1.02); /* Subtle hover effect */
+        }
+
+        @media (max-width: 767px) {
+            :root {
+                --billboard-height: 150px;
+                --ad-wrapper-padding: 1rem;
+            }
+            .navbar.sticky-top {
+                top: 0;
+            }
+            /* Hide top-bar on mobile if ad is sticky to save space */
+            .top-bar { display: none; }
+        }
+
+        /* Optimization: Hide ad-wrapper if no ad is rendered */
+        .header-ad-wrapper:empty { display: none; }
     </style>
 </head>
 <body>
 @php
     $runningText = setting('running_text', 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate - Jalin Silaturahmi, Bangun Kontribusi!');
 @endphp
+    <div class="header-ad-wrapper shadow-sm" id="main-header-ad">
+        <button class="ad-close-btn" onclick="document.getElementById('main-header-ad').remove()" title="Tutup Iklan">
+            <i class="bi bi-x"></i>
+        </button>
+        <div class="container text-center py-2 py-md-3">
+            <x-ad-slot position="header" />
+        </div>
+    </div>
+
 @if($runningText)
 <div class="running-text-wrapper">
     <div class="running-text-label">
@@ -119,6 +234,11 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('leaderboard') }}">PERINGKAT</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('forums.index') }}">FORUM</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('mentors.index') }}">MENTOR</a></li>
+                    @auth
+                    @if(auth()->user()->role == 'alumni')
+                    <li class="nav-item"><a class="nav-link text-emerald-600 fw-bold" href="{{ route('alumni.health.index') }}"><i class="bi bi-heart-pulse-fill me-1"></i>KESEHATAN</a></li>
+                    @endif
+                    @endauth
                     <li class="nav-item"><a class="nav-link" href="/kontak">KONTAK</a></li>
                     @auth
                         <li class="nav-item dropdown me-2">
@@ -155,11 +275,6 @@
         </div>
     </nav>
 
-    <div class="header-ad-wrapper py-3">
-        <div class="container text-center">
-            <x-ad-slot position="header" />
-        </div>
-    </div>
 
     @yield('content')
 
@@ -317,6 +432,5 @@
     </script>
     @stack('scripts')
     @include('components.ai-chat-bubble')
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>
 </html>

@@ -40,7 +40,9 @@ class BusinessController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'required|string',
             'description' => 'required|string',
+            'discount_info' => 'nullable|string|max:255',
             'whatsapp' => 'required|string',
+            'website_url' => 'nullable|url|max:255',
             'location' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -59,7 +61,9 @@ class BusinessController extends Controller
             'name' => $request->name,
             'category' => $request->category,
             'description' => $request->description,
+            'discount_info' => $request->discount_info,
             'whatsapp' => $request->whatsapp,
+            'website_url' => $request->website_url,
             'location' => $request->location,
             'logo_url' => $logoUrl,
             'status' => 'pending',
@@ -115,7 +119,7 @@ class BusinessController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
-        $data = $request->only(['name', 'category', 'description', 'whatsapp', 'location']);
+        $data = $request->only(['name', 'category', 'description', 'discount_info', 'whatsapp', 'website_url', 'location']);
 
         if ($request->hasFile('logo')) {
             if ($business->logo_url) {

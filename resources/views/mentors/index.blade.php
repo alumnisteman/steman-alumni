@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="card-body p-4 text-center">
-                        <img src="{{ $mentor->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($mentor->name).'&background=0D6EFD&color=fff&size=200' }}" 
+                        <img src="{{ $mentor->profile_picture_url }}" 
                              class="rounded-circle border border-3 border-primary mb-3 shadow" width="110" height="110" style="object-fit: cover;">
                         
                         <h5 class="fw-bold mb-1">{{ $mentor->name }}</h5>

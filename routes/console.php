@@ -40,3 +40,12 @@ Schedule::call(function () {
     }
 })->dailyAt('03:00')->name('logs:prune-scheduler');
 
+// Automated System Health Audit: Hourly Check for Errors, Permissions, and Data Integrity (ULTIMATE GUARDIAN)
+Schedule::call(function () {
+    $guardian = app(\App\Services\GuardianService::class);
+    $guardian->performDeepScan();
+})->hourly()->name('app:guardian-deep-scan');
+
+// Automated Daily System Check & Integrity Healing
+Schedule::command('app:audit-integrity --fix')->dailyAt('00:00')->name('app:audit-integrity-fix');
+Schedule::command('app:system-check')->dailyAt('00:30')->name('app:system-check-daily');

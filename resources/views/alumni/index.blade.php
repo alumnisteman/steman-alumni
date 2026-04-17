@@ -23,7 +23,7 @@
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
                     <div class="card-header border-0 bg-transparent py-4 text-center">
                         <div class="position-relative d-inline-block">
-                            <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=6366f1&color=fff' }}" 
+                            <img src="{{ $user->profile_picture_url }}" 
                                  class="rounded-circle border border-4 border-white shadow-sm" 
                                  style="width: 100px; height: 100px; object-fit: cover;" 
                                  alt="{{ $user->name }}">

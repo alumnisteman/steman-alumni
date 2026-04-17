@@ -60,6 +60,11 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         try {
+            // Security check: Editor cannot edit Admin accounts
+            if (Auth::user()->role === 'editor' && $user->role === 'admin') {
+                return back()->with('error', 'Editor tidak diperbolehkan mengubah akun Admin.');
+            }
+
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,

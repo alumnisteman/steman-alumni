@@ -4,9 +4,9 @@
 <div class="container-fluid px-4 py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-black text-dark mb-1">DASHBOARD ADMIN (VERSION 4.2)</h2>
-            <p class="text-muted">Selamat datang kembali, {{ auth()->user()->name }}. Panel kendali sistem Steman Alumni.</p>
-            <p class="small text-danger fw-bold">SERVER TIME: {{ now() }} | ROLE: {{ auth()->user()->role }}</p>
+            <h2 class="fw-black text-dark mb-1 text-uppercase">DASHBOARD {{ auth()->user()->role }} (VERSION 4.2)</h2>
+            <p class="text-muted">Selamat datang kembali, {{ auth()->user()->name }}. Anda masuk sebagai <strong>{{ ucfirst(auth()->user()->role) }}</strong> Portal Steman.</p>
+            <p class="small text-danger fw-bold"><i class="bi bi-cpu-fill me-1"></i> SERVER TIME: {{ now()->format('H:i:s') }} | <i class="bi bi-shield-check me-1"></i> STATUS: SECURE</p>
         </div>
         <div>
             <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill border">
@@ -19,47 +19,47 @@
         <!-- Quick Actions Row -->
         <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>PINTASAN CEPAT</h5>
         <div class="row g-3 mb-5">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <a href="{{ route('admin.users.index') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100">
                     <div class="card-body p-4 text-center">
                         <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
                             <i class="bi bi-person-plus-fill fs-3"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1">Tambah User</h6>
-                        <p class="text-muted small mb-0">Kelola alumni & admin</p>
+                        <p class="text-muted small mb-0">Kelola alumni</p>
                     </div>
                 </a>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <a href="{{ route('admin.news.create') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100">
                     <div class="card-body p-4 text-center">
                         <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
                             <i class="bi bi-newspaper fs-3"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1">Tulis Berita</h6>
-                        <p class="text-muted small mb-0">Upload info & berita</p>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="{{ route('admin.gallery.index') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100">
-                    <div class="card-body p-4 text-center">
-                        <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                            <i class="bi bi-images fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold text-dark mb-1">Upload Foto</h6>
-                        <p class="text-muted small mb-0">Update galeri kegiatan</p>
+                        <p class="text-muted small mb-0">Upload info</p>
                     </div>
                 </a>
             </div>
             <div class="col-md-2">
-                <a href="{{ route('admin.programs.index') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100">
+                <a href="{{ route('admin.health.trends') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100">
                     <div class="card-body p-4 text-center">
-                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                            <i class="bi bi-mortarboard fs-3 text-warning"></i>
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-heart-pulse-fill fs-3"></i>
                         </div>
-                        <h6 class="fw-bold text-dark mb-1">Program</h6>
-                        <p class="text-muted small mb-0">Kelola kegiatan</p>
+                        <h6 class="fw-bold text-dark mb-1">Kesehatan</h6>
+                        <p class="text-muted small mb-0">Tren Alumni</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ route('alumni.card') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100 bg-dark">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-warning bg-opacity-20 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-id-card fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold text-white mb-1">Admin Card</h6>
+                        <p class="text-white-50 small mb-0">Kunci akses cepat</p>
                     </div>
                 </a>
             </div>
@@ -74,152 +74,131 @@
                     </div>
                 </a>
             </div>
-        </div>
-
-        <!-- Stats Row -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white h-100 transition-all hover-up-small">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div class="bg-primary bg-opacity-10 p-3 rounded-3"><i class="bi bi-people text-primary fs-3"></i></div>
-                        <div class="text-end">
-                            <h3 class="fw-black mb-0">{{ number_format($totalAlumni) }}</h3>
-                            <p class="text-muted small mb-0">Total Alumni</p>
+            <div class="col-md-2">
+                <a href="{{ route('admin.system.logs') }}" class="card border-0 shadow-sm rounded-4 text-decoration-none transition-all hover-up-small h-100">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-terminal fs-3"></i>
                         </div>
+                        <h6 class="fw-bold text-dark mb-1">Log Sistem</h6>
+                        <p class="text-muted small mb-0">Audit teknis</p>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white h-100 transition-all hover-up-small">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div class="bg-success bg-opacity-10 p-3 rounded-3"><i class="bi bi-briefcase text-success fs-3"></i></div>
-                        <div class="text-end">
-                            <h3 class="fw-black mb-0">{{ number_format($totalJobs) }}</h3>
-                            <p class="text-muted small mb-0">Lowongan Kerja</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white h-100 transition-all hover-up-small">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div class="bg-info bg-opacity-10 p-3 rounded-3"><i class="bi bi-mortarboard text-info fs-3"></i></div>
-                        <div class="text-end">
-                            <h3 class="fw-black mb-0">{{ number_format($totalMajors) }}</h3>
-                            <p class="text-muted small mb-0">Program Studi</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card p-4 rounded-4 shadow-sm border-0 bg-white h-100 transition-all hover-up-small">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div class="bg-dark bg-opacity-10 p-3 rounded-3"><i class="bi bi-shield-lock text-dark fs-3"></i></div>
-                        <div class="text-end">
-                            <h3 class="fw-black mb-0">{{ number_format($totalAdmins) }}</h3>
-                            <p class="text-muted small mb-0">Admin Cabang</p>
-                        </div>
-                    </div>
-                </div>
+                </a>
             </div>
         </div>
 
-        <div class="row g-4">
-            <!-- Latest Activities -->
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                    <div class="card-header bg-white py-4 border-0">
-                        <h5 class="fw-bold mb-0 text-dark">AKTIVITAS ALUMNI TERBARU</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Alumni</th>
-                                    <th>Tahun Lulus</th>
-                                    <th>Status Pekerjaan</th>
-                                    <th class="text-end pe-4">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($recentActivities as $activity)
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                {{ substr($activity->name, 0, 1) }}
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold text-dark">{{ $activity->name }}</div>
-                                                <div class="text-muted small">{{ $activity->major }}</div>
+        <!-- AI Insights Block -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-5 bg-dark text-white p-1 overflow-hidden">
+                    <div class="card-body p-4 p-lg-5 position-relative">
+                        <!-- Neon decoration -->
+                        <div class="position-absolute top-0 end-0 p-5 mt-5 me-5 opacity-25">
+                            <i class="bi bi-stars display-1 text-primary animate-pulse"></i>
+                        </div>
+                        
+                        <div class="row align-items-center position-relative z-1">
+                            <div class="col-lg-1 d-none d-lg-block">
+                                <div class="bg-primary bg-opacity-25 p-3 rounded-circle text-center">
+                                    <i class="bi bi-cpu text-primary fs-1"></i>
+                                </div>
+                            </div>
+                            <div class="col-lg-11 ps-lg-4">
+                                <h4 class="fw-black mb-3 text-primary"><i class="bi bi-stars me-2"></i>GEMINI AI INTELLIGENCE</h4>
+                                <div class="row g-3">
+                                    @foreach($aiInsights as $insight)
+                                        @if(!empty(trim($insight)))
+                                        <div class="col-md-6">
+                                            <div class="d-flex align-items-start p-3 rounded-4 bg-white bg-opacity-5 hover-up-small border border-white border-opacity-10 h-100">
+                                                <i class="bi bi-check2-circle text-primary me-3 fs-4"></i>
+                                                <div class="small leading-relaxed text-secondary">{{ ltrim($insight, " -•*") }}</div>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td><span class="badge bg-light text-dark">{{ $activity->graduation_year }}</span></td>
-                                    <td>{{ $activity->current_job ?: 'Mencari Kerja' }}</td>
-                                    <td class="text-end pe-4">
-                                        <a href="{{ route('alumni.show', $activity->id) }}" class="btn btn-sm btn-outline-dark rounded-pill">Profil</a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- War Room: Live Activity -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg rounded-5 bg-white h-100 overflow-hidden">
+                    <div class="card-header bg-dark py-4 px-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="fw-bold mb-1 text-white"><i class="bi bi-activity text-primary me-2"></i>WAR ROOM: LIVE ACTIVITY</h5>
+                            <p class="text-white-50 small mb-0">Pantauan aktivitas sistem secara real-time</p>
+                        </div>
+                        <span class="badge bg-primary rounded-pill animate-pulse">LIVE MONITOR</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="activity-feed p-4" style="max-height: 500px; overflow-y: auto;">
+                            @foreach($recentActivities as $log)
+                            <div class="activity-item d-flex gap-4 mb-4 pb-4 border-bottom border-light animate-reveal">
+                                <div class="activity-user-avatar">
+                                    @if($log->user && $log->user->profile_picture)
+                                        <img src="{{ asset('storage/' . $log->user->profile_picture) }}" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px;">
+                                            {{ substr($log->user->name ?? '?', 0, 1) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="activity-content flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="fw-bold text-dark mb-0">{{ $log->user->name ?? 'System' }}</h6>
+                                        <span class="small text-muted">{{ $log->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    <div class="badge bg-light text-primary small mb-2 border">{{ strtoupper($log->action) }}</div>
+                                    <p class="text-muted small mb-0">{{ $log->description }}</p>
+                                    @if($log->ip_address)
+                                        <div class="mt-2 small text-secondary opacity-50"><i class="bi bi-geo-alt me-1"></i> IP: {{ $log->ip_address }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Health Radar -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
-                    <h5 class="fw-bold mb-4">STATUS SISTEM</h5>
+                <div class="card border-0 shadow-lg rounded-5 h-100 p-4 bg-white border-top border-primary border-5">
+                    <h5 class="fw-bold mb-4 text-dark">HEALTH RADAR</h5>
                     <div class="d-flex flex-column gap-4">
                         <div class="radar-item">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="small fw-bold">PENGGUNAAN STORAGE</span>
-                                <span class="small text-{{ $healthRadar['storage']['status'] }}">{{ $healthRadar['storage']['percent'] }}%</span>
+                                <span class="small fw-bold">STORAGE NODES</span>
+                                <span class="small text-{{ $healthRadar['storage']['status'] }} fw-black">{{ $healthRadar['storage']['percent'] }}% full</span>
                             </div>
-                            <div class="progress rounded-pill" style="height: 8px;">
-                                <div class="progress-bar bg-{{ $healthRadar['storage']['percent'] > 80 ? 'danger' : 'success' }}" style="width: {{ $healthRadar['storage']['percent'] }}%"></div>
+                            <div class="progress rounded-pill bg-light" style="height: 12px;">
+                                <div class="progress-bar bg-primary shadow-sm" style="width: {{ $healthRadar['storage']['percent'] }}%"></div>
                             </div>
                         </div>
                         
-                        <div class="p-3 rounded-4 bg-light">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-cloud-check text-success fs-4 me-3"></i>
+                        <div class="p-4 rounded-5 bg-dark text-white border-start border-primary border-4 shadow">
+                            <div class="d-flex align-items-center mb-0">
+                                <i class="bi bi-hdd-network text-primary fs-2 me-4"></i>
                                 <div>
-                                    <div class="small fw-bold">BACKUP TERAKHIR</div>
-                                    <div class="text-muted small">{{ $healthRadar['backup']['date'] }} ({{ $healthRadar['backup']['size'] }})</div>
+                                    <div class="small text-white-50">LAST SECURE BACKUP</div>
+                                    <div class="fw-bold">{{ $healthRadar['backup']['date'] }}</div>
+                                    <div class="small badge bg-primary mt-1">{{ $healthRadar['backup']['size'] }} compressed</div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="text-center py-3">
-                             <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 mb-3" style="width: 80px; height: 80px;">
-                                 <i class="bi bi-shield-check text-success fs-1 animate-pulse"></i>
+                        <div class="text-center py-4 rounded-5 border-2 border-dashed border-primary bg-primary bg-opacity-5">
+                             <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary shadow-lg mb-3" style="width: 100px; height: 100px;">
+                                 <i class="bi bi-shield-lock-fill text-white display-5 animate-pulse"></i>
                              </div>
-                             <h6 class="fw-bold mb-1">DATA INTEGRITY: OK</h6>
-                             <p class="text-muted small">Sistem mendeteksi semua file dan database dalam kondisi stabil.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Insights -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-white bg-opacity-20 p-3 rounded-circle me-4">
-                            <i class="bi bi-stars fs-2"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-1">AI INSIGHTS & ANALYTICS</h5>
-                            <div class="d-flex flex-wrap gap-2 mt-2">
-                                @foreach($aiInsights as $insight)
-                                    <span class="badge bg-white bg-opacity-10 fw-normal py-2 px-3 border border-white border-opacity-25 rounded-pill">{{ $insight }}</span>
-                                @endforeach
-                            </div>
+                             <h4 class="fw-black text-dark mb-1">STATUS: SECURE</h4>
+                             <p class="text-muted small px-3">End-to-end audit integrity confirmed. System is running at peak performance.</p>
+                             <a href="{{ $healthRadar['logs_url'] }}" class="btn btn-dark btn-sm rounded-pill px-4">Review Logs</a>
                         </div>
                     </div>
                 </div>

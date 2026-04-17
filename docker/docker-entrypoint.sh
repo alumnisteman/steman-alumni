@@ -53,6 +53,34 @@ echo "* * * * * cd /var/www && php artisan schedule:run >> /var/www/storage/logs
 crond -b -l 8
 echo "Scheduler cron is active."
 
-# --- 7. Start PHP-FPM or Custom Command ---
+# --- 7. Meilisearch: Auto-Configure & Re-Index (Resilient) ---
+MEILI_HOST="${MEILISEARCH_HOST:-http://steman_meilisearch:7700}"
+MEILI_KEY="${MEILISEARCH_KEY:-stemanMasterKey123}"
+
+echo "Waiting for Meilisearch at $MEILI_HOST ..."
+MEILI_TRIES=0
+MEILI_MAX=20
+until wget -q --spider "${MEILI_HOST}/health" 2>/dev/null || [ $MEILI_TRIES -eq $MEILI_MAX ]; do
+    sleep 2
+    MEILI_TRIES=$((MEILI_TRIES+1))
+done
+
+if [ $MEILI_TRIES -lt $MEILI_MAX ]; then
+    echo "Meilisearch is ready. Configuring index settings (geo-sort)..."
+    # Configure sortable & filterable attributes for geo radar feature
+    wget -q -O /dev/null \
+        --method=PATCH \
+        --header="Content-Type: application/json" \
+        --header="Authorization: Bearer ${MEILI_KEY}" \
+        --body-data='{"sortableAttributes":["_geo"],"filterableAttributes":["major","graduation_year","id"]}' \
+        "${MEILI_HOST}/indexes/users/settings" || true
+    echo "Meilisearch configured. Importing user index..."
+    php artisan scout:import "App\Models\User" >> /var/www/storage/logs/scheduler.log 2>&1 &
+    echo "Scout import running in background."
+else
+    echo "WARNING: Meilisearch not reachable within timeout. App will use Eloquent fallback."
+fi
+
+# --- 8. Start PHP-FPM or Custom Command ---
 echo "Steman Alumni Portal is ready! Executing: $@"
 exec "$@"

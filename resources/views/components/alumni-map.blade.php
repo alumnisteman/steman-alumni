@@ -1,9 +1,9 @@
 @props(['locations', 'nationalCount', 'internationalCount'])
 
-<div class="card border-0 shadow-sm glass-card overflow-hidden">
+<div class="card border-0 shadow-sm glass-card" style="border-radius: 20px; overflow: hidden;">
     <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-geo-alt-fill text-danger me-2"></i>Persebaran Alumni 
+            <i class="bi bi-geo-alt-fill text-danger me-2"></i>Persebaran Alumni
             <span class="badge bg-primary bg-opacity-10 text-primary ms-2 fw-normal" style="font-size: 0.7rem;">Nasional & Internasional</span>
         </h5>
         <div class="d-flex gap-2">
@@ -28,6 +28,7 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 <style>
+    /* JANGAN override z-index Leaflet internal — biarkan Leaflet yang kelola */
     .custom-div-icon div {
         transition: all 0.3s ease;
     }
@@ -41,68 +42,93 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+(function() {
+    function initMap() {
         const mapId = 'alumni-map-{{ $attributes->get('id', 'main') }}';
-        const hasInt = {{ $internationalCount > 0 ? 'true' : 'false' }};
-        const initialView = hasInt ? [20, 100] : [-2.5, 118];
-        const initialZoom = hasInt ? 2 : 5;
+        const el = document.getElementById(mapId);
+        if (!el) return;
 
-        const map = L.map(mapId).setView(initialView, initialZoom);
-        
-        const baseTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
+        if (typeof L === 'undefined') {
+            console.error('Leaflet not loaded');
+            el.innerHTML = '<div class="p-4 text-center text-muted">Peta tidak dapat dimuat. Silakan refresh halaman.</div>';
+            return;
+        }
+
+        const hasInt = {{ $internationalCount > 0 ? 'true' : 'false' }};
+        const initialView = hasInt ? [5, 118] : [-2.5, 118];
+        const initialZoom = hasInt ? 3 : 5;
+
+        const map = L.map(mapId, {
+            scrollWheelZoom: false,
+            zoomControl: true
+        }).setView(initialView, initialZoom);
+
+        // Gunakan CartoDB Light — lebih stabil & cepat di Indonesia
+        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> &copy; <a href="https://carto.com">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
         }).addTo(map);
 
-        const alumniData = @json($locations);
-        
-        const getMarkerIcon = (isInternational) => {
-            return L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div style='background-color:${isInternational ? "#4361ee" : "#ef233c"}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 8px rgba(0,0,0,0.4);'></div>`,
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
-            });
-        };
-
-        const idBounds = { lat: [-11, 6], lng: [95, 141] };
-        
-        alumniData.forEach(function(alumni) {
-            if (alumni.latitude && alumni.longitude) {
-                const isInt = alumni.is_international;
-                
-                L.marker([alumni.latitude, alumni.longitude], { icon: getMarkerIcon(isInt) })
-                 .addTo(map)
-                 .bindPopup(`
-                    <div class="p-1" style="min-width: 150px;">
-                        <div class="badge ${isInt ? 'bg-primary' : 'bg-danger'} mb-2" style="font-size: 0.6rem;">${isInt ? 'Internasional' : 'Nasional'}</div>
-                        <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">${alumni.name}</h6>
-                        <div class="small text-muted mb-2">${alumni.major} - ${alumni.graduation_year}</div>
-                        <button class="btn btn-sm btn-light w-100 py-1 fw-bold" style="font-size:0.65rem;">Profil Lengkap</button>
-                    </div>
-                 `);
-            }
+        // Fallback ke ESRI jika CartoDB gagal
+        tileLayer.on('tileerror', function() {
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; Esri'
+            }).addTo(map);
         });
 
-        // Zoom Controls
-        document.getElementById('zoom-indo-{{ $attributes->get('id', 'main') }}').addEventListener('click', () => map.setView([-2.5, 118], 5));
-        document.getElementById('zoom-world-{{ $attributes->get('id', 'main') }}').addEventListener('click', () => map.setView([20, 100], 2));
+        const alumniData = @json($locations ?? []);
 
-        // Theme Sync
-        const syncMapTheme = () => {
-            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            if (isDark) {
-                baseTiles.setUrl('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png');
-            } else {
-                baseTiles.setUrl('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-            }
-        };
-        syncMapTheme();
-        
-        // Listen for theme toggle
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => setTimeout(syncMapTheme, 250));
+        if (Array.isArray(alumniData) && alumniData.length > 0) {
+            alumniData.forEach(function(alumni) {
+                if (alumni.latitude && alumni.longitude) {
+                    const isInt = alumni.is_international;
+                    const color = isInt ? '#3b82f6' : '#ef4444';
+                    const icon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`,
+                        iconSize: [14, 14],
+                        iconAnchor: [7, 7]
+                    });
+                    L.marker([alumni.latitude, alumni.longitude], { icon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <div style="min-width:150px;padding:4px;">
+                                <span class="badge" style="background:${color};font-size:0.6rem;">${isInt ? 'Internasional' : 'Nasional'}</span>
+                                <h6 style="font-weight:700;margin:6px 0 2px;font-size:0.85rem;">${alumni.name}</h6>
+                                <div style="font-size:0.8rem;color:#666;">${alumni.major || ''} ${alumni.graduation_year ? '· ' + alumni.graduation_year : ''}</div>
+                            </div>
+                        `);
+                }
+            });
         }
-    });
+
+        // Force re-render untuk container kompleks
+        setTimeout(() => { map.invalidateSize(); }, 300);
+        setTimeout(() => { map.invalidateSize(); }, 1000);
+
+        // Zoom controls
+        document.getElementById('zoom-indo-{{ $attributes->get('id', 'main') }}').addEventListener('click', () => map.setView([-2.5, 118], 5));
+        document.getElementById('zoom-world-{{ $attributes->get('id', 'main') }}').addEventListener('click', () => map.setView([5, 118], 3));
+
+        // Dark mode support
+        const baseTilesUrl = {
+            light: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        };
+        document.addEventListener('themeChanged', function() {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            const darkUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            const lightUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            map.eachLayer(layer => { if (layer.setUrl) layer.setUrl(isDark ? darkUrl : lightUrl); });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMap);
+    } else {
+        initMap();
+    }
+})();
 </script>
 @endpush

@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
-    public function index()
+    public function index(\App\Services\AIService $aiService)
     {
-        $stats = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_stats', 900, function () {
+        $stats = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_stats', 300, function () use ($aiService) {
             $totalAlumni = User::where('role', 'alumni')->count();
             $laravelAdmins = User::where('role', 'admin')->count();
             
@@ -28,24 +28,26 @@ class AdminDashboardController extends Controller
             $totalJobs = JobVacancy::count();
 
             // 1. Fetch live timeline (Recent Activities / Latest Users)
-            $recentActivities = User::latest()->take(5)->get();
+            $recentActivities = \App\Models\ActivityLog::with('user')->latest()->take(10)->get();
 
-            // 2. Simple AI Insights String Generator
-            $aiInsights = [];
-            if ($totalAlumni > 100) {
-                $aiInsights[] = "Terdapat pertumbuhan signifikan dengan total {$totalAlumni} alumni terdaftar di sistem. Pertimbangkan untuk mem-blast buletin karir.";
-            } else {
-                $aiInsights[] = "Pendaftaran alumni masih berada di angka {$totalAlumni}. Coba jalankan kampanye sosial media untuk mengajak lebih banyak lulusan mendaftar.";
-            }
-            
             $employedCount = User::where('role', 'alumni')->whereNotNull('current_job')->where('current_job', '!=', '')->count();
             $employedPercentage = $totalAlumni > 0 ? round(($employedCount / $totalAlumni) * 100) : 0;
-            
-            if ($employedPercentage > 50) {
-                $aiInsights[] = "Luar Biasa! Lebih dari {$employedPercentage}% alumni telah memiliki pekerjaan tetap atau usaha.";
-            } else {
-                $aiInsights[] = "Persentase alumni bekerja di angka {$employedPercentage}%. Perbanyak relasi loker untuk meningkatkan daya serap lulusan.";
-            }
+
+            $mapAnalytics = User::getMapAnalytics();
+            $alumniLocations = $mapAnalytics['alumniLocations'];
+            $nationalCount = $mapAnalytics['nationalCount'];
+            $internationalCount = $mapAnalytics['internationalCount'];
+
+            // REAL AI INSIGHTS
+            $aiResponse = $aiService->analyzeStats([
+                'totalAlumni' => $totalAlumni,
+                'employmentRate' => $employedPercentage,
+                'internationalCount' => $internationalCount,
+                'totalPrograms' => $totalPrograms,
+                'totalJobs' => $totalJobs,
+            ]);
+
+            $aiInsights = $aiResponse ? explode("\n", trim($aiResponse)) : ["AI sedang melakukan analisis mendalam..."];
 
             // Stats for Charts
             $alumniByMajor = User::where('role', 'alumni')

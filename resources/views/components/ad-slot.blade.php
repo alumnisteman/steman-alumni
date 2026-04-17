@@ -66,13 +66,33 @@
         margin-bottom: 2rem;
         border-radius: 16px;
         overflow: hidden;
-        background: #f1f5f9;
+        background: transparent;
         position: relative;
     }
 
-    .ad-marquee-mode {
-        background: transparent;
+    /* Billboard-Style Banner untuk Header & Content (Sindonews-Style) */
+    .ad-pos-header, 
+    .ad-pos-content {
+        background: #ffffff;
+        width: 100%;
+        max-width: 1210px; /* Lebar maksimal billboard */
+        height: 250px;     /* Tinggi ditambah agar konten terbaca */
+        margin: auto;      /* Tengah rata */
+        margin-bottom: 2rem;
+        display: block;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         border-radius: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .ad-pos-header:hover, 
+    .ad-pos-content:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .ad-marquee-mode {
+        background: #ffffff;
     }
 
     .ad-link {
@@ -86,8 +106,9 @@
         width: 100%;
         height: 100%;
         display: block;
-        object-fit: cover;
-        aspect-ratio: var(--aspect-ratio);
+        object-fit: contain; /* ANTI-LONJONG: Menjaga proporsi asli */
+        object-position: center;
+        background-color: #fcfcfc; /* Mengisi ruang kosong jika rasio berbeda */
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -95,29 +116,27 @@
     .ad-marquee-wrapper {
         overflow: hidden;
         width: 100%;
-        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        container-type: inline-size;
+        mask-image: linear-gradient(to right, transparent, black 1%, black 99%, transparent);
     }
 
     .ad-marquee-content {
         display: flex;
         width: max-content;
-        animation: ad-scroll 15s linear infinite;
+        animation: ad-scroll 8s linear infinite;
     }
 
-    .ad-marquee-content:hover {
-        animation-play-state: paused;
+    @media (hover: hover) {
+        .ad-marquee-content:hover {
+            animation-play-state: paused;
+        }
     }
 
-    .ad-item {
+    .ad-marquee-content .ad-item {
         flex: 0 0 auto;
-        width: 100vw; /* Default take full width of viewport if in container */
-        max-width: 100%;
-    }
-
-    /* Override width for positions */
-    .ad-pos-header .ad-item, 
-    .ad-pos-content .ad-item {
-        width: 100%; /* In flex container, this will be the base */
+        width: 100cqw; /* Perfect fit to the container wrapper */
+        padding-right: 2rem; /* Wider gap for billboard marquee */
+        box-sizing: border-box;
     }
 
     @keyframes ad-scroll {
@@ -141,8 +160,17 @@
         .ad-container {
             margin-bottom: 1.5rem;
         }
+
+        /* Responsive Billboard untuk Mobile (Sindonews-Style) */
+        .ad-pos-header, 
+        .ad-pos-content {
+            width: 100% !important; /* Penuhi lebar layar ponsel */
+            height: 150px !important; /* Tinggi ditingkatkan */
+            border-radius: 8px;
+        }
+        
         .ad-img {
-            aspect-ratio: var(--mobile-aspect-ratio);
+            padding: 5px;
         }
     }
 </style>

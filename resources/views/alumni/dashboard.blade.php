@@ -6,7 +6,7 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm text-center p-4 bg-white" style="border-top: 5px solid #ffcc00; border-radius: 15px;">
                 <div class="position-relative d-inline-block mx-auto mb-3">
-                    <img src="{{ $user->profile_picture ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=ffcc00&color=000&size=200' }}" 
+                    <img src="{{ $user->profile_picture_url }}" 
                          class="rounded-circle border border-4 border-light shadow-sm" width="120" height="120" style="object-fit: cover;">
                 </div>
                 <h4 class="fw-bold mb-1">{{ $user->name }}</h4>
@@ -41,15 +41,62 @@
             <!-- Phase 6: Badges & Gamification -->
             <div class="card border-0 shadow-sm mt-4 p-4 glass-card" style="border-radius: 15px;">
                 <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-patch-check-fill text-primary me-2"></i>BADGE & PENCAPAIAN</h6>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2 text-center">
                     @forelse($userBadges as $badge)
-                        <div class="badge-item text-center p-2 rounded-3" style="width: 80px; background: rgba(67, 97, 238, 0.05); border: 1px solid rgba(67, 97, 238, 0.1);">
+                        <div class="badge-item p-2 rounded-3" style="width: 80px; background: rgba(67, 97, 238, 0.05); border: 1px solid rgba(67, 97, 238, 0.1);">
                             <i class="bi {{ $badge->icon }} fs-3 text-primary d-block mb-1"></i>
                             <span class="small fw-bold text-dark" style="font-size: 0.6rem;">{{ $badge->name }}</span>
                         </div>
                     @empty
                         <p class="small text-muted mb-0 italic text-center w-100">Lengkapi profil untuk dapat badge!</p>
                     @endforelse
+                </div>
+            </div>
+
+            <!-- Meilisearch Networking Sidebar -->
+            <div class="card border-0 shadow-sm mt-4 p-4" style="border-radius: 15px; background: #f8fafc;">
+                <h6 class="fw-bold mb-3 text-dark d-flex justify-content-between">
+                    <span><i class="bi bi-people-fill text-primary me-2"></i>TEMAN SE-JURUSAN</span>
+                    <i class="bi bi-lightning-charge-fill text-warning small"></i>
+                </h6>
+                <div id="sidebar-networking-list">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    </div>
+                </div>
+                <hr class="opacity-10 my-3">
+                <a href="/alumni" class="btn btn-link link-primary p-0 small fw-bold text-decoration-none w-100 text-center">CARI REKAN LAIN <i class="bi bi-arrow-right small"></i></a>
+            </div>
+
+            <!-- Alumni Radar (Nearby) -->
+            <div class="card border-0 shadow-sm mt-4 p-4 text-white overflow-hidden position-relative" style="border-radius: 15px; background: #0f172a;">
+                <div class="position-relative z-1">
+                    <h6 class="fw-bold mb-3" style="color: #ffcc00;"><i class="bi bi-radar me-2"></i>ALUMNI RADAR</h6>
+                    
+                    <div id="radar-initial" class="text-center py-4">
+                        <div class="radar-sonar-static mx-auto mb-4">
+                            <i class="bi bi-geo-alt-fill fs-1 text-warning"></i>
+                        </div>
+                        <p class="small opacity-75 mb-4">Temukan rekan alumni yang berada di sekitar lokasi Anda saat ini.</p>
+                        <button onclick="activateRadar()" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill">AKTIFKAN RADAR</button>
+                    </div>
+
+                    <div id="radar-scanning" class="text-center py-4 d-none">
+                        <div class="radar-sonar-active mx-auto mb-4"></div>
+                        <p class="small fw-bold text-warning mb-0 animate-pulse">MENYISIR AREA...</p>
+                    </div>
+
+                    <div id="radar-results" class="d-none">
+                        <div id="radar-list" class="mt-2">
+                            <!-- Results will be injected here -->
+                        </div>
+                        <button onclick="resetRadar()" class="btn btn-link link-light p-0 small opacity-50 text-decoration-none w-100 mt-3">NONAKTIFKAN RADAR</button>
+                    </div>
+                </div>
+
+                <!-- Sonar Background -->
+                <div class="position-absolute top-100 start-50 translate-middle opacity-10 pointer-events-none" style="width: 400px; height: 400px;">
+                    <div class="radar-sonar-active"></div>
                 </div>
             </div>
         </div>
@@ -154,6 +201,12 @@
                             <div class="p-2 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
                                 <small class="fw-bold d-block mb-1">DATA INSIGHT:</small>
                                 <small class="opacity-75" id="career-snippet-text"></small>
+                            </div>
+                        </div>
+                        <div id="profile-suggestion-content" class="mt-2 d-none">
+                            <div class="p-2 rounded-3 bg-warning bg-opacity-20 border border-warning border-opacity-20">
+                                <small class="fw-bold d-block mb-1 text-warning"><i class="bi bi-lightbulb-fill me-1"></i> OPTIMALKAN PROFIL:</small>
+                                <small class="text-white" id="profile-suggestion-text"></small>
                             </div>
                         </div>
                     </div>
@@ -296,6 +349,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('career-snippet-text').innerHTML = `Mayoritas alumni {{ $user->major }} kini sukses sebagai <b>${data.careerSnippet.pekerjaan}</b>`;
             }
 
+            // 2b. Update Profile Suggestion
+            if (data.profileSuggestion) {
+                document.getElementById('profile-suggestion-content').classList.remove('d-none');
+                document.getElementById('profile-suggestion-text').innerText = data.profileSuggestion;
+            }
+
             // 3. Update Recommendations
             const recContainer = document.getElementById('ai-recommendations-container');
             const recWrapper = document.getElementById('ai-recommendations-wrapper');
@@ -334,11 +393,128 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('AI Dashboard Loading Error:', error);
             document.getElementById('ai-recommendations-skeleton').classList.add('d-none');
         });
+
+    // 4. Sidebar Networking (Meilisearch)
+    fetch('{{ route("alumni.networking.recommendations") }}')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('sidebar-networking-list');
+            if (data.success && data.recommendations.length > 0) {
+                let html = '';
+                data.recommendations.forEach(rec => {
+                    html += `
+                        <div class="d-flex align-items-center mb-3 transition-all hover-translate-y">
+                            <img src="${rec.profile_picture}" class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <h6 class="fw-bold mb-0 text-dark text-truncate" style="font-size: 0.8rem;">${rec.name}</h6>
+                                <p class="text-muted mb-0 text-truncate" style="font-size: 0.65rem;">${rec.current_job} • ${rec.graduation_year}</p>
+                            </div>
+                            <a href="/alumni/${rec.id}" class="btn btn-sm btn-light border-0 rounded-circle text-primary ms-2"><i class="bi bi-chevron-right"></i></a>
+                        </div>`;
+                });
+                list.innerHTML = html;
+            } else {
+                list.innerHTML = '<p class="small text-muted text-center mb-0">Belum ada rekan disarankan.</p>';
+            }
+        });
 });
+
+function activateRadar() {
+    const initial = document.getElementById('radar-initial');
+    const scanning = document.getElementById('radar-scanning');
+    const results = document.getElementById('radar-results');
+    const list = document.getElementById('radar-list');
+
+    initial.classList.add('d-none');
+    scanning.classList.remove('d-none');
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            fetch(`{{ route('alumni.networking.nearby') }}?lat=${lat}&lng=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    scanning.classList.add('d-none');
+                    results.classList.remove('d-none');
+
+                    if (data.success && data.recommendations.length > 0) {
+                        let html = '';
+                        data.recommendations.forEach(rec => {
+                            html += `
+                            <div class="d-flex align-items-center mb-3 p-2 bg-white bg-opacity-10 rounded-3 transition-all hover-translate-y">
+                                <img src="${rec.profile_picture}" class="rounded-circle me-3 border border-warning" width="35" height="35" style="object-fit: cover;">
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="fw-bold mb-0 text-white text-truncate" style="font-size: 0.75rem;">${rec.name}</h6>
+                                    <p class="mb-0 text-warning text-truncate" style="font-size: 0.6rem;">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>${rec.distance} km • ${rec.graduation_year}
+                                    </p>
+                                </div>
+                                <a href="/alumni/${rec.id}" class="btn btn-sm btn-warning rounded-pill px-2 py-0" style="font-size: 0.6rem;">LIHAT</a>
+                            </div>`;
+                        });
+                        list.innerHTML = html;
+                    } else {
+                        list.innerHTML = '<p class="small opacity-75 text-center py-2">Tidak ada alumni ditemukan di sekitar Anda.</p>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Gagal mengambil data radar.");
+                    resetRadar();
+                });
+        }, error => {
+            alert("Izin lokasi diperlukan untuk menggunakan Radar.");
+            resetRadar();
+        });
+    } else {
+        alert("Browser Anda tidak mendukung Geolocation.");
+        resetRadar();
+    }
+}
+
+function resetRadar() {
+    document.getElementById('radar-initial').classList.remove('d-none');
+    document.getElementById('radar-scanning').classList.add('d-none');
+    document.getElementById('radar-results').classList.add('d-none');
+}
 </script>
 @endpush
 
 <style>
+.radar-sonar-active {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 204, 0, 0.2);
+    border-radius: 50%;
+    position: relative;
+    animation: sonar 2s infinite;
+}
+.radar-sonar-active::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: #ffcc00;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #ffcc00;
+}
+@keyframes sonar {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+.animate-pulse {
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
 .skeleton-shimmer {
     background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
     background-size: 200% 100%;

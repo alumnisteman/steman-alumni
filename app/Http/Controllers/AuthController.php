@@ -178,4 +178,33 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/');
     }
+
+    public function qrLogin(string $token)
+    {
+        $user = \App\Models\User::where('qr_login_token', $token)->first();
+
+        if (!$user) {
+            return redirect('/login')->with('error', 'Token QR tidak valid atau sudah kadaluarsa.');
+        }
+
+        if ($user->status === 'pending') {
+            return redirect('/login')->with('error', 'Akun Anda masih dalam proses verifikasi.');
+        }
+
+        // Perform Login
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        \App\Jobs\LogActivity::dispatch(
+            $user->id,
+            'QR Login',
+            'User logged in via Magic QR Card.',
+            request()->ip(),
+            request()->header('User-Agent')
+        );
+
+        \Illuminate\Support\Facades\Log::info('QR Login success for: ' . $user->email);
+
+        request()->session()->regenerate();
+        return redirect()->intended($user->dashboardUrl())->with('success', 'Selamat datang kembali, ' . $user->name . '!');
+    }
 }

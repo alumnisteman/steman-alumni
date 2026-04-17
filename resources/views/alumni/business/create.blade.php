@@ -81,6 +81,20 @@
                             @error('description') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-tag-fill me-2 text-danger"></i>Info Diskon (Opsional)</label>
+                            <input type="text" name="discount_info" class="form-control bg-light border-0 py-3 px-4 rounded-3" placeholder="Contoh: Diskon 10% Member" value="{{ old('discount_info') }}">
+                            <small class="text-muted">Akan muncul sebagai label merah di kartu usaha.</small>
+                            @error('discount_info') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-globe me-2 text-primary"></i>Website / Link Eksternal (Opsional)</label>
+                            <input type="url" name="website_url" class="form-control bg-light border-0 py-3 px-4 rounded-3" placeholder="https://tokoku.com" value="{{ old('website_url') }}">
+                            <small class="text-muted">Link ke website resmi atau marketplace.</small>
+                            @error('website_url') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
                         <div class="col-12 mt-5">
                             <button type="submit" class="btn btn-dark w-100 py-3 rounded-pill fw-bold shadow-lg">
                                 DAFTARKAN SEKARANG 🚀

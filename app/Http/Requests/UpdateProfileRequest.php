@@ -31,6 +31,9 @@ class UpdateProfileRequest extends FormRequest
             'bio' => 'nullable|string',
             'mentor_bio' => 'nullable|string',
             'mentor_expertise' => 'nullable|string|max:255',
+            'show_social' => 'nullable|boolean',
+            'socials' => 'nullable|array',
+            'socials.*' => 'nullable|string|max:255',
         ];
     }
 }

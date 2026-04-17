@@ -22,12 +22,12 @@ services:
           cpus: '0.25'
           memory: 256M
     volumes:
+      - ./.env:/var/www/.env
       - ./storage:/var/www/storage
       - ./bootstrap:/var/www/bootstrap
       - ./docker/php/fpm-pool.conf:/usr/local/etc/php-fpm.d/www.conf:ro
       - ./artisan:/var/www/artisan
       - app_public:/var/www/public
-      # --- KODE PHP: Mount langsung agar file baru tidak perlu rebuild image ---
       - ./app:/var/www/app
       - ./resources:/var/www/resources
       - ./routes:/var/www/routes
@@ -56,6 +56,7 @@ services:
           cpus: '0.30'
           memory: 256M
     volumes:
+      - ./.env:/var/www/.env
       - ./storage:/var/www/storage
       - ./bootstrap:/var/www/bootstrap
       - ./docker/php/fpm-pool.conf:/usr/local/etc/php-fpm.d/www.conf:ro
@@ -196,12 +197,30 @@ services:
     networks:
       - steman-network
 
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: steman_meilisearch
+    restart: always
+    environment:
+      - MEILI_MASTER_KEY=${MEILISEARCH_KEY:-masterKey}
+      - MEILI_NO_ANALYTICS=true
+    volumes:
+      - meilidata:/meili_data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 256M
+    networks:
+      - steman-network
+
 networks:
   steman-network:
     driver: bridge
 
 volumes:
   dbdata:
+  meilidata:
   certbot_certs:
   certbot_www:
   app_public:

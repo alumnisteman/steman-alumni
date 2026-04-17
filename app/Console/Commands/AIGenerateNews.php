@@ -52,6 +52,7 @@ class AIGenerateNews extends Command
 
         if (!$result) {
             $this->error('AI failed to generate content.');
+            \Illuminate\Support\Facades\Log::error('AIGenerateNews: AIService returned null. Check AIService logs/Gemini API status.');
             return;
         }
 

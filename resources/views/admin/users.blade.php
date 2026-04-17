@@ -69,24 +69,39 @@
                             </td>
                             <td>{{ $user->created_at->format('d M Y') }}</td>
                             <td class="text-end pe-4">
+                                @if(!(auth()->user()->role === 'editor' && $user->role === 'admin'))
                                 <button type="button" class="btn btn-sm btn-outline-warning me-1"
                                     data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}">
                                     <i class="bi bi-pencil-fill"></i> Edit
                                 </button>
+                                @endif
 
-                                <form action="/admin/users/{{ $user->id }}/role" method="POST" class="d-inline">
+                                @if(!(auth()->user()->role === 'editor' && $user->role === 'admin'))
+                                <form action="{{ route('admin.users.updateRole', $user->id) }}" method="POST" class="d-inline">
                                     @csrf @method('PUT')
-                                    <div class="btn-group me-1">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" {{ $user->id == auth()->id() ? 'disabled' : '' }}>
-                                            <i class="bi bi-shield-check"></i> Role
+                                    <div class="dropdown d-inline-block">
+                                        <button class="btn btn-sm btn-primary dropdown-toggle shadow-sm fw-bold px-3" 
+                                                type="button" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false" 
+                                                {{ $user->id == auth()->id() ? 'disabled' : '' }}>
+                                            <i class="bi bi-shield-lock me-1"></i> Role
                                         </button>
-                                        <ul class="dropdown-menu shadow-sm">
-                                            @if(auth()->user()->role === 'admin' && $user->role !== 'admin')<li><button class="dropdown-item" type="submit" name="role" value="admin">Jadikan Admin</button></li>@endif
-                                            @if($user->role !== 'editor')<li><button class="dropdown-item" type="submit" name="role" value="editor">Jadikan Editor</button></li>@endif
-                                            @if($user->role !== 'alumni')<li><button class="dropdown-item" type="submit" name="role" value="alumni">Jadikan Alumni</button></li>@endif
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 12px;">
+                                            <li class="dropdown-header small text-uppercase">Ganti Role ke:</li>
+                                            @foreach(\App\Models\User::ROLES as $r)
+                                                @if($user->role !== $r)
+                                                    <li>
+                                                        <button class="dropdown-item d-flex align-items-center py-2" type="submit" name="role" value="{{ $r }}">
+                                                            <i class="bi bi-person-badge me-2 text-primary"></i> Jadikan {{ ucfirst($r) }}
+                                                        </button>
+                                                    </li>
+                                                @endif
+                                            @endforeach
                                         </ul>
                                     </div>
                                 </form>
+                                @endif
 
                                 @if($user->role !== 'admin')
                                 <div class="d-inline-flex gap-1 align-items-center">
@@ -126,8 +141,6 @@
                                 </button>
                                 @endif
                             </td>
-                        </tr>
-
                         </tr>
                         @endforeach
                     </tbody>

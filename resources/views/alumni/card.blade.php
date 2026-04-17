@@ -104,8 +104,7 @@
         overflow: hidden;
     }
 
-    .card-front {
-        background: rgba(15, 23, 42, 0.6);
+        background: var(--card-bg, rgba(15, 23, 42, 0.6));
         backdrop-filter: blur(15px);
         display: flex;
         flex-direction: column;
@@ -113,6 +112,40 @@
         padding: 35px; /* Web-friendly safe area */
         color: white;
         box-sizing: border-box;
+    }
+
+    /* Admin Theme: Onyx Black & Gold */
+    .role-admin .card-front {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    }
+    .role-admin .logo-text {
+        background: linear-gradient(to right, #d4af37, #f9e29c) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    .role-admin .profile-frame {
+        background: linear-gradient(45deg, #d4af37, #b8860b) !important;
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.3) !important;
+    }
+    .role-admin .status-badge {
+        background: rgba(212, 175, 55, 0.2) !important;
+        color: #f9e29c !important;
+        border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    }
+    .role-admin .meta-item span { color: #94a3b8; }
+    .role-admin .meta-item b { color: #f9e29c; }
+    .role-admin .card-footer { border-top: 1px solid rgba(212, 175, 55, 0.2); }
+    .role-admin .card-front::after {
+        content: 'OFFICIAL ADMINISTRATOR';
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        font-size: 0.5rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: #d4af37;
+        opacity: 0.8;
     }
 
     .card-front::before {
@@ -325,8 +358,20 @@
         /* Front side: keep dark background for print */
         .card-front {
             background: #0f172a !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .logo-text {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: initial !important;
+            color: white !important;
+        }
+
+        .profile-frame {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         /* Back side: already white */
@@ -376,7 +421,7 @@
     }
 </style>
 
-<div class="id-card-outer">
+<div class="id-card-outer role-{{ auth()->user()->role }}">
     <!-- Blobs in their own overflow:hidden wrapper -->
     <div class="blob-wrapper">
         <div class="blob"></div>
@@ -401,13 +446,7 @@
 
             <div class="user-info">
                 <div class="profile-frame">
-                    @if($user->profile_picture)
-                        <img src="{{ \Illuminate\Support\Str::startsWith($user->profile_picture, '/storage/') ? $user->profile_picture : asset('storage/' . $user->profile_picture) }}" class="profile-img">
-                    @else
-                        <div class="profile-img bg-slate-800 d-flex align-items-center justify-content-center text-white fw-bold fs-3">
-                            {{ substr($user->name, 0, 1) }}
-                        </div>
-                    @endif
+                    <img src="{{ $user->profile_picture_url }}" class="profile-img">
                 </div>
                 <div class="info-content">
                     <h2 class="text-white">{{ strtoupper($user->name) }}</h2>
@@ -421,7 +460,7 @@
                     <b>#{{ str_pad($user->id, 6, '0', STR_PAD_LEFT) }}</b>
                 </div>
                 <div class="status-badge">
-                    <i class="bi bi-patch-check-fill me-1"></i> VERIFIED MEMBER
+                    <i class="bi bi-patch-check-fill me-1"></i> {{ auth()->user()->role === 'admin' ? 'SYSTEM AUTHORITY' : 'VERIFIED MEMBER' }}
                 </div>
             </div>
         </div>
@@ -531,8 +570,8 @@
             height: 280px;
             padding: 35px; /* Safe area web friendly */
             border-radius: 20px;
-            background: #0f172a;
-            color: white;
+            background: #0f172a !important;
+            color: white !important;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -540,8 +579,8 @@
             position: relative;
             overflow: hidden;
             box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         .print-front::before {
             content: '';
@@ -564,13 +603,13 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             border: 1px solid #e2e8f0;
             box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         /* Front inner styles */
         .card-header { display:flex; justify-content:space-between; align-items:center; }
-        .logo-text { font-weight:900; font-size:1.5rem; letter-spacing:-1px; background:linear-gradient(to right,#fff,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .chip-icon { width:45px; height:35px; background:linear-gradient(135deg,#d4af37,#f9e29c,#b8860b); border-radius:6px; position:relative; }
+        .logo-text { font-weight:900; font-size:1.5rem; letter-spacing:-1px; color: white !important; -webkit-text-fill-color: white !important; }
+        .chip-icon { width:45px; height:35px; background:linear-gradient(135deg,#d4af37,#f9e29c,#b8860b) !important; border-radius:6px; position:relative; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
         .chip-line { position:absolute; background:rgba(0,0,0,0.2); width:100%; height:1px; top:50%; }
         .user-info { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:12px; width:100%; margin-top:-10px; }
         .profile-frame { width:85px; height:85px; border-radius:50%; padding:4px; background:linear-gradient(45deg,#3f37c9,#4cc9f0); -webkit-print-color-adjust:exact; print-color-adjust:exact; }

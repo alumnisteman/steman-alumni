@@ -1,6 +1,6 @@
 <aside class="admin-sidebar bg-white shadow-sm d-none d-lg-block" style="width: 280px; z-index: 1000; height: 100vh; position: sticky; top: 0; overflow-y: auto;">
     <div class="p-4 border-bottom bg-dark text-white text-center">
-        <h5 class="fw-black mb-0 tracking-wider">ADMIN PANEL</h5>
+        <h5 class="fw-black mb-0 tracking-wider text-uppercase">{{ auth()->user()->role }} PANEL</h5>
         <small class="text-warning opacity-75">STEMAN ALUMNI v4.2-ADS</small>
     </div>
     <div class="p-3 pb-0">

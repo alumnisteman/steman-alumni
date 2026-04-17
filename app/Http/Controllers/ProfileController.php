@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\Major;
+use App\Models\SocialLink;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -83,7 +85,29 @@ class ProfileController extends Controller
 
         $user->mentor_bio = $data['mentor_bio'] ?? $user->mentor_bio;
         $user->mentor_expertise = $data['mentor_expertise'] ?? $user->mentor_expertise;
+        $user->show_social = $request->has('show_social');
         $user->save();
+
+        // Handle Social Links
+        if ($request->has('socials')) {
+            $platforms = ['instagram', 'facebook', 'tiktok', 'linkedin', 'github', 'website'];
+            foreach ($request->socials as $platform => $url) {
+                if (in_array($platform, $platforms)) {
+                    if (empty($url)) {
+                        $user->socialLinks()->where('platform', $platform)->delete();
+                        continue;
+                    }
+
+                    // Smart Auto-Fixer: Convert @username or username to full URL
+                    $formattedUrl = $this->formatSocialUrl($platform, $url);
+
+                    $user->socialLinks()->updateOrCreate(
+                        ['platform' => $platform],
+                        ['url' => $formattedUrl]
+                    );
+                }
+            }
+        }
         
         LogActivity::dispatch(
             $user->id,
@@ -94,5 +118,29 @@ class ProfileController extends Controller
         );
 
         return back()->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    /**
+     * Smart Auto-Fixer for Social Media URLs
+     */
+    private function formatSocialUrl(string $platform, string $input): string
+    {
+        // If it's already a full URL, return it
+        if (filter_var($input, FILTER_VALIDATE_URL)) {
+            return $input;
+        }
+
+        // Clean @ symbol
+        $username = ltrim($input, '@');
+
+        $baseUrls = [
+            'instagram' => 'https://instagram.com/',
+            'facebook' => 'https://facebook.com/',
+            'tiktok' => 'https://tiktok.com/@',
+            'linkedin' => 'https://linkedin.com/in/',
+            'github' => 'https://github.com/',
+        ];
+
+        return isset($baseUrls[$platform]) ? $baseUrls[$platform] . $username : $input;
     }
 }
