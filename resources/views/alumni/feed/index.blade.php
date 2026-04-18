@@ -81,8 +81,6 @@
                     $hasImageStory = $userStories->where('type', 'image')->count() > 0;
                 @endphp
                 <div class="flex-shrink-0 text-center position-relative" style="width: 72px; scroll-snap-align: start; cursor: pointer;" onclick="{{ $hasImageStory ? 'viewStory('.$userId.')' : '' }}">
-                    <button id="story-trigger-{{ $userId }}" class="d-none" data-bs-toggle="modal" data-bs-target="#storyViewerModal"></button>
-                    
                     {{-- Note Bubble --}}
                     @if($activeNote)
                         <div class="position-absolute top-0 start-50 translate-middle-x bg-white text-dark rounded-pill px-2 py-1 shadow-sm border small fw-bold text-truncate" style="max-width: 80px; font-size: 0.6rem; z-index: 10; margin-top: -5px;">
@@ -365,8 +363,14 @@
 
     // Story Viewer Logic
     function viewStory(userId) {
-        // Find the hidden trigger button
-        const trigger = document.getElementById('story-trigger-' + userId);
+        if (window.storyInterval) clearInterval(window.storyInterval);
+        
+        const modalEl = document.getElementById('storyViewerModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        
+        // Reset UI immediately to avoid flicker from previous story
+        document.getElementById('story-display-img').src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Blank
+        document.getElementById('story-progress').style.width = '0%';
         
         fetch(`/api/stories/active`)
             .then(r => r.json())
@@ -381,30 +385,24 @@
                 document.getElementById('story-display-img').src = story.image_url;
                 document.getElementById('story-display-caption').innerText = story.caption || '';
                 
-                // Trigger the modal via Data API (more reliable if JS bootstrap variable is missing)
-                if (trigger) {
-                    trigger.click();
-                } else {
-                    // Fallback to JS if trigger not found
-                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('storyViewerModal'));
-                    modal.show();
-                }
+                modal.show();
 
                 // Progress bar animation
                 const progressBar = document.getElementById('story-progress');
-                progressBar.style.width = '0%';
                 let progress = 0;
-                if (window.storyInterval) clearInterval(window.storyInterval);
                 
                 window.storyInterval = setInterval(() => {
                     progress += 1;
                     progressBar.style.width = progress + '%';
                     if (progress >= 100) {
                         clearInterval(window.storyInterval);
-                        // Find and click the close button to be safe
-                        document.querySelector('#storyViewerModal .btn-close').click();
+                        modal.hide();
                     }
                 }, 50);
+
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    clearInterval(window.storyInterval);
+                }, { once: true });
             });
     }
 
