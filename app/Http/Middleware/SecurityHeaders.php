@@ -19,12 +19,12 @@ class SecurityHeaders
         
         // Allowed external sources for Media Embeds (TikTok, YouTube, Cloudflare)
         $csp = "default-src 'self'; ";
-        $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.tiktok.com https://sf-tb-sg.ibytedtos.com https://lf16-tiktok-web.ttwstatic.com https://static.cloudflareinsights.com https://unpkg.com; ";
+        $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://*.tiktok.com https://*.tiktokcdn.com https://sf-tb-sg.ibytedtos.com https://lf16-tiktok-web.ttwstatic.com https://static.cloudflareinsights.com https://unpkg.com; ";
         $csp .= "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://unpkg.com; ";
         $csp .= "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; ";
         $csp .= "img-src 'self' data: blob: https://ui-avatars.com https://*.tiktokcdn.com https://*.ibytedtos.com https://*.basemaps.cartocdn.com https://server.arcgisonline.com https://*.tile.openstreetmap.org https://unpkg.com; ";
         $csp .= "video-src 'self' blob: https://*.tiktokcdn.com https://*.youtube.com; ";
-        $csp .= "frame-src 'self' https://www.youtube.com https://www.tiktok.com; ";
+        $csp .= "frame-src 'self' https://www.youtube.com https://*.tiktok.com; ";
         $csp .= "connect-src 'self' https://*.tiktok.com https://*.ibytedtos.com https://cloudflareinsights.com; ";
         $csp .= "report-uri /api/csp-report;";
 

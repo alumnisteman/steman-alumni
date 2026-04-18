@@ -23,10 +23,15 @@
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
                     <div class="card-header border-0 bg-transparent py-4 text-center">
                         <div class="position-relative d-inline-block">
-                            <img src="{{ $user->profile_picture_url }}" 
-                                 class="rounded-circle border border-4 border-white shadow-sm" 
-                                 style="width: 100px; height: 100px; object-fit: cover;" 
-                                 alt="{{ $user->name }}">
+                            <div class="p-1 rounded-circle {{ $user->active_stories_count > 0 ? 'bg-gradient-story' : '' }}">
+                                <img src="{{ $user->profile_picture_url }}" 
+                                     class="rounded-circle border border-4 border-white shadow-sm" 
+                                     style="width: 100px; height: 100px; object-fit: cover;" 
+                                     alt="{{ $user->name }}">
+                            </div>
+                            @if($user->active_stories_count > 0)
+                                <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white" style="font-size: 0.6rem; z-index: 10;">LIVE</div>
+                            @endif
                             @if($user->is_mentor)
                                 <div class="position-absolute bottom-0 end-0 bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 30px; height: 30px;" title="Mentor Verified">
                                     <i class="bi bi-patch-check-fill"></i>

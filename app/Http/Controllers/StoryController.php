@@ -32,6 +32,22 @@ class StoryController extends Controller
         return redirect()->back()->with('success', 'Story berhasil diposting! Akan hilang dalam 24 jam.');
     }
 
+    public function storeNote(Request $request)
+    {
+        $request->validate([
+            'content' => 'required|string|max:60',
+        ]);
+
+        $story = Story::create([
+            'user_id' => auth()->id(),
+            'type' => 'note',
+            'content' => $request->content,
+            'expires_at' => now()->addHours(24),
+        ]);
+
+        return back()->with('success', 'Catatan dibagikan!');
+    }
+
     /**
      * View a specific story (API)
      */

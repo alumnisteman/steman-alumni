@@ -12,9 +12,13 @@ class AlumniRepository implements AlumniRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getPaginatedAlumni(array $filters = [], int $perPage = 12): LengthAwarePaginator
+    public function getPaginatedAlumni(array $filters = [], int $perPage = 12, array $withCount = []): LengthAwarePaginator
     {
         $query = User::with('badges')->whereIn('role', ['alumni', 'admin', 'editor']);
+
+        if (!empty($withCount)) {
+            $query->withCount($withCount);
+        }
 
         if (!empty($filters['search'])) {
             $query->where('name', 'like', '%' . $filters['search'] . '%');

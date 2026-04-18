@@ -170,8 +170,9 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::post('/feed/follow/{user}', [\App\Http\Controllers\FeedController::class, 'toggleFollow'])->name('feed.follow');
         
         // Alumni Stories
-        Route::post('/stories', [\App\Http\Controllers\StoryController::class, 'store'])->name('stories.store');
-        Route::get('/api/stories/active', [\App\Http\Controllers\StoryController::class, 'getActiveStories'])->name('api.stories.active');
+        Route::post('/stories', [StoryController::class, 'store'])->name('stories.store');
+        Route::post('/stories/note', [StoryController::class, 'storeNote'])->name('stories.note');
+        Route::get('/api/stories/active', [StoryController::class, 'getActiveStories'])->name('api.stories.active');
         Route::get('/api/stories/{story}', [\App\Http\Controllers\StoryController::class, 'show'])->name('api.stories.show');
 
         // Nostalgia Feed Routes (Legacy Support)

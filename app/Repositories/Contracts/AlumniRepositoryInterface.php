@@ -12,9 +12,10 @@ interface AlumniRepositoryInterface
      *
      * @param array $filters
      * @param int $perPage
+     * @param array $withCount
      * @return LengthAwarePaginator
      */
-    public function getPaginatedAlumni(array $filters = [], int $perPage = 12): LengthAwarePaginator;
+    public function getPaginatedAlumni(array $filters = [], int $perPage = 12, array $withCount = []): LengthAwarePaginator;
 
     /**
      * Find an alumni by ID.

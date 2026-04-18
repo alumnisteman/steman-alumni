@@ -75,10 +75,22 @@
             @endphp
 
             @foreach($activeStories as $userId => $userStories)
-                @php $storyUser = $userStories->first()->user; @endphp
-                <div class="flex-shrink-0 text-center" style="width: 72px; scroll-snap-align: start; cursor: pointer;" onclick="viewStory({{ $userId }})">
+                @php 
+                    $storyUser = $userStories->first()->user; 
+                    $activeNote = $userStories->where('type', 'note')->first();
+                    $hasImageStory = $userStories->where('type', 'image')->count() > 0;
+                @endphp
+                <div class="flex-shrink-0 text-center position-relative" style="width: 72px; scroll-snap-align: start; cursor: pointer;" onclick="{{ $hasImageStory ? 'viewStory('.$userId.')' : '' }}">
                     <button id="story-trigger-{{ $userId }}" class="d-none" data-bs-toggle="modal" data-bs-target="#storyViewerModal"></button>
-                    <div class="p-1 rounded-circle mb-1" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);">
+                    
+                    {{-- Note Bubble --}}
+                    @if($activeNote)
+                        <div class="position-absolute top-0 start-50 translate-middle-x bg-white text-dark rounded-pill px-2 py-1 shadow-sm border small fw-bold text-truncate" style="max-width: 80px; font-size: 0.6rem; z-index: 10; margin-top: -5px;">
+                            {{ $activeNote->content }}
+                        </div>
+                    @endif
+
+                    <div class="p-1 rounded-circle mb-1 {{ $hasImageStory ? 'bg-gradient-story' : '' }}">
                         <img src="{{ $storyUser->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
                     </div>
                     <div class="small fw-bold text-truncate mx-auto" style="font-size: 0.7rem; width: 64px;">{{ $storyUser->name }}</div>
@@ -88,24 +100,31 @@
 
         {{-- QUICK ACTIONS (Gen Z) --}}
         <div class="row g-2 mb-4">
-            <div class="col-6">
+            <div class="col-4">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-primary text-white h-100 cursor-pointer" data-bs-toggle="modal" data-bs-target="#createNoteModal">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <i class="bi bi-chat-dots fs-4"></i>
+                    </div>
+                    <div class="fw-bold" style="font-size: 0.75rem;">Notes</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Status Pendek</div>
+                </div>
+            </div>
+            <div class="col-4">
                 <div class="card border-0 shadow-sm rounded-4 p-3 bg-dark text-white h-100 cursor-pointer" onclick="openConfession()">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <i class="bi bi-mask fs-4 text-warning"></i>
-                        <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.6rem;">HOT</span>
                     </div>
-                    <div class="fw-bold" style="font-size: 0.85rem;">Curhat Karir</div>
-                    <div class="text-white-50 mt-1" style="font-size: 0.7rem;">Anonim & Aman</div>
+                    <div class="fw-bold" style="font-size: 0.75rem;">Curhat</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Anonim</div>
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-4">
                 <div class="card border-0 shadow-sm rounded-4 p-3 bg-success text-white h-100 cursor-pointer" onclick="openHelpRequest()">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <i class="bi bi-megaphone fs-4"></i>
-                        <span class="badge bg-white text-success rounded-pill" style="font-size: 0.6rem;">PENTING</span>
                     </div>
-                    <div class="fw-bold" style="font-size: 0.85rem;">One Tap Help</div>
-                    <div class="text-white-50 mt-1" style="font-size: 0.7rem;">Minta Bantuan</div>
+                    <div class="fw-bold" style="font-size: 0.75rem;">Help</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Bantuan</div>
                 </div>
             </div>
         </div>
@@ -232,6 +251,33 @@
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2">POSTING</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- CREATE NOTE MODAL --}}
+<div class="modal fade" id="createNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Bagikan Catatan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('stories.note') }}" method="POST">
+                @csrf
+                <div class="modal-body text-center">
+                    <div class="position-relative d-inline-block mb-3">
+                        <img src="{{ auth()->user()->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                        <div class="position-absolute top-0 start-50 translate-middle-x bg-white text-dark rounded-pill px-3 py-2 shadow border small fw-bold" style="margin-top: -15px; min-width: 120px;">
+                            <input type="text" name="content" class="form-control form-control-sm border-0 bg-transparent text-center p-0" placeholder="Apa yang Anda pikirkan?" maxlength="60" required autofocus>
+                        </div>
+                    </div>
+                    <p class="small text-muted">Teman-teman dapat melihat catatan Anda selama 24 jam.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2">BAGIKAN</button>
                 </div>
             </form>
         </div>
