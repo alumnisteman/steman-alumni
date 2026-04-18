@@ -226,6 +226,34 @@ class User extends Authenticatable
     }
 
     /**
+     * Social Feed Relationships
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class)->latest();
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')->withTimestamps();
+    }
+
+    public function feed()
+    {
+        return $this->hasMany(Feed::class)->orderBy('score', 'desc');
+    }
+
+    public function isFollowing(User $user)
+    {
+        return $this->following()->where('following_id', $user->id)->exists();
+    }
+
+    /**
      * Social Links relationship
      */
     public function socialLinks()

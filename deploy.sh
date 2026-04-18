@@ -74,13 +74,23 @@ docker exec steman-alumni-app-1 php artisan event:cache
 
 # --- 8. POST-DEPLOYMENT VERIFICATION ---
 echo "[8/10] Menjalankan verifikasi sistem (Integrity & Tests)..."
-if ! docker exec steman-alumni-app-1 php artisan test --filter SystemIntegrityTest; then
-    echo "  [ERROR] Smoke Test Gagal! Memeriksa kesehatan sistem..."
-    docker exec steman-alumni-app-1 php artisan steman:check-integrity
-    echo "  !! PERHATIAN !! Aplikasi tetap dalam Maintenance Mode karena test gagal."
+# Jalankan Integrity Check (Wajib)
+if ! docker exec steman-alumni-app-1 php artisan steman:check-integrity; then
+    echo "  [ERROR] Audit Integritas Gagal! Periksa koneksi Database/Meilisearch."
+    echo "  Aplikasi tetap dalam Maintenance Mode."
     exit 1
 fi
-docker exec steman-alumni-app-1 php artisan steman:check-integrity
+
+# Jalankan Smoke Test (Opsional jika ada phpunit)
+if docker exec steman-alumni-app-1 [ -f vendor/bin/phpunit ]; then
+    if ! docker exec steman-alumni-app-1 ./vendor/bin/phpunit --filter SystemIntegrityTest; then
+        echo "  [ERROR] Smoke Test Gagal! Aplikasi tetap dalam Maintenance Mode."
+        exit 1
+    fi
+    echo "  Smoke Test OK."
+else
+    echo "  [INFO] Smoke Test dilewati (PHPUnit tidak tersedia di environment ini)."
+fi
 
 # --- 9. Permissions ---
 echo "[9/10] Applying permissions..."

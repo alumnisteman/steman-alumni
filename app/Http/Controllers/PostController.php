@@ -140,6 +140,11 @@ class PostController extends Controller
             $post->increment('likes_count');
             $status = 'liked';
             
+            // Update scores in precomputed feeds
+            \App\Models\Feed::where('post_id', $post->id)->update([
+                'score' => app(\App\Services\FeedService::class)->calculateScore($post)
+            ]);
+
             // Award points for receiving a like (only if user exists and is not self)
             if ($post->user && $post->user->exists && $post->user->id !== Auth::id()) {
                 $post->user->awardPoints(1);
@@ -168,6 +173,11 @@ class PostController extends Controller
         ]);
 
         $post->increment('comments_count');
+
+        // Update scores in precomputed feeds
+        \App\Models\Feed::where('post_id', $post->id)->update([
+            'score' => app(\App\Services\FeedService::class)->calculateScore($post)
+        ]);
 
         // AI Moderation
         \App\Jobs\ModerateContentWithAI::dispatch($comment);

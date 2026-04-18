@@ -177,6 +177,115 @@
 
         /* Optimization: Hide ad-wrapper if no ad is rendered */
         .header-ad-wrapper:empty { display: none; }
+
+        /* MOBILE BOTTOM NAV SYSTEM */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 2000;
+            border-top: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
+        }
+        .mobile-bottom-nav .nav-item {
+            text-decoration: none;
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            font-size: 0.65rem;
+            font-weight: 700;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .mobile-bottom-nav .nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+        .mobile-bottom-nav .nav-item.active {
+            color: #059669;
+            transform: translateY(-2px);
+        }
+        .mobile-bottom-nav .nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 20px;
+            height: 3px;
+            background: #059669;
+            border-radius: 0 0 10px 10px;
+        }
+        .mobile-bottom-nav .action-btn {
+            position: relative;
+            top: -20px;
+            z-index: 2001;
+        }
+        .mobile-bottom-nav .plus-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);
+            border: 5px solid #fff;
+            transition: transform 0.2s;
+        }
+        .mobile-bottom-nav .plus-icon:active {
+            transform: scale(0.9);
+        }
+        .mobile-bottom-nav .plus-icon i {
+            margin-bottom: 0;
+            font-size: 1.6rem;
+        }
+
+        /* Mobile Header Layout */
+        .mobile-header {
+            display: none;
+            background: #fff;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+        }
+
+        @media (max-width: 991px) {
+            body { padding-bottom: 85px; }
+            .navbar { display: none !important; }
+            .mobile-header { display: flex; justify-content: space-between; align-items: center; }
+            .top-bar { display: none !important; }
+            .header-ad-wrapper { border-bottom: none; }
+            
+            /* Large Buttons for Mobile */
+            .btn-lg-mobile {
+                padding: 12px 20px;
+                font-size: 1.1rem;
+                font-weight: 700;
+                border-radius: 12px;
+            }
+        }
+        
+        .dark .mobile-bottom-nav, .dark .mobile-header {
+            background: #1e293b;
+            border-color: rgba(255,255,255,0.1);
+        }
+        .dark .mobile-bottom-nav .plus-icon {
+            border-color: #1e293b;
+        }
+        .dark .mobile-bottom-nav .nav-item { color: #64748b; }
+        .dark .mobile-bottom-nav .nav-item.active { color: #10b981; }
     </style>
 </head>
 <body>
@@ -210,6 +319,22 @@
                 <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
                 <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
             </div>
+        </div>
+    </div>
+
+    {{-- MOBILE HEADER --}}
+    <div class="mobile-header shadow-sm d-lg-none">
+        <a href="/" class="text-decoration-none fw-black text-dark dark:text-white" style="font-size: 1.1rem; letter-spacing: -0.5px;">
+            <span class="text-success">STEMAN</span> ALUMNI
+        </a>
+        <div class="d-flex gap-3 align-items-center">
+            <a href="{{ route('alumni.messages') }}" class="text-dark dark:text-white position-relative">
+                <i class="bi bi-chat-dots fs-4"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1 border border-2 border-white" style="font-size: 0.5rem; display: none;"></span>
+            </a>
+            <button class="btn p-0 text-dark dark:text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3"></i>
+            </button>
         </div>
     </div>
     
@@ -274,6 +399,29 @@
             </div>
         </div>
     </nav>
+
+    {{-- BOTTOM NAVIGATION (MOBILE ONLY) --}}
+    <div class="mobile-bottom-nav d-lg-none">
+        <a href="/" class="nav-item {{ request()->is('/') ? 'active' : '' }}">
+            <i class="bi bi-house-door{{ request()->is('/') ? '-fill' : '' }}"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="{{ route('feed.index') }}" class="nav-item {{ request()->is('feed*') ? 'active' : '' }}">
+            <i class="bi bi-grid-3x3-gap{{ request()->is('feed*') ? '-fill' : '' }}"></i>
+            <span>Feed</span>
+        </a>
+        <a href="#" class="nav-item action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
+            <div class="plus-icon"><i class="bi bi-plus-lg"></i></div>
+        </a>
+        <a href="{{ route('alumni.network') }}" class="nav-item {{ request()->is('alumni/network*') ? 'active' : '' }}">
+            <i class="bi bi-globe-central-south-asia"></i>
+            <span>Peta</span>
+        </a>
+        <a href="{{ auth()->check() ? auth()->user()->dashboardUrl() : '/login' }}" class="nav-item {{ request()->is('alumni/dashboard*') || request()->is('admin/dashboard*') ? 'active' : '' }}">
+            <i class="bi bi-person-circle{{ request()->is('*/dashboard*') ? '-fill' : '' }}"></i>
+            <span>Profil</span>
+        </a>
+    </div>
 
 
     @yield('content')

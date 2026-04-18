@@ -164,7 +164,12 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         // Wildcard Profile Route (MUST BE LAST in the /alumni/ group)
         Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
 
-        // Nostalgia Feed Routes
+        // Alumni Social Feed (New High Performance System)
+        Route::get('/feed', [\App\Http\Controllers\FeedController::class, 'index'])->name('feed.index');
+        Route::post('/feed/post', [\App\Http\Controllers\FeedController::class, 'store'])->name('feed.store');
+        Route::post('/feed/follow/{user}', [\App\Http\Controllers\FeedController::class, 'toggleFollow'])->name('feed.follow');
+
+        // Nostalgia Feed Routes (Legacy Support)
         Route::get('/nostalgia', [\App\Http\Controllers\PostController::class, 'index'])->name('nostalgia.index');
         Route::post('/nostalgia', [\App\Http\Controllers\PostController::class, 'store'])->name('nostalgia.store');
         Route::delete('/nostalgia/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('nostalgia.destroy');

@@ -60,7 +60,7 @@ class MapController extends Controller
         $count = $request->get('count', 0);
         $majors = $request->get('majors', '');
 
-        $prompt = "Buatkan 1 kalimat narasi intelijen analitik tentang kekuatan alumni di {$city}. Terdapat {$count} alumni, mayoritas dari jurusan {$majors}. Beri kesan futuristik/high-tech bahwa daerah ini adalah hub penting. Gunakan bahasa Indonesia profesional. Jangan pakai bullet points.";
+        $prompt = "Buatkan 1 kalimat narasi intelijen analitik tentang kekuatan alumni di {$city}. Terdapat {$count} alumni, mayoritas dari program studi {$majors}. Beri kesan futuristik/high-tech bahwa daerah ini adalah hub penting. Gunakan bahasa Indonesia profesional. Jangan pakai bullet points.";
 
         $aiService = app(\App\Services\AIService::class);
         $insight = $aiService->ask($prompt, 0.7) ?? "Intelijen satelit mengonfirmasi {$count} alumni aktif di {$city}, menandakan wilayah ini sebagai titik kumpul strategis.";
