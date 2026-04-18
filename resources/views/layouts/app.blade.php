@@ -340,7 +340,7 @@
                 <i class="bi bi-chat-dots fs-4"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1 border border-2 border-white" style="font-size: 0.5rem; display: none;"></span>
             </a>
-            <button class="btn p-0 text-dark dark:text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="btn p-0 text-dark dark:text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
                 <i class="bi bi-list fs-3"></i>
             </button>
         </div>
@@ -408,6 +408,56 @@
         </div>
     </nav>
 
+    {{-- MOBILE OFFCANVAS MENU --}}
+    <div class="offcanvas offcanvas-end border-0 shadow-lg" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel" style="width: 280px;">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold" id="mobileMenuLabel">MENU UTAMA</h5>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush">
+                <a href="/" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-house-door fs-5 text-success"></i> BERANDA
+                </a>
+                <a href="/profil" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-info-circle fs-5 text-primary"></i> PROFIL ALUMNI
+                </a>
+                <a href="/alumni" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-people fs-5 text-info"></i> DIREKTORI
+                </a>
+                <a href="{{ route('alumni.network') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-globe-central-south-asia fs-5 text-success"></i> 3D NETWORK
+                </a>
+                <a href="/news" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-newspaper fs-5 text-warning"></i> BERITA & INFO
+                </a>
+                <a href="{{ route('analytics.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-graph-up fs-5 text-danger"></i> STATISTIK
+                </a>
+                <a href="{{ route('forums.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-chat-square-dots fs-5 text-primary"></i> FORUM DISKUSI
+                </a>
+                <a href="/gallery" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-images fs-5 text-secondary"></i> GALERI FOTO
+                </a>
+                <hr class="my-2 opacity-10">
+                @auth
+                    <a href="{{ auth()->user()->dashboardUrl() }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                        <i class="bi bi-speedometer2 fs-5 text-success"></i> DASHBOARD
+                    </a>
+                    <a href="/logout" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3 text-danger">
+                        <i class="bi bi-box-arrow-right fs-5"></i> KELUAR
+                    </a>
+                @else
+                    <a href="/login" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-in-right fs-5 text-success"></i> LOGIN
+                    </a>
+                @endauth
+            </div>
+        </div>
+    </div>
+
+
     {{-- BOTTOM NAVIGATION (MOBILE ONLY) --}}
     <div class="mobile-bottom-nav d-lg-none">
         <a href="/" class="nav-item {{ request()->is('/') ? 'active' : '' }}">
@@ -430,7 +480,6 @@
             <span>Profil</span>
         </a>
     </div>
-
 
     @yield('content')
 
