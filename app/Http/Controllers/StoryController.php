@@ -68,6 +68,20 @@ class StoryController extends Controller
     }
 
     /**
+     * Handle shared story links
+     */
+    public function showShared(Story $story)
+    {
+        if ($story->expires_at < now()) {
+            return redirect('/feed')->with('error', 'Story ini sudah kadaluarsa atau dihapus.');
+        }
+
+        // We can just redirect to the feed and pass a parameter to auto-open it via JS if we want,
+        // or just let them see the feed. For a seamless Gen-Z experience, let's pass a query param.
+        return redirect()->route('feed.index', ['open_story' => $story->user_id]);
+    }
+
+    /**
      * View a specific story (API)
      */
     public function show(Story $story)

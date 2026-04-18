@@ -497,7 +497,19 @@
         }
     }
 
+    // Auto-open story from shared link
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const openStoryUserId = urlParams.get('open_story');
+        if (openStoryUserId) {
+            setTimeout(() => {
+                viewStory(openStoryUserId);
+            }, 500); // Small delay to ensure everything is initialized
+        }
+    });
+
     // Quick Actions
+
     function openConfession() {
         const modal = new bootstrap.Modal(document.getElementById('createPostModal'));
         document.querySelector('#createPostModal .modal-title').innerText = '🎭 Anonymous Confession';
