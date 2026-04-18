@@ -428,7 +428,10 @@
                 const userStories = data[userId];
                 if (!userStories || userStories.length === 0) return;
                 
-                const story = userStories[0];
+                // Find the first story that is an image or spotify (skip notes)
+                const story = userStories.find(s => s.type === 'image' || s.type === 'spotify');
+                if (!story) return;
+
                 modalEl.dataset.currentStoryId = story.id;
                 
                 document.getElementById('story-user-avatar').src = story.user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.user.name);
