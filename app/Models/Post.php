@@ -18,6 +18,8 @@ class Post extends Model
         'type',
         'likes_count',
         'comments_count',
+        'visibility',
+        'is_anonymous',
     ];
 
     public function user()

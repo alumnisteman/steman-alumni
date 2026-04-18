@@ -248,6 +248,11 @@ class User extends Authenticatable
         return $this->hasMany(Feed::class)->orderBy('score', 'desc');
     }
 
+    public function stories()
+    {
+        return $this->hasMany(Story::class)->active();
+    }
+
     public function isFollowing(User $user)
     {
         return $this->following()->where('following_id', $user->id)->exists();

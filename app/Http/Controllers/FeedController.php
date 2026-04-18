@@ -36,6 +36,8 @@ class FeedController extends Controller
             'content' => 'required|string|max:2000',
             'image' => 'nullable|image|max:5120', // 5MB max
             'visibility' => 'required|in:public,friends',
+            'is_anonymous' => 'nullable|boolean',
+            'type' => 'nullable|string',
         ]);
 
         $imageUrl = null;
@@ -48,7 +50,8 @@ class FeedController extends Controller
             'content' => $request->content,
             'image_url' => $imageUrl,
             'visibility' => $request->visibility,
-            'type' => 'memory',
+            'is_anonymous' => $request->is_anonymous ?? false,
+            'type' => $request->type ?? 'memory',
         ]);
 
         return redirect()->back()->with('success', 'Postingan berhasil dibagikan!');

@@ -23,6 +23,7 @@ class FeedService
             'image_url' => $data['image_url'] ?? null,
             'type' => $data['type'] ?? 'memory',
             'visibility' => $data['visibility'] ?? 'public',
+            'is_anonymous' => $data['is_anonymous'] ?? false,
         ]);
 
         // 1. Add to owner's own feed immediately

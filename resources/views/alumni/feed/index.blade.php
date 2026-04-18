@@ -38,6 +38,11 @@
     /* Skeleton Loader */
     .skeleton { background: #e2e8f0; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 @endpush
 
@@ -45,29 +50,86 @@
 <div class="container py-4">
     <div class="feed-container">
         
-        {{-- CREATE POST TRIGGER (Desktop/Tablet) --}}
-        <div class="create-post-trigger d-none d-md-flex align-items-center gap-3 mb-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
-            <img src="{{ auth()->user()->profile_picture_url }}" class="post-avatar">
-            <div class="bg-light rounded-pill flex-grow-1 px-4 py-2 text-muted">
-                Apa yang sedang Anda pikirkan, {{ auth()->user()->name }}?
+        {{-- STORY BAR --}}
+        <div class="d-flex gap-3 overflow-x-auto pb-3 mb-4 no-scrollbar" style="scroll-snap-type: x mandatory;">
+            {{-- ADD STORY --}}
+            <div class="flex-shrink-0 text-center" style="width: 72px; scroll-snap-align: start;" data-bs-toggle="modal" data-bs-target="#createStoryModal">
+                <div class="position-relative mb-1">
+                    <img src="{{ auth()->user()->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
+                    <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;">
+                        <i class="bi bi-plus-lg text-white" style="font-size: 0.7rem;"></i>
+                    </div>
+                </div>
+                <div class="small fw-bold text-muted" style="font-size: 0.7rem;">Cerita Anda</div>
             </div>
-            <button class="btn btn-success rounded-circle p-2"><i class="bi bi-camera-fill"></i></button>
+
+            @php
+                $activeStories = \App\Models\Story::active()->with('user')->get()->groupBy('user_id');
+            @endphp
+
+            @foreach($activeStories as $userId => $userStories)
+                @php $storyUser = $userStories->first()->user; @endphp
+                <div class="flex-shrink-0 text-center" style="width: 72px; scroll-snap-align: start;" onclick="viewStory({{ $userId }})">
+                    <div class="p-1 rounded-circle mb-1" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);">
+                        <img src="{{ $storyUser->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
+                    </div>
+                    <div class="small fw-bold text-truncate mx-auto" style="font-size: 0.7rem; width: 64px;">{{ $storyUser->name }}</div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- QUICK ACTIONS (Gen Z) --}}
+        <div class="row g-2 mb-4">
+            <div class="col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-dark text-white h-100 cursor-pointer" onclick="openConfession()">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <i class="bi bi-mask fs-4 text-warning"></i>
+                        <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.6rem;">HOT</span>
+                    </div>
+                    <div class="fw-bold small">Curhat Karir (Anonim)</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Bagikan keluh kesah Anda tanpa identitas.</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-success text-white h-100 cursor-pointer" onclick="openHelpRequest()">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <i class="bi bi-megaphone fs-4"></i>
+                        <span class="badge bg-white text-success rounded-pill" style="font-size: 0.6rem;">URGENT</span>
+                    </div>
+                    <div class="fw-bold small">One Tap Help</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Butuh bantuan? Alumni lain siap membantu.</div>
+                </div>
+            </div>
         </div>
 
         {{-- FEED LIST --}}
         <div id="feed-list">
             @forelse($posts as $post)
-                <div class="card post-card mb-4 shadow-sm border-0 overflow-hidden">
+                @php 
+                    $isAnon = $post->is_anonymous;
+                    $displayName = $isAnon ? 'Alumni Anonim' : $post->user->name;
+                    $displayAvatar = $isAnon ? 'https://ui-avatars.com/api/?name=A&background=1e293b&color=fff' : $post->user->profile_picture_url;
+                @endphp
+                <div class="card post-card mb-4 shadow-sm border-0 overflow-hidden {{ $post->type === 'help_request' ? 'border-start border-4 border-success' : '' }} {{ $isAnon ? 'bg-dark bg-opacity-10' : '' }}">
                     <div class="p-3">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="d-flex gap-3 align-items-center">
+                                @if(!$isAnon)
                                 <a href="{{ route('alumni.show', $post->user) }}">
-                                    <img src="{{ $post->user->profile_picture_url }}" class="post-avatar shadow-sm">
+                                    <img src="{{ $displayAvatar }}" class="post-avatar shadow-sm">
                                 </a>
+                                @else
+                                <img src="{{ $displayAvatar }}" class="post-avatar shadow-sm">
+                                @endif
                                 <div>
-                                    <h6 class="mb-0 fw-bold">{{ $post->user->name }}</h6>
+                                    <h6 class="mb-0 fw-bold">{{ $displayName }}</h6>
                                     <small class="text-muted">
-                                        {{ $post->user->major }} '{{ $post->user->graduation_year }} &bull; {{ $post->created_at->diffForHumans() }}
+                                        @if($isAnon)
+                                            <i class="bi bi-mask me-1"></i> Anonymous Confession
+                                        @else
+                                            {{ $post->user->major }} '{{ $post->user->graduation_year }}
+                                        @endif
+                                        &bull; {{ $post->created_at->diffForHumans() }}
                                     </small>
                                 </div>
                             </div>
@@ -168,26 +230,154 @@
     </div>
 </div>
 
+{{-- CREATE STORY MODAL --}}
+<div class="modal fade" id="createStoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Posting Story</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('stories.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div id="story-preview-container" class="position-relative mb-3 bg-light rounded-4 d-flex align-items-center justify-content-center" style="min-height: 300px;">
+                        <img id="story-preview" src="#" class="w-100 rounded-4 d-none">
+                        <label for="story-input" class="btn btn-success rounded-pill px-4 py-2" id="story-label">
+                            <i class="bi bi-camera-fill me-2"></i>Ambil Gambar
+                        </label>
+                        <input type="file" name="image" id="story-input" class="d-none" accept="image/*" required>
+                    </div>
+                    <input type="text" name="caption" class="form-control border-0 bg-light rounded-3 py-2" placeholder="Tambahkan keterangan (opsional)..." maxlength="100">
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2">BAGIKAN CERITA</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- STORY VIEWER MODAL --}}
+<div class="modal fade" id="storyViewerModal" tabindex="-1" style="background: rgba(0,0,0,0.9);">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content border-0 bg-transparent text-white">
+            <div class="modal-body p-0 position-relative d-flex align-items-center justify-content-center">
+                <div class="position-absolute top-0 start-0 w-100 p-3" style="z-index: 10;">
+                    <div class="progress mb-3" style="height: 3px; background: rgba(255,255,255,0.2);">
+                        <div id="story-progress" class="progress-bar bg-white" style="width: 0%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <img id="story-user-avatar" src="" class="rounded-circle border border-2 border-white" style="width: 40px; height: 40px; object-fit: cover;">
+                            <div>
+                                <div id="story-user-name" class="fw-bold small"></div>
+                                <div id="story-time" class="opacity-75" style="font-size: 0.7rem;"></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+
+                <img id="story-display-img" src="" class="w-100" style="max-height: 80vh; object-fit: contain;">
+
+                <div class="position-absolute bottom-0 start-0 w-100 p-4 text-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                    <p id="story-display-caption" class="mb-0 fw-bold"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
-    // Image Preview logic
-    const imgInp = document.getElementById('post-image-input');
-    const imgPre = document.getElementById('image-preview');
-    const preCon = document.getElementById('image-preview-container');
+    // Story Preview
+    const storyInp = document.getElementById('story-input');
+    const storyPre = document.getElementById('story-preview');
+    const storyLab = document.getElementById('story-label');
 
-    imgInp.onchange = evt => {
-        const [file] = imgInp.files;
+    storyInp.onchange = evt => {
+        const [file] = storyInp.files;
         if (file) {
-            imgPre.src = URL.createObjectURL(file);
-            preCon.classList.remove('d-none');
+            storyPre.src = URL.createObjectURL(file);
+            storyPre.classList.remove('d-none');
+            storyLab.classList.add('d-none');
         }
     }
 
-    function removeImage() {
-        imgInp.value = "";
-        preCon.classList.add('d-none');
+    // Story Viewer Logic
+    function viewStory(userId) {
+        fetch(`/api/stories/active`)
+            .then(r => r.json())
+            .then(data => {
+                const userStories = data[userId];
+                if (!userStories) return;
+                
+                const story = userStories[0]; // Just show the latest for now
+                document.getElementById('story-user-avatar').src = story.user.profile_picture_url;
+                document.getElementById('story-user-name').innerText = story.user.name;
+                document.getElementById('story-time').innerText = new Date(story.created_at).toLocaleTimeString();
+                document.getElementById('story-display-img').src = story.image_url;
+                document.getElementById('story-display-caption').innerText = story.caption || '';
+                
+                const modal = new bootstrap.Modal(document.getElementById('storyViewerModal'));
+                modal.show();
+
+                // Progress bar animation
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 1;
+                    document.getElementById('story-progress').style.width = progress + '%';
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        modal.hide();
+                    }
+                }, 50);
+
+                document.getElementById('storyViewerModal').addEventListener('hidden.bs.modal', () => {
+                    clearInterval(interval);
+                });
+            });
+    }
+
+    // Quick Actions
+    function openConfession() {
+        const modal = new bootstrap.Modal(document.getElementById('createPostModal'));
+        document.querySelector('#createPostModal .modal-title').innerText = '🎭 Anonymous Confession';
+        document.querySelector('#createPostModal select[name="visibility"]').value = 'public';
+        document.querySelector('#createPostModal select[name="visibility"]').disabled = true;
+        
+        // Add hidden input for anonymity
+        let anonInput = document.getElementById('is_anonymous_hidden');
+        if (!anonInput) {
+            anonInput = document.createElement('input');
+            anonInput.type = 'hidden';
+            anonInput.name = 'is_anonymous';
+            anonInput.id = 'is_anonymous_hidden';
+            document.querySelector('#createPostModal form').appendChild(anonInput);
+        }
+        anonInput.value = '1';
+        
+        modal.show();
+    }
+
+    function openHelpRequest() {
+        const modal = new bootstrap.Modal(document.getElementById('createPostModal'));
+        document.querySelector('#createPostModal .modal-title').innerText = '📢 One Tap Help';
+        
+        let typeInput = document.getElementById('type_hidden');
+        if (!typeInput) {
+            typeInput = document.createElement('input');
+            typeInput.type = 'hidden';
+            typeInput.name = 'type';
+            typeInput.id = 'type_hidden';
+            document.querySelector('#createPostModal form').appendChild(typeInput);
+        }
+        typeInput.value = 'help_request';
+        
+        modal.show();
     }
 
     // Like logic (Real API)
