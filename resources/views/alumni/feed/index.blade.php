@@ -348,8 +348,21 @@
                 </div>
 
                 {{-- Bottom Overlay --}}
-                <div class="position-absolute bottom-0 start-0 w-100 p-5 text-center" style="z-index: 10; background: linear-gradient(transparent, rgba(0,0,0,0.8));">
-                    <p id="story-display-caption" class="mb-0 fw-bold px-3" style="text-shadow: 0 1px 4px rgba(0,0,0,0.8); font-size: 1.1rem;"></p>
+                <div class="position-absolute bottom-0 start-0 w-100 p-4 text-center" style="z-index: 10; background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                    <p id="story-display-caption" class="mb-3 fw-bold px-3" style="text-shadow: 0 1px 4px rgba(0,0,0,0.8); font-size: 1.1rem;"></p>
+                    
+                    {{-- Share Actions --}}
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-dark btn-sm rounded-circle border border-secondary shadow" style="width: 40px; height: 40px;" onclick="shareStory('facebook')">
+                            <i class="bi bi-facebook text-primary"></i>
+                        </button>
+                        <button class="btn btn-dark btn-sm rounded-circle border border-secondary shadow" style="width: 40px; height: 40px;" onclick="shareStory('whatsapp')">
+                            <i class="bi bi-whatsapp text-success"></i>
+                        </button>
+                        <button class="btn btn-dark btn-sm rounded-circle border border-secondary shadow" style="width: 40px; height: 40px;" onclick="shareStory('native')">
+                            <i class="bi bi-share-fill"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -392,6 +405,8 @@
                 if (!userStories || userStories.length === 0) return;
                 
                 const story = userStories[0];
+                modalEl.dataset.currentStoryId = story.id;
+                
                 document.getElementById('story-user-avatar').src = story.user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.user.name);
                 document.getElementById('story-user-name').innerText = story.user.name;
                 document.getElementById('story-time').innerText = story.created_at_human || 'Baru saja';
@@ -431,6 +446,31 @@
                     clearInterval(window.storyInterval);
                 }, { once: true });
             });
+    }
+
+    // Share Story Logic
+    function shareStory(platform) {
+        const storyId = document.getElementById('storyViewerModal').dataset.currentStoryId;
+        if (!storyId) return;
+
+        const shareUrl = `${window.location.origin}/stories/${storyId}`;
+        const title = 'Lihat Story Alumni ini!';
+
+        if (platform === 'native' && navigator.share) {
+            navigator.share({
+                title: title,
+                url: shareUrl
+            }).catch(console.error);
+        } else if (platform === 'facebook') {
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+        } else if (platform === 'whatsapp') {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + shareUrl)}`, '_blank');
+        } else {
+            // Fallback copy to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('Tautan disalin ke clipboard! Anda bisa membagikannya ke Instagram atau TikTok.');
+            });
+        }
     }
 
     // Quick Actions
