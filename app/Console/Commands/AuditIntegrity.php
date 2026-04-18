@@ -33,6 +33,9 @@ class AuditIntegrity extends Command
         $this->auditPermissions();
         $this->auditStorageLink();
         $this->auditDatabase();
+        $this->auditCache();
+        $this->auditMeilisearch();
+        $this->auditDiskSpace();
         $this->healUserData();
         $this->geocodeMissingAddresses();
         $this->auditEnvironment();
@@ -163,6 +166,71 @@ class AuditIntegrity extends Command
                     $this->info("Data Integrity OK: $table -> $targetTable");
                 }
             }
+        }
+    }
+
+    /**
+     * Audit Cache (Redis/File) connectivity
+     */
+    private function auditCache()
+    {
+        $this->comment("\n2d. Auditing Cache System...");
+        try {
+            \Illuminate\Support\Facades\Cache::put('integrity_test', true, 10);
+            if (\Illuminate\Support\Facades\Cache::get('integrity_test')) {
+                $this->info("Cache System (Driver: " . config('cache.default') . ") is operational.");
+            } else {
+                $this->error("Cache System failed to retrieve test key.");
+            }
+        } catch (\Exception $e) {
+            $this->error("Cache System Error: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Audit Meilisearch health
+     */
+    private function auditMeilisearch()
+    {
+        $this->comment("\n2e. Auditing Meilisearch connectivity...");
+        $host = config('scout.meilisearch.host', 'http://localhost:7700');
+        $key = config('scout.meilisearch.key');
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::withHeaders(['Authorization' => 'Bearer ' . $key])
+                ->timeout(5)
+                ->get($host . '/health');
+
+            if ($response->successful()) {
+                $this->info("Meilisearch is healthy.");
+            } else {
+                $this->warn("Meilisearch reachable but returned status: " . $response->status());
+            }
+        } catch (\Exception $e) {
+            $this->error("Meilisearch is OFFLINE: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Audit Disk Space
+     */
+    private function auditDiskSpace()
+    {
+        $this->comment("\n2f. Auditing Server Disk Space...");
+        try {
+            $freeSpace = @disk_free_space("/");
+            $totalSpace = @disk_total_space("/");
+            if ($freeSpace !== false && $totalSpace !== false) {
+                $percentFree = ($freeSpace / $totalSpace) * 100;
+
+                if ($percentFree < 10) {
+                    $this->error("CRITICAL: Disk Space is running low (" . round($percentFree, 2) . "% free).");
+                } else {
+                    $this->info("Disk Space OK: " . round($percentFree, 2) . "% free (" . round($freeSpace / 1024 / 1024 / 1024, 2) . " GB).");
+                }
+            }
+        } catch (\Exception $e) {
+            $this->warn("Disk Space Check failed: " . $e->getMessage());
         }
     }
 

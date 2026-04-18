@@ -60,7 +60,7 @@ class AIService
         
         Keep it concise but impactful.";
 
-        return $this->ask($prompt, 0.8, 'gemini-3.1-flash-lite-preview');
+        return $this->ask($prompt, 0.8, 'gemini-1.5-flash');
     }
 
     /**
@@ -108,6 +108,24 @@ class AIService
             Log::error("AIService Exception for [$model]: " . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Verify if the API key is healthy
+     */
+    public function checkHealth(): array
+    {
+        if (empty($this->apiKey)) {
+            return ['status' => 'ERROR', 'message' => 'API Key is missing in configuration.'];
+        }
+
+        $result = $this->ask("Hello, are you active? Reply with 'ACTIVE' only.", 0.1, 'gemini-1.5-flash');
+        
+        if ($result && str_contains(strtoupper($result), 'ACTIVE')) {
+            return ['status' => 'HEALTHY', 'message' => 'Gemini API is connected and responding.'];
+        }
+
+        return ['status' => 'ERROR', 'message' => 'Gemini API is unreachable or returned invalid response.'];
     }
 
     /**
@@ -214,6 +232,12 @@ class AIService
      */
     public function geocode(string $address): ?array
     {
+        $cacheKey = 'geocode_fail_' . md5($address);
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            Log::warning("AIService: Skipping geocode for known unsearchable address: $address");
+            return null;
+        }
+
         // Variation 1: Exact Address
         $prompt = "Convert the following Indonesian address into geographic coordinates (latitude and longitude). 
         Address: \"$address\"
@@ -276,6 +300,8 @@ class AIService
             Log::warning("AIService Geocode: Nominatim fallback failed: " . $e->getMessage());
         }
 
+        // Mark as failed in cache for 24h to avoid redundant expensive API calls
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 86400);
         return null;
     }
 
