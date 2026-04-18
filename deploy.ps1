@@ -36,7 +36,7 @@ if ($MigrateOnly) {
 if (-not $SkipUpload) {
     Write-Host "[1/3] Menyinkronkan file ke server..." -ForegroundColor Yellow
     
-    $dirs = @("app", "resources", "routes", "config", "database")
+    $dirs = @("app", "resources", "routes", "config", "database", "public")
     foreach ($dir in $dirs) {
         & $PSCP -r -pw $PASS -batch "$LOCAL_DIR\$dir" "${USER}@${SERVER}:${APP_DIR}" | Out-Null
     }

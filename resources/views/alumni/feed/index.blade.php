@@ -76,7 +76,8 @@
 
             @foreach($activeStories as $userId => $userStories)
                 @php $storyUser = $userStories->first()->user; @endphp
-                <div class="flex-shrink-0 text-center" style="width: 72px; scroll-snap-align: start;" onclick="viewStory({{ $userId }})">
+                <div class="flex-shrink-0 text-center" style="width: 72px; scroll-snap-align: start; cursor: pointer;" onclick="viewStory({{ $userId }})">
+                    <button id="story-trigger-{{ $userId }}" class="d-none" data-bs-toggle="modal" data-bs-target="#storyViewerModal"></button>
                     <div class="p-1 rounded-circle mb-1" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);">
                         <img src="{{ $storyUser->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
                     </div>
@@ -318,40 +319,34 @@
 
     // Story Viewer Logic
     function viewStory(userId) {
-        // Show loading state if needed
-        const modalEl = document.getElementById('storyViewerModal');
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        // Find the hidden trigger button
+        const trigger = document.getElementById('story-trigger-' + userId);
         
         fetch(`/api/stories/active`)
             .then(r => r.json())
             .then(data => {
                 const userStories = data[userId];
-                if (!userStories || userStories.length === 0) {
-                    alert('Tidak ada story aktif untuk user ini.');
-                    return;
-                }
+                if (!userStories || userStories.length === 0) return;
                 
                 const story = userStories[0];
-                const avatarImg = document.getElementById('story-user-avatar');
-                const userName = document.getElementById('story-user-name');
-                const storyTime = document.getElementById('story-time');
-                const displayImg = document.getElementById('story-display-img');
-                const displayCap = document.getElementById('story-display-caption');
-                const progressBar = document.getElementById('story-progress');
-
-                // Reset progress
-                progressBar.style.width = '0%';
+                document.getElementById('story-user-avatar').src = story.user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.user.name);
+                document.getElementById('story-user-name').innerText = story.user.name;
+                document.getElementById('story-time').innerText = story.created_at_human || 'Baru saja';
+                document.getElementById('story-display-img').src = story.image_url;
+                document.getElementById('story-display-caption').innerText = story.caption || '';
                 
-                // Set data
-                avatarImg.src = story.user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.user.name);
-                userName.innerText = story.user.name;
-                storyTime.innerText = story.created_at_human || 'Baru saja'; // Fallback
-                displayImg.src = story.image_url;
-                displayCap.innerText = story.caption || '';
-                
-                modal.show();
+                // Trigger the modal via Data API (more reliable if JS bootstrap variable is missing)
+                if (trigger) {
+                    trigger.click();
+                } else {
+                    // Fallback to JS if trigger not found
+                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('storyViewerModal'));
+                    modal.show();
+                }
 
                 // Progress bar animation
+                const progressBar = document.getElementById('story-progress');
+                progressBar.style.width = '0%';
                 let progress = 0;
                 if (window.storyInterval) clearInterval(window.storyInterval);
                 
@@ -360,17 +355,10 @@
                     progressBar.style.width = progress + '%';
                     if (progress >= 100) {
                         clearInterval(window.storyInterval);
-                        modal.hide();
+                        // Find and click the close button to be safe
+                        document.querySelector('#storyViewerModal .btn-close').click();
                     }
-                }, 50); // 5 seconds total
-
-                modalEl.addEventListener('hidden.bs.modal', () => {
-                    clearInterval(window.storyInterval);
-                }, { once: true });
-            })
-            .catch(err => {
-                console.error('Error fetching stories:', err);
-                alert('Gagal memuat story. Silakan coba lagi.');
+                }, 50);
             });
     }
 
