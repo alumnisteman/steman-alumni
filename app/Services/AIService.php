@@ -231,32 +231,52 @@ class AIService
 
         $result = $this->ask($prompt, 0.1);
         if ($result) {
-            Log::info("AIService Geocode Raw Result (Gemini): " . $result);
             $json = preg_replace('/^```json\s*|\s*```$/i', '', trim($result));
             $data = json_decode($json, true);
-            if (isset($data['lat']) && isset($data['lng'])) {
+            if (isset($data['lat']) && isset($data['lng']) && $data['lat'] !== null) {
                 return $data;
             }
         }
 
-        // Fallback: OpenStreetMap Nominatim
+        // Broad Search Fallback: If specific address fails, try just the Kabupaten/City
+        $searchTerms = ['Kabupaten', 'Kota', 'Kecamatan'];
+        foreach ($searchTerms as $term) {
+            if (str_contains($address, $term)) {
+                $parts = explode($term, $address);
+                $broaderAddress = $term . end($parts);
+                Log::info("AIService Geocode: Specific failed, trying broader region: $broaderAddress");
+                
+                $prompt = "Find center coordinates for this area in Indonesia: \"$broaderAddress\". Return ONLY JSON: {\"lat\": float, \"lng\": float}.";
+                $result = $this->ask($prompt, 0.1);
+                if ($result) {
+                    $json = preg_replace('/^```json\s*|\s*```$/i', '', trim($result));
+                    $data = json_decode($json, true);
+                    if (isset($data['lat']) && isset($data['lng']) && $data['lat'] !== null) {
+                        return $data;
+                    }
+                }
+            }
+        }
+
+        // Final Fallback: OpenStreetMap Nominatim with 'Indonesia' suffix
         Log::info("AIService Geocode: Gemini failed, attempting Nominatim fallback for: $address");
         try {
+            $query = $address;
+            if (!str_contains(strtolower($address), 'indonesia')) {
+                $query .= ', Indonesia';
+            }
+            
             $response = Http::withHeaders([
                 'User-Agent' => 'StemanAlumniPortal/1.0'
             ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
-                'q' => $address,
+                'q' => $query,
                 'format' => 'json',
                 'limit' => 1
             ]);
 
             if ($response->successful() && !empty($response->json())) {
                 $data = $response->json()[0];
-                Log::info("AIService Geocode Success (Nominatim): " . $data['lat'] . ", " . $data['lon']);
-                return [
-                    'lat' => (float) $data['lat'],
-                    'lng' => (float) $data['lon']
-                ];
+                return ['lat' => (float) $data['lat'], 'lng' => (float) $data['lon']];
             }
         } catch (\Exception $e) {
             Log::warning("AIService Geocode: Nominatim fallback failed: " . $e->getMessage());
