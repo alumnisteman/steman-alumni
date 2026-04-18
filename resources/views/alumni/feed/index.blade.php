@@ -298,9 +298,18 @@
                         <label for="story-input" class="btn btn-success rounded-pill px-4 py-2" id="story-label">
                             <i class="bi bi-camera-fill me-2"></i>Ambil Gambar
                         </label>
-                        <input type="file" name="image" id="story-input" class="d-none" accept="image/*" required>
+                        <input type="file" name="image" id="story-input" class="d-none" accept="image/*">
                     </div>
-                    <input type="text" name="caption" class="form-control border-0 bg-light rounded-3 py-2" placeholder="Tambahkan keterangan (opsional)..." maxlength="100">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Atau Bagikan Lagu Spotify</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-spotify text-success"></i></span>
+                            <input type="url" name="spotify_url" id="spotify-input" class="form-control border-start-0 ps-0 shadow-none" placeholder="Paste link lagu Spotify di sini...">
+                        </div>
+                    </div>
+
+                    <input type="text" name="caption" class="form-control border-0 bg-light rounded-3 py-2 mb-2" placeholder="Tambahkan keterangan (opsional)..." maxlength="100">
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2">BAGIKAN CERITA</button>
@@ -333,6 +342,10 @@
                 </div>
 
                 <img id="story-display-img" src="" class="img-fluid" style="max-height: 100vh; width: auto; object-fit: contain;">
+                
+                <div id="story-spotify-container" class="w-100 px-4 d-none position-absolute top-50 start-50 translate-middle" style="max-width: 400px; z-index: 15;">
+                    <iframe id="story-spotify-iframe" src="" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" class="rounded-4 shadow-lg"></iframe>
+                </div>
 
                 {{-- Bottom Overlay --}}
                 <div class="position-absolute bottom-0 start-0 w-100 p-5 text-center" style="z-index: 10; background: linear-gradient(transparent, rgba(0,0,0,0.8));">
@@ -382,7 +395,21 @@
                 document.getElementById('story-user-avatar').src = story.user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.user.name);
                 document.getElementById('story-user-name').innerText = story.user.name;
                 document.getElementById('story-time').innerText = story.created_at_human || 'Baru saja';
-                document.getElementById('story-display-img').src = story.image_url;
+                
+                const imgDisplay = document.getElementById('story-display-img');
+                const spotifyContainer = document.getElementById('story-spotify-container');
+                const spotifyIframe = document.getElementById('story-spotify-iframe');
+                
+                if (story.type === 'spotify' || story.spotify_url) {
+                    imgDisplay.classList.add('d-none');
+                    spotifyContainer.classList.remove('d-none');
+                    spotifyIframe.src = story.spotify_url;
+                } else {
+                    spotifyContainer.classList.add('d-none');
+                    imgDisplay.classList.remove('d-none');
+                    imgDisplay.src = story.image_url;
+                }
+
                 document.getElementById('story-display-caption').innerText = story.caption || '';
                 
                 modal.show();

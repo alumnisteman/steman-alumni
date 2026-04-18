@@ -13,6 +13,7 @@ class Story extends Model
         'user_id',
         'type',
         'content',
+        'spotify_url',
         'image_path',
         'caption',
         'expires_at'
@@ -33,5 +34,13 @@ class Story extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image_path) {
+            return asset('storage/' . $this->image_path);
+        }
+        return null;
     }
 }

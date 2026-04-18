@@ -15,16 +15,34 @@ class StoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|max:10240', // 10MB max for high quality
+            'image' => 'nullable|image|max:10240',
             'caption' => 'nullable|string|max:100',
+            'spotify_url' => 'nullable|url',
         ]);
 
-        $path = $request->file('image')->store('stories', 'public');
-        $imageUrl = Storage::url($path);
+        if (!$request->hasFile('image') && !$request->spotify_url) {
+            return back()->with('error', 'Pilih gambar atau masukkan link Spotify.');
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('stories', 'public');
+        }
+
+        $spotifyUrl = $request->spotify_url;
+        if ($spotifyUrl) {
+            // Convert to embed URL if needed
+            if (str_contains($spotifyUrl, 'open.spotify.com/track/')) {
+                // Ensure it's the embed format
+                $spotifyUrl = str_replace('open.spotify.com/track/', 'open.spotify.com/embed/track/', $spotifyUrl);
+            }
+        }
 
         Story::create([
             'user_id' => auth()->id(),
-            'image_url' => $imageUrl,
+            'type' => $spotifyUrl && !$imagePath ? 'spotify' : 'image',
+            'image_path' => $imagePath,
+            'spotify_url' => $spotifyUrl,
             'caption' => $request->caption,
             'expires_at' => now()->addHours(24),
         ]);
@@ -65,7 +83,9 @@ class StoryController extends Controller
                 'name' => $story->user->name,
                 'avatar' => $story->user->profile_picture_url,
             ],
+            'type' => $story->type,
             'image_url' => $story->image_url,
+            'spotify_url' => $story->spotify_url,
             'caption' => $story->caption,
             'created_at_human' => $story->created_at->diffForHumans(),
             'created_at' => $story->created_at,
@@ -83,6 +103,7 @@ class StoryController extends Controller
             ->get()
             ->map(function ($story) {
                 $story->created_at_human = $story->created_at->diffForHumans();
+                $story->image_url = $story->image_url; // Explicitly trigger accessor
                 return $story;
             })
             ->groupBy('user_id');
