@@ -24,9 +24,10 @@ class StoryController extends Controller
             return back()->with('error', 'Pilih gambar atau masukkan link Spotify.');
         }
 
-        $imagePath = null;
+        $imageUrl = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('stories', 'public');
+            $path = $request->file('image')->store('stories', 'public');
+            $imageUrl = Storage::url($path);
         }
 
         $spotifyUrl = $request->spotify_url;
@@ -40,8 +41,8 @@ class StoryController extends Controller
 
         Story::create([
             'user_id' => auth()->id(),
-            'type' => $spotifyUrl && !$imagePath ? 'spotify' : 'image',
-            'image_path' => $imagePath,
+            'type' => $spotifyUrl && !$imageUrl ? 'spotify' : 'image',
+            'image_url' => $imageUrl,
             'spotify_url' => $spotifyUrl,
             'caption' => $request->caption,
             'expires_at' => now()->addHours(24),
@@ -103,7 +104,6 @@ class StoryController extends Controller
             ->get()
             ->map(function ($story) {
                 $story->created_at_human = $story->created_at->diffForHumans();
-                $story->image_url = $story->image_url; // Explicitly trigger accessor
                 return $story;
             })
             ->groupBy('user_id');
