@@ -83,41 +83,33 @@
 
         {{-- STORY BAR --}}
         <div class="d-flex gap-3 overflow-x-auto pb-3 mb-4 no-scrollbar" style="scroll-snap-type: x mandatory;">
+            {{-- ADD STORY (Instagram Style) --}}
             @php
-                $activeStories = \App\Models\Story::active()->with('user')->get()->groupBy('user_id');
-                $myUserId = auth()->id();
-                $myStories = $activeStories->get($myUserId);
-                $hasMyClickableStory = $myStories ? $myStories->whereIn('type', ['image', 'spotify'])->count() > 0 : false;
-                $myActiveNote = $myStories ? $myStories->where('type', 'note')->first() : null;
-                $activeStoriesWithoutMe = $activeStories->except($myUserId);
+                $myStories = $activeStories->get(auth()->id());
+                $hasMyClickableStory = $myStories && $myStories->whereIn('type', ['image', 'spotify'])->count() > 0;
             @endphp
-
-            {{-- MY STORY (Cerita Anda) --}}
-            <div class="flex-shrink-0 text-center position-relative" style="width: 72px; scroll-snap-align: start;">
-                @if($myActiveNote)
-                    <div class="position-absolute top-0 start-50 translate-middle-x bg-white text-dark rounded-pill px-2 py-1 shadow-sm border small fw-bold text-truncate cursor-pointer" style="max-width: 80px; font-size: 0.6rem; z-index: 10; margin-top: -5px;" data-bs-toggle="modal" data-bs-target="#createNoteModal">
-                        {{ $myActiveNote->content }}
+            <div class="flex-shrink-0 text-center" style="width: 72px; scroll-snap-align: start;">
+                <div class="position-relative mb-1 cursor-pointer" 
+                     onclick="{{ $hasMyClickableStory ? 'viewStory('.auth()->id().')' : '' }}"
+                     data-bs-toggle="{{ $hasMyClickableStory ? '' : 'modal' }}" 
+                     data-bs-target="{{ $hasMyClickableStory ? '' : '#createStoryModal' }}">
+                    
+                    <div class="p-1 rounded-circle {{ $hasMyClickableStory ? 'bg-gradient-story' : '' }}">
+                        <img src="{{ auth()->user()->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
                     </div>
-                @endif
 
-                <div class="p-1 rounded-circle mb-1 {{ $hasMyClickableStory ? 'bg-gradient-story cursor-pointer' : 'cursor-pointer' }}" 
-                     onclick="{{ $hasMyClickableStory ? 'viewStory('.$myUserId.')' : '' }}"
-                     {!! !$hasMyClickableStory ? 'data-bs-toggle="modal" data-bs-target="#createStoryModal"' : '' !!}>
-                    <img src="{{ auth()->user()->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
+                    <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white d-flex align-items-center justify-content-center cursor-pointer" 
+                         style="width: 22px; height: 22px; z-index: 5;"
+                         data-bs-toggle="modal" data-bs-target="#createStoryModal"
+                         onclick="event.stopPropagation();">
+                        <i class="bi bi-plus-lg text-white" style="font-size: 0.7rem;"></i>
+                    </div>
                 </div>
-                
-                {{-- Tiny Plus Button --}}
-                <div class="position-absolute bg-success rounded-circle border border-2 border-white d-flex align-items-center justify-content-center cursor-pointer" 
-                     style="width: 22px; height: 22px; bottom: 20px; right: 4px; z-index: 5;"
-                     data-bs-toggle="modal" data-bs-target="#createStoryModal">
-                    <i class="bi bi-plus-lg text-white" style="font-size: 0.7rem;"></i>
-                </div>
-                
-                <div class="small fw-bold text-muted text-truncate mx-auto" style="font-size: 0.7rem; width: 64px;">Cerita Anda</div>
+                <div class="small fw-bold text-muted" style="font-size: 0.7rem;">Cerita Anda</div>
             </div>
 
-            {{-- OTHER USERS STORIES --}}
-            @foreach($activeStoriesWithoutMe as $userId => $userStories)
+            @foreach($activeStories as $userId => $userStories)
+                @if($userId == auth()->id()) @continue @endif
                 @php 
                     $storyUser = $userStories->first()->user; 
                     $activeNote = $userStories->where('type', 'note')->first();
