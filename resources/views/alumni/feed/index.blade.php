@@ -57,6 +57,30 @@
 <div class="container py-4">
     <div class="feed-container">
         
+        {{-- DESKTOP CREATE POST BOX --}}
+        <div class="card border-0 shadow-sm rounded-4 mb-4 d-none d-md-block">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="{{ auth()->user()->profile_picture_url }}" class="rounded-circle object-fit-cover shadow-sm" style="width: 48px; height: 48px;">
+                    <div class="form-control rounded-pill bg-light border-0 cursor-pointer text-muted d-flex align-items-center" style="height: 48px; padding-left: 1.5rem;" data-bs-toggle="modal" data-bs-target="#createStoryModal">
+                        Bagikan cerita, momen, atau lagu Spotify Anda...
+                    </div>
+                </div>
+                <hr class="my-3 text-muted opacity-25">
+                <div class="d-flex justify-content-between px-2">
+                    <button class="btn btn-light fw-bold text-muted rounded-pill flex-fill mx-1 d-flex align-items-center justify-content-center border-0 bg-transparent hover-bg-light" data-bs-toggle="modal" data-bs-target="#createStoryModal">
+                        <i class="bi bi-image text-success me-2 fs-5"></i> Foto / Cerita
+                    </button>
+                    <button class="btn btn-light fw-bold text-muted rounded-pill flex-fill mx-1 d-flex align-items-center justify-content-center border-0 bg-transparent hover-bg-light" data-bs-toggle="modal" data-bs-target="#createStoryModal">
+                        <i class="bi bi-spotify text-success me-2 fs-5"></i> Lagu Spotify
+                    </button>
+                    <button class="btn btn-light fw-bold text-muted rounded-pill flex-fill mx-1 d-flex align-items-center justify-content-center border-0 bg-transparent hover-bg-light" data-bs-toggle="modal" data-bs-target="#createNoteModal">
+                        <i class="bi bi-chat-dots text-primary me-2 fs-5"></i> Catatan Pendek
+                    </button>
+                </div>
+            </div>
+        </div>
+
         {{-- STORY BAR --}}
         <div class="d-flex gap-3 overflow-x-auto pb-3 mb-4 no-scrollbar" style="scroll-snap-type: x mandatory;">
             {{-- ADD STORY --}}
