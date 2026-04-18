@@ -74,23 +74,17 @@ class AIService
         }
 
         try {
-            // Use v1 for maximum compatibility with all API keys
-            $apiVersion = 'v1'; 
+            // Use v1beta for better compatibility with latest models
+            $apiVersion = 'v1beta'; 
             $url = "https://generativelanguage.googleapis.com/{$apiVersion}/models/{$model}:generateContent?key={$this->apiKey}";
-
-            Log::warning("AIService Calling Gemini: $apiVersion/$model");
-
-
-
-
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post($url, [
+            ])->timeout(30)->post($url, [
                 'contents' => [['parts' => [['text' => $prompt]]]],
                 'generationConfig' => [
                     'temperature' => $temperature,
-                    'maxOutputTokens' => 2048,
+                    'maxOutputTokens' => 1024,
                 ]
             ]);
 
@@ -102,14 +96,11 @@ class AIService
             $status = $response->status();
             $body = $response->body();
 
-            // Only log errors that aren't expected "switches" (like 404 or 429) if we have more models to try
-            if ($status === 404) {
-                Log::warning("AIService: Model [$model] not found (404). Trying next...");
-            } elseif ($status === 429) {
-                Log::warning("AIService: Quota exceeded for [$model] (429). Trying next...");
-            } else {
-                Log::error("AIService: Gemini API Error ($status) for [$model]", ['body' => $body]);
-            }
+            // Log full error details for debugging
+            Log::warning("AIService: Gemini API Error ($status) for [$model]", [
+                'url' => "generativelanguage.googleapis.com/{$apiVersion}/models/{$model}",
+                'body' => $body
+            ]);
 
             return null;
 
@@ -244,7 +235,7 @@ class AIService
             if (str_contains($address, $term)) {
                 $parts = explode($term, $address);
                 $broaderAddress = $term . end($parts);
-                Log::info("AIService Geocode: Specific failed, trying broader region: $broaderAddress");
+                Log::warning("AIService Geocode: Specific failed, trying broader region: $broaderAddress");
                 
                 $prompt = "Find center coordinates for this area in Indonesia: \"$broaderAddress\". Return ONLY JSON: {\"lat\": float, \"lng\": float}.";
                 $result = $this->ask($prompt, 0.1);
@@ -259,7 +250,7 @@ class AIService
         }
 
         // Final Fallback: OpenStreetMap Nominatim with 'Indonesia' suffix
-        Log::info("AIService Geocode: Gemini failed, attempting Nominatim fallback for: $address");
+        Log::warning("AIService Geocode: Gemini failed, attempting Nominatim fallback for: $address");
         try {
             $query = $address;
             if (!str_contains(strtolower($address), 'indonesia')) {
@@ -276,6 +267,7 @@ class AIService
 
             if ($response->successful() && !empty($response->json())) {
                 $data = $response->json()[0];
+                Log::warning("AIService Geocode Success (Nominatim): " . $data['lat'] . ", " . $data['lon']);
                 return ['lat' => (float) $data['lat'], 'lng' => (float) $data['lon']];
             }
         } catch (\Exception $e) {
