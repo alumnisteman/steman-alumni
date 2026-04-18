@@ -266,30 +266,32 @@
 </div>
 
 {{-- STORY VIEWER MODAL --}}
-<div class="modal fade" id="storyViewerModal" tabindex="-1" style="background: rgba(0,0,0,0.9);">
-    <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content border-0 bg-transparent text-white">
-            <div class="modal-body p-0 position-relative d-flex align-items-center justify-content-center">
-                <div class="position-absolute top-0 start-0 w-100 p-3" style="z-index: 10;">
-                    <div class="progress mb-3" style="height: 3px; background: rgba(255,255,255,0.2);">
-                        <div id="story-progress" class="progress-bar bg-white" style="width: 0%;"></div>
+<div class="modal fade" id="storyViewerModal" tabindex="-1" style="background: #000; z-index: 3000;">
+    <div class="modal-dialog modal-fullscreen m-0">
+        <div class="modal-content border-0 bg-dark text-white rounded-0">
+            <div class="modal-body p-0 position-relative d-flex align-items-center justify-content-center bg-black">
+                {{-- Top Overlay --}}
+                <div class="position-absolute top-0 start-0 w-100 p-3" style="z-index: 10; background: linear-gradient(rgba(0,0,0,0.6), transparent);">
+                    <div class="progress mb-3" style="height: 2px; background: rgba(255,255,255,0.2);">
+                        <div id="story-progress" class="progress-bar bg-white" style="width: 0%; transition: none;"></div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
-                            <img id="story-user-avatar" src="" class="rounded-circle border border-2 border-white" style="width: 40px; height: 40px; object-fit: cover;">
+                            <img id="story-user-avatar" src="" class="rounded-circle border border-1 border-white shadow-sm" style="width: 36px; height: 36px; object-fit: cover;">
                             <div>
-                                <div id="story-user-name" class="fw-bold small"></div>
-                                <div id="story-time" class="opacity-75" style="font-size: 0.7rem;"></div>
+                                <div id="story-user-name" class="fw-bold small" style="text-shadow: 0 1px 2px rgba(0,0,0,0.5);"></div>
+                                <div id="story-time" class="opacity-75" style="font-size: 0.65rem;"></div>
                             </div>
                         </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
                     </div>
                 </div>
 
-                <img id="story-display-img" src="" class="w-100" style="max-height: 80vh; object-fit: contain;">
+                <img id="story-display-img" src="" class="img-fluid" style="max-height: 100vh; width: auto; object-fit: contain;">
 
-                <div class="position-absolute bottom-0 start-0 w-100 p-4 text-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
-                    <p id="story-display-caption" class="mb-0 fw-bold"></p>
+                {{-- Bottom Overlay --}}
+                <div class="position-absolute bottom-0 start-0 w-100 p-5 text-center" style="z-index: 10; background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                    <p id="story-display-caption" class="mb-0 fw-bold px-3" style="text-shadow: 0 1px 4px rgba(0,0,0,0.8); font-size: 1.1rem;"></p>
                 </div>
             </div>
         </div>
@@ -316,36 +318,59 @@
 
     // Story Viewer Logic
     function viewStory(userId) {
+        // Show loading state if needed
+        const modalEl = document.getElementById('storyViewerModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        
         fetch(`/api/stories/active`)
             .then(r => r.json())
             .then(data => {
                 const userStories = data[userId];
-                if (!userStories) return;
+                if (!userStories || userStories.length === 0) {
+                    alert('Tidak ada story aktif untuk user ini.');
+                    return;
+                }
                 
-                const story = userStories[0]; // Just show the latest for now
-                document.getElementById('story-user-avatar').src = story.user.profile_picture_url;
-                document.getElementById('story-user-name').innerText = story.user.name;
-                document.getElementById('story-time').innerText = new Date(story.created_at).toLocaleTimeString();
-                document.getElementById('story-display-img').src = story.image_url;
-                document.getElementById('story-display-caption').innerText = story.caption || '';
+                const story = userStories[0];
+                const avatarImg = document.getElementById('story-user-avatar');
+                const userName = document.getElementById('story-user-name');
+                const storyTime = document.getElementById('story-time');
+                const displayImg = document.getElementById('story-display-img');
+                const displayCap = document.getElementById('story-display-caption');
+                const progressBar = document.getElementById('story-progress');
+
+                // Reset progress
+                progressBar.style.width = '0%';
                 
-                const modal = new bootstrap.Modal(document.getElementById('storyViewerModal'));
+                // Set data
+                avatarImg.src = story.user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.user.name);
+                userName.innerText = story.user.name;
+                storyTime.innerText = story.created_at_human || 'Baru saja'; // Fallback
+                displayImg.src = story.image_url;
+                displayCap.innerText = story.caption || '';
+                
                 modal.show();
 
                 // Progress bar animation
                 let progress = 0;
-                const interval = setInterval(() => {
+                if (window.storyInterval) clearInterval(window.storyInterval);
+                
+                window.storyInterval = setInterval(() => {
                     progress += 1;
-                    document.getElementById('story-progress').style.width = progress + '%';
+                    progressBar.style.width = progress + '%';
                     if (progress >= 100) {
-                        clearInterval(interval);
+                        clearInterval(window.storyInterval);
                         modal.hide();
                     }
-                }, 50);
+                }, 50); // 5 seconds total
 
-                document.getElementById('storyViewerModal').addEventListener('hidden.bs.modal', () => {
-                    clearInterval(interval);
-                });
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    clearInterval(window.storyInterval);
+                }, { once: true });
+            })
+            .catch(err => {
+                console.error('Error fetching stories:', err);
+                alert('Gagal memuat story. Silakan coba lagi.');
             });
     }
 

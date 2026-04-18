@@ -51,7 +51,8 @@ class StoryController extends Controller
             ],
             'image_url' => $story->image_url,
             'caption' => $story->caption,
-            'created_at' => $story->created_at->diffForHumans(),
+            'created_at_human' => $story->created_at->diffForHumans(),
+            'created_at' => $story->created_at,
         ]);
     }
 
@@ -64,6 +65,10 @@ class StoryController extends Controller
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->get()
+            ->map(function ($story) {
+                $story->created_at_human = $story->created_at->diffForHumans();
+                return $story;
+            })
             ->groupBy('user_id');
 
         return response()->json($stories);
