@@ -102,9 +102,9 @@
                 @php 
                     $storyUser = $userStories->first()->user; 
                     $activeNote = $userStories->where('type', 'note')->first();
-                    $hasImageStory = $userStories->where('type', 'image')->count() > 0;
+                    $hasClickableStory = $userStories->whereIn('type', ['image', 'spotify'])->count() > 0;
                 @endphp
-                <div class="flex-shrink-0 text-center position-relative" style="width: 72px; scroll-snap-align: start; cursor: pointer;" onclick="{{ $hasImageStory ? 'viewStory('.$userId.')' : '' }}">
+                <div class="flex-shrink-0 text-center position-relative" style="width: 72px; scroll-snap-align: start; cursor: pointer;" onclick="{{ $hasClickableStory ? 'viewStory('.$userId.')' : '' }}">
                     {{-- Note Bubble --}}
                     @if($activeNote)
                         <div class="position-absolute top-0 start-50 translate-middle-x bg-white text-dark rounded-pill px-2 py-1 shadow-sm border small fw-bold text-truncate" style="max-width: 80px; font-size: 0.6rem; z-index: 10; margin-top: -5px;">
@@ -112,7 +112,7 @@
                         </div>
                     @endif
 
-                    <div class="p-1 rounded-circle mb-1 {{ $hasImageStory ? 'bg-gradient-story' : '' }}">
+                    <div class="p-1 rounded-circle mb-1 {{ $hasClickableStory ? 'bg-gradient-story' : '' }}">
                         <img src="{{ $storyUser->profile_picture_url }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
                     </div>
                     <div class="small fw-bold text-truncate mx-auto" style="font-size: 0.7rem; width: 64px;">{{ $storyUser->name }}</div>
