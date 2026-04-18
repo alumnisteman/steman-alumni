@@ -23,9 +23,9 @@ class AIService
     public function ask(string $prompt, float $temperature = 0.7, ?string $model = null): ?string
     {
         $models = $model ? [$model] : [
-            'gemini-2.0-flash',          // Current default (fast + capable)
-            'gemini-1.5-flash',          // Fallback: 1.5 Flash
-            'gemini-1.5-flash-latest',   // Fallback: latest 1.5
+            'gemini-1.5-flash',
+            'gemini-1.5-pro',
+            'gemini-2.0-flash-exp',
         ];
 
         foreach ($models as $currentModel) {
@@ -214,9 +214,9 @@ class AIService
      */
     public function geocode(string $address): ?array
     {
+        // Variation 1: Exact Address
         $prompt = "Convert the following Indonesian address into geographic coordinates (latitude and longitude). 
         Address: \"$address\"
-        
         Return ONLY valid JSON format: {\"lat\": float, \"lng\": float}. 
         If address is invalid or not found, return {\"lat\": null, \"lng\": null}.";
 
@@ -229,7 +229,7 @@ class AIService
             }
         }
 
-        // Broad Search Fallback: If specific address fails, try just the Kabupaten/City
+        // Broad Search Fallback: Try Kabupaten/City
         $searchTerms = ['Kabupaten', 'Kota', 'Kecamatan'];
         foreach ($searchTerms as $term) {
             if (str_contains($address, $term)) {
@@ -249,11 +249,13 @@ class AIService
             }
         }
 
-        // Final Fallback: OpenStreetMap Nominatim with 'Indonesia' suffix
+        // Final Fallback: OpenStreetMap Nominatim with cleaned query
         Log::warning("AIService Geocode: Gemini failed, attempting Nominatim fallback for: $address");
         try {
-            $query = $address;
-            if (!str_contains(strtolower($address), 'indonesia')) {
+            // Clean common terms that sometimes confuse Nominatim for villages
+            $cleanAddress = str_replace(['Desa ', 'Kelurahan '], '', $address);
+            $query = $cleanAddress;
+            if (!str_contains(strtolower($cleanAddress), 'indonesia')) {
                 $query .= ', Indonesia';
             }
             
