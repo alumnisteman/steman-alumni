@@ -83,6 +83,10 @@
 
         {{-- STORY BAR --}}
         <div class="d-flex gap-3 overflow-x-auto pb-3 mb-4 no-scrollbar" style="scroll-snap-type: x mandatory;">
+            @php
+                $activeStories = \App\Models\Story::active()->with('user')->get()->groupBy('user_id');
+            @endphp
+
             {{-- ADD STORY (Instagram Style) --}}
             @php
                 $myStories = $activeStories->get(auth()->id());

@@ -61,7 +61,7 @@ class AlumniController extends Controller
 
     public function index(Request $request)
     {
-        $alumni = $this->alumniRepository->getPaginatedAlumni($request->all(), 12, ['activeStoriesCount'])->withQueryString();
+        $alumni = $this->alumniRepository->getPaginatedAlumni($request->all(), 12, ['stories'])->withQueryString();
         
         // Apply masking for privacy (unless admin)
         if (!auth()->user() || auth()->user()->role !== 'admin') {

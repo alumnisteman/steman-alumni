@@ -23,13 +23,13 @@
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
                     <div class="card-header border-0 bg-transparent py-4 text-center">
                         <div class="position-relative d-inline-block">
-                            <div class="p-1 rounded-circle {{ $user->active_stories_count > 0 ? 'bg-gradient-story' : '' }}">
+                            <div class="p-1 rounded-circle {{ ($user->stories_count ?? 0) > 0 ? 'bg-gradient-story' : '' }}">
                                 <img src="{{ $user->profile_picture_url }}" 
                                      class="rounded-circle border border-4 border-white shadow-sm" 
                                      style="width: 100px; height: 100px; object-fit: cover;" 
                                      alt="{{ $user->name }}">
                             </div>
-                            @if($user->active_stories_count > 0)
+                            @if(($user->stories_count ?? 0) > 0)
                                 <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white" style="font-size: 0.6rem; z-index: 10;">LIVE</div>
                             @endif
                             @if($user->is_mentor)
