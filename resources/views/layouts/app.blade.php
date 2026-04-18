@@ -262,12 +262,20 @@
         }
 
         @media (max-width: 991px) {
-            body { padding-bottom: 85px; }
+            body { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
             .navbar { display: none !important; }
             .mobile-header { display: flex; justify-content: space-between; align-items: center; }
             .top-bar { display: none !important; }
             .header-ad-wrapper { border-bottom: none; }
             
+            /* Maximize space for content */
+            .container { padding-left: 12px; padding-right: 12px; }
+            
+            /* Typography scaling for mobile */
+            h1 { font-size: 1.75rem !important; }
+            h2 { font-size: 1.5rem !important; }
+            h5 { font-size: 1.1rem !important; }
+
             /* Large Buttons for Mobile */
             .btn-lg-mobile {
                 padding: 12px 20px;

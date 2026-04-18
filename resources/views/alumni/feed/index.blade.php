@@ -9,10 +9,17 @@
         border: 1px solid rgba(0,0,0,0.05);
         border-radius: 16px;
         transition: transform 0.2s;
+        word-break: break-word;
     }
     .post-card:hover { transform: translateY(-2px); }
     .post-avatar { width: 48px; height: 48px; object-fit: cover; border-radius: 12px; }
     .post-image { border-radius: 12px; max-height: 500px; object-fit: cover; width: 100%; }
+    
+    @media (max-width: 575px) {
+        .post-card { border-radius: 0; margin-left: -12px; margin-right: -12px; border-left: none; border-right: none; }
+        .post-avatar { width: 40px; height: 40px; }
+        .feed-container { padding: 0; }
+    }
     .interaction-btn {
         padding: 8px 16px;
         border-radius: 50px;
@@ -86,18 +93,18 @@
                         <i class="bi bi-mask fs-4 text-warning"></i>
                         <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.6rem;">HOT</span>
                     </div>
-                    <div class="fw-bold small">Curhat Karir (Anonim)</div>
-                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Bagikan keluh kesah Anda tanpa identitas.</div>
+                    <div class="fw-bold" style="font-size: 0.85rem;">Curhat Karir</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.7rem;">Anonim & Aman</div>
                 </div>
             </div>
             <div class="col-6">
                 <div class="card border-0 shadow-sm rounded-4 p-3 bg-success text-white h-100 cursor-pointer" onclick="openHelpRequest()">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <i class="bi bi-megaphone fs-4"></i>
-                        <span class="badge bg-white text-success rounded-pill" style="font-size: 0.6rem;">URGENT</span>
+                        <span class="badge bg-white text-success rounded-pill" style="font-size: 0.6rem;">PENTING</span>
                     </div>
-                    <div class="fw-bold small">One Tap Help</div>
-                    <div class="text-white-50 mt-1" style="font-size: 0.65rem;">Butuh bantuan? Alumni lain siap membantu.</div>
+                    <div class="fw-bold" style="font-size: 0.85rem;">One Tap Help</div>
+                    <div class="text-white-50 mt-1" style="font-size: 0.7rem;">Minta Bantuan</div>
                 </div>
             </div>
         </div>
