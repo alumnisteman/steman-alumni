@@ -77,7 +77,7 @@
             <h6 class="text-cyan fw-bold text-uppercase tracking-widest mb-3">Inspirasi Alumni</h6>
             <h1 class="display-3 fw-black mb-4">JEJAK <span class="text-cyan">SUKSES</span></h1>
             <p class="text-white-50 lead mx-auto mb-5" style="max-width: 700px;">
-                Eksplorasi perjalanan karir dan kisah inspiratif dari para lulusan {{ setting('school_name', 'SMKN 2 Ternate') }} yang telah mendunia.
+                Eksplorasi perjalanan karir dan kisah inspiratif dari para lulusan {{ setting('school_name', 'SMKN 2 Ternate') }} yang telah berkontribusi di berbagai bidang.
             </p>
             
             <div class="d-flex justify-content-center gap-3 mb-5">
