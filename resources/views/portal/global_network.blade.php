@@ -7,9 +7,10 @@
     #globeViz {
         height: 80vh;
         width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
         border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        background: #000;
+        background: transparent;
         z-index: 1;
         cursor: grab;
     }
@@ -120,15 +121,17 @@
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('globeViz');
         
-        // Initialize 3D Globe
+        // Initialize 3D Globe with explicit dimensions and centered POV
         const world = Globe()(container)
+            .width(container.clientWidth)
+            .height(container.clientHeight)
             .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
             .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
             .showAtmosphere(true)
             .atmosphereColor('#3b82f6')
             .atmosphereAltitude(0.15)
-            .pointOfView({ lat: 0.7856, lng: 127.3719, altitude: 2.5 });
+            .pointOfView({ lat: 0.7856, lng: 127.3719, altitude: 2.8 }); // altitude increased to 2.8 for better framing
 
         // Resize globe when window resizes
         window.addEventListener('resize', () => {
