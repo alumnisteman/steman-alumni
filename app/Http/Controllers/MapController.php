@@ -20,7 +20,20 @@ class MapController extends Controller
      */
     public function data()
     {
-        $alumni = \Illuminate\Support\Facades\Cache::remember('global_network_data', 3600, function () {
+        // Try to geocode users who have city_name but no coordinates
+        $pendingUsers = User::where('role', 'alumni')
+            ->whereNotNull('city_name')
+            ->where(function($q) {
+                $q->whereNull('latitude')->orWhereNull('longitude');
+            })
+            ->take(5) // Limit per request to avoid API throttle
+            ->get();
+
+        foreach ($pendingUsers as $user) {
+            $this->geocodeUser($user);
+        }
+
+        $alumni = \Illuminate\Support\Facades\Cache::remember('global_network_data_v2', 3600, function () {
             return User::where('role', 'alumni')
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
@@ -49,6 +62,33 @@ class MapController extends Controller
             ],
             'alumni' => $alumni
         ]);
+    }
+
+    /**
+     * Internal Geocoding Logic using OpenStreetMap (Nominatim)
+     */
+    private function geocodeUser(User $user)
+    {
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(5)
+                ->withHeaders(['User-Agent' => 'StemanAlumniPortal/1.0'])
+                ->get('https://nominatim.openstreetmap.org/search', [
+                    'q' => $user->city_name,
+                    'format' => 'json',
+                    'limit' => 1
+                ]);
+
+            if ($response->successful() && !empty($response->json())) {
+                $data = $response->json()[0];
+                $user->update([
+                    'latitude' => $data['lat'],
+                    'longitude' => $data['lon']
+                ]);
+                \Illuminate\Support\Facades\Cache::forget('global_network_data_v2');
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Geocoding failed for User {$user->id}: " . $e->getMessage());
+        }
     }
 
     /**
