@@ -119,9 +119,9 @@
                         <div class="position-absolute inset-0 bg-black opacity-10"></div>
                     </div>
                     
-                    <div class="p-4 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10 mb-4 magnetic-el">
-                        <h6 class="fw-bold text-info mb-3 small uppercase tracking-widest"><i class="bi bi-quote me-2"></i>Kutipan Inspirasi</h6>
-                        <p class="text-white-50 fw-medium mb-0" style="font-size: 1.1rem; line-height: 1.6; font-style: italic;">"{{ $successStory->quote }}"</p>
+                    <div class="p-4 rounded-4 bg-dark bg-opacity-50 border border-info border-opacity-20 mb-4 magnetic-el" style="box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.05);">
+                        <h6 class="fw-bold text-info mb-3 small uppercase tracking-widest"><i class="bi bi-quote fs-4 me-2"></i>Kutipan Inspirasi</h6>
+                        <p class="text-info fw-bold mb-0" style="font-size: 1.15rem; line-height: 1.6; font-style: italic; text-shadow: 0 0 10px rgba(6, 182, 212, 0.2);">"{{ $successStory->quote }}"</p>
                     </div>
                     
                     <div class="d-grid gap-2">
