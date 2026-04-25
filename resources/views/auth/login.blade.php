@@ -86,7 +86,7 @@
                         <p class="opacity-50 small">Selamat datang kembali di Portal STEMAN</p>
                     </div>
 
-                    <form action="/login" method="POST">
+                    <form action="{{ route('login') }}" method="POST">
                         @csrf
                         <div style="display:none !important;">
                             <input type="text" name="hp_field" tabindex="-1" autocomplete="off">
@@ -115,7 +115,7 @@
                         <button type="submit" class="btn btn-login w-100 text-uppercase">MASUK KE DASHBOARD</button>
 
                         <p class="text-center mt-5 mb-0 opacity-75 small">
-                            Belum punya akun? <a href="/register" class="text-warning fw-bold text-decoration-none">Daftar sekarang</a>
+                            Belum punya akun? <a href="{{ route('register') }}" class="text-warning fw-bold text-decoration-none">Daftar sekarang</a>
                         </p>
                     </form>
                 </div>

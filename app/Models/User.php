@@ -16,7 +16,7 @@ class User extends Authenticatable
      * SINGLE SOURCE OF TRUTH FOR ROLES
      * Tambahkan role baru hanya di sini. Controller & View otomatis mengikuti.
      */
-    const ROLES = ['admin', 'editor', 'alumni'];
+    const ROLES = ['admin', 'editor', 'staff', 'alumni'];
 
     protected static function booted()
     {
@@ -61,6 +61,11 @@ class User extends Authenticatable
                 \Illuminate\Support\Facades\Log::info('Alumni caches cleared due to user update: ' . $user->name);
             }
         });
+
+        // Meilisearch Syncing Events
+        static::created(fn ($model) => $model->searchable());
+        static::updated(fn ($model) => $model->searchable());
+        static::deleted(fn ($model) => $model->unsearchable());
     }
 
     /**
@@ -79,7 +84,7 @@ class User extends Authenticatable
         'linkedin_url', 'instagram_url', 'twitter_url',
         'latitude', 'longitude',
         'qr_login_token',
-        'city_name', 'is_active', 'show_social',
+        'city_name', 'is_active', 'last_active_at', 'show_social',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -91,6 +96,8 @@ class User extends Authenticatable
             'latitude' => 'double',
             'longitude' => 'double',
             'points' => 'integer',
+            'last_active_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -175,12 +182,16 @@ class User extends Authenticatable
 
     public function canAccessAdminPanel(): bool
     {
-        return in_array($this->role, self::ADMIN_PANEL_ROLES);
+        return in_array($this->role, ['admin', 'editor']);
     }
 
     public function dashboardUrl(): string
     {
-        return $this->canAccessAdminPanel() ? '/admin/dashboard' : '/alumni/dashboard';
+        if ($this->canAccessAdminPanel()) {
+            $host = parse_url(config('app.url'), PHP_URL_HOST);
+            return 'https://admin.' . $host . '/dashboard';
+        }
+        return '/alumni/dashboard';
     }
 
     /**
@@ -259,6 +270,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the list of the user's active login sessions.
+     */
+    public function sessions()
+    {
+        return $this->hasMany(Session::class);
+    }
+
+    /**
      * Social Links relationship
      */
     public function socialLinks()
@@ -319,5 +338,21 @@ class User extends Authenticatable
         $path = preg_replace('#^/?storage/#', '', $this->profile_picture);
         
         return asset('storage/' . $path);
+    }
+
+    /**
+     * Scope for active users only
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true)->where('status', 'approved');
+    }
+
+    /**
+     * Scope for online users (last 30 minutes)
+     */
+    public function scopeOnline($query)
+    {
+        return $query->active()->where('last_active_at', '>=', now()->subMinutes(30));
     }
 }

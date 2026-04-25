@@ -72,24 +72,19 @@
         position: relative;
         transform-style: preserve-3d;
         -webkit-transform-style: preserve-3d;
-        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        -webkit-transition: -webkit-transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* Remove CSS transition for transform so JS tilt is smooth */
+        transition: transform 0.1s ease-out;
         cursor: pointer;
         z-index: 10;
-    }
-
-    /* Hover on desktop */
-    @media (hover: hover) {
-        .card-3d:hover {
-            transform: rotateY(180deg) scale(1.05);
-            -webkit-transform: rotateY(180deg) scale(1.05);
-        }
+        /* Will-change for performance */
+        will-change: transform;
     }
 
     /* Click/tap toggle class for mobile and desktop */
     .card-3d.is-flipped {
-        transform: rotateY(180deg) scale(1.05);
-        -webkit-transform: rotateY(180deg) scale(1.05);
+        /* Flipped state logic handled partly by JS now, but we set a base */
+        transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
     }
 
     .card-side {
@@ -300,17 +295,89 @@
         margin-top: 5px;
     }
 
-    .shine-effect {
+    /* Holographic Glare Overlay */
+    .holo-glare {
         position: absolute;
-        top: 0; left: -100%;
-        width: 50%; height: 100%;
-        background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-        transform: skewX(-25deg);
-        transition: 0.5s;
+        inset: 0;
+        border-radius: 20px;
+        background: linear-gradient(
+            125deg, 
+            rgba(255,255,255,0) 10%, 
+            rgba(255,255,255,0.4) 30%, 
+            rgba(6, 182, 212, 0.6) 40%, 
+            rgba(139, 92, 246, 0.6) 50%, 
+            rgba(255,255,255,0.4) 60%, 
+            rgba(255,255,255,0) 80%
+        );
+        background-size: 200% 200%;
+        background-position: 50% 50%;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 50;
+        mix-blend-mode: color-dodge;
     }
-    .card-3d:hover .shine-effect {
-        left: 200%;
-        transition: 0.8s;
+
+    .card-3d:hover .holo-glare {
+        opacity: 1;
+    }
+
+    /* Subtle Border Glow on Hover */
+    .card-3d::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 22px;
+        background: linear-gradient(45deg, #06b6d4, #8b5cf6, #ec4899, #06b6d4);
+        z-index: -1;
+        opacity: 0;
+        filter: blur(10px);
+        transition: opacity 0.3s;
+    }
+    .card-3d:hover::before {
+        opacity: 0.7;
+    }
+
+    /* Gamification Badges */
+    .badges-container {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        z-index: 10;
+        position: relative;
+    }
+
+    .cyber-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1), 0 0 10px var(--badge-color, #3b82f6);
+        color: var(--badge-color, #3b82f6);
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease;
+    }
+
+    .cyber-badge:hover {
+        transform: scale(1.2) translateZ(20px);
+        z-index: 20;
+    }
+
+    .cyber-badge::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: var(--badge-color, #3b82f6);
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(4px);
     }
 
     /* ── PRINT / DOWNLOAD STYLES ── */
@@ -421,7 +488,7 @@
     }
 </style>
 
-<div class="id-card-outer role-{{ auth()->user()->role }}">
+<div class="id-card-outer role-{{ auth()->user()?->role ?? 'alumni' }}">
     <!-- Blobs in their own overflow:hidden wrapper -->
     <div class="blob-wrapper">
         <div class="blob"></div>
@@ -433,7 +500,8 @@
     <div class="card-3d" id="alumniCard">
         <!-- FRONT -->
         <div class="card-side card-front">
-            <div class="shine-effect"></div>
+            <!-- Holographic Glare -->
+            <div class="holo-glare" id="holoGlare"></div>
             
             <div class="card-header">
                 <div class="logo-text">STEMAN ALUMNI</div>
@@ -451,6 +519,16 @@
                 <div class="info-content">
                     <h2 class="text-white">{{ strtoupper($user->name) }}</h2>
                     <p>{{ $user->major }} • CLASS OF {{ $user->graduation_year }}</p>
+                    
+                    @if(isset($user->badges) && $user->badges->count() > 0)
+                    <div class="badges-container">
+                        @foreach($user->badges as $badge)
+                        <div class="cyber-badge" style="--badge-color: {{ $badge->color_theme }};" title="{{ $badge->name }}">
+                            {!! $badge->icon_url ?? '<i class="bi bi-star-fill"></i>' !!}
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -459,8 +537,9 @@
                     <span>Registration ID</span>
                     <b>#{{ str_pad($user->id, 6, '0', STR_PAD_LEFT) }}</b>
                 </div>
-                <div class="status-badge">
-                    <i class="bi bi-patch-check-fill me-1"></i> {{ auth()->user()->role === 'admin' ? 'SYSTEM AUTHORITY' : 'VERIFIED MEMBER' }}
+                <div class="status-badge {{ $user->is_verified ? 'bg-warning bg-opacity-20 text-warning border-warning' : '' }}">
+                    <i class="bi bi-{{ $user->is_verified ? 'gem' : 'patch-check-fill' }} me-1"></i> 
+                    {{ (auth()->user()?->role === 'admin') ? 'SYSTEM AUTHORITY' : ($user->is_verified ? 'VIP VERIFIED MEMBER' : 'ALUMNI MEMBER') }}
                 </div>
             </div>
         </div>
@@ -498,27 +577,108 @@
     </div><!-- end id-card-container -->
 </div><!-- end id-card-outer -->
 
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h3 class="fw-black text-uppercase tracking-wider">💎 STEMAN PRIVILEGE NETWORK</h3>
+        <p class="text-muted">Tunjukkan Digital ID Card Anda di merchant alumni berikut untuk mendapatkan penawaran eksklusif.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        @forelse($discountedBusinesses as $biz)
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-lift">
+                    <div class="position-relative">
+                        <img src="{{ $biz->logo_url ?? 'https://dummyimage.com/600x400/f8f9fa/adb5bd&text=No+Logo' }}" class="card-img-top" style="height: 180px; object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm fw-bold">
+                                <i class="bi bi-tag-fill me-1"></i> PROMO ALUMNI
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-1">{{ $biz->name }}</h5>
+                        <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i> {{ $biz->location }}</p>
+                        
+                        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3 border border-primary border-opacity-10 mb-3 text-center">
+                            <p class="mb-0 fw-bold" style="font-size: 0.9rem;">{{ $biz->discount_details }}</p>
+                        </div>
+                        
+                        <a href="{{ route('alumni.business.show', $biz->id) }}" class="btn btn-outline-dark btn-sm w-100 rounded-pill fw-bold">Lihat Detail Bisnis</a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-12 text-center py-5">
+                <div class="bg-light p-5 rounded-5 d-inline-block">
+                    <i class="bi bi-shop display-4 text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">Belum ada merchant terdaftar di area Anda.</h5>
+                    <p class="small text-muted">Punya bisnis? <a href="{{ route('alumni.business.create') }}" class="fw-bold text-primary">Daftarkan di sini</a> dan berikan diskon!</p>
+                </div>
+            </div>
+        @endforelse
+    </div>
+</div>
+
 <script>
     const card = document.getElementById('alumniCard');
     const hintText = document.getElementById('hintText');
+    const glare = document.getElementById('holoGlare');
+    let isFlipped = false;
+
+    // ── 3D HOLOGRAPHIC TILT EFFECT ──
+    if (window.matchMedia("(any-hover: hover)").matches) {
+        card.addEventListener('mousemove', (e) => {
+            if (isFlipped) return; // Disable tilt when flipped to back
+
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Calculate rotation (max 15 degrees)
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -15;
+            const rotateY = ((x - centerX) / centerX) * 15;
+
+            // Apply transform
+            card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+
+            // Update Holographic Glare Position
+            const glareX = (x / rect.width) * 100;
+            const glareY = (y / rect.height) * 100;
+            glare.style.backgroundPosition = `${glareX}% ${glareY}%`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            if (!isFlipped) {
+                card.style.transform = `perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                card.style.transition = `transform 0.5s ease-out`;
+                setTimeout(() => { card.style.transition = `transform 0.1s ease-out`; }, 500);
+            }
+            hintText.textContent = 'Klik untuk membalik kartu';
+        });
+
+        card.addEventListener('mouseenter', () => {
+            hintText.textContent = 'Klik untuk melihat QR Code';
+        });
+    }
 
     // Toggle flip on click/tap (works on mobile & desktop)
     card.addEventListener('click', function () {
+        isFlipped = !isFlipped;
         this.classList.toggle('is-flipped');
-        if (this.classList.contains('is-flipped')) {
+        
+        if (isFlipped) {
+            // Apply flip transform with transition
+            card.style.transition = `transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)`;
+            card.style.transform = `perspective(1200px) rotateY(180deg) scale3d(1.05, 1.05, 1.05)`;
             hintText.textContent = 'Klik lagi untuk kembali ke depan';
         } else {
-            hintText.textContent = 'Klik atau hover untuk membalik kartu';
-        }
-    });
-
-    // On desktop with hover: also sync hint text
-    card.addEventListener('mouseenter', function () {
-        hintText.textContent = 'Lepas kursor atau klik untuk kembali';
-    });
-    card.addEventListener('mouseleave', function () {
-        if (!this.classList.contains('is-flipped')) {
-            hintText.textContent = 'Klik atau hover untuk membalik kartu';
+            // Revert flip
+            card.style.transition = `transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)`;
+            card.style.transform = `perspective(1200px) rotateY(0deg) scale3d(1, 1, 1)`;
+            hintText.textContent = 'Klik untuk melihat QR Code';
+            setTimeout(() => { card.style.transition = `transform 0.1s ease-out`; }, 800);
         }
     });
 

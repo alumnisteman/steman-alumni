@@ -40,7 +40,7 @@
                                 <tr>
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center gap-3">
-                                            <img src="{{ $biz->logo_url ?? 'https://via.placeholder.com/40' }}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                            <img src="{{ $biz->logo_url ?? 'https://dummyimage.com/40' }}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
                                             <div>
                                                 <div class="fw-bold">{{ $biz->name }}</div>
                                                 <div class="text-muted small">{{ $biz->location }}</div>
@@ -98,7 +98,7 @@
                                 <tr>
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center gap-3">
-                                            <img src="{{ $biz->logo_url ?? 'https://via.placeholder.com/40' }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                                            <img src="{{ $biz->logo_url ?? 'https://dummyimage.com/40' }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
                                             <div class="fw-bold">{{ $biz->name }}</div>
                                         </div>
                                     </td>
@@ -122,3 +122,4 @@
     </div>
 </div>
 @endsection
+

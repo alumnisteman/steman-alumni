@@ -12,7 +12,7 @@
     <!-- Search & Tabs UI -->
     <div class="row mb-4 justify-content-center text-center">
         <div class="col-md-8">
-            <form action="/jobs" method="GET" class="mb-4">
+            <form action="{{ route('jobs.index') }}" method="GET" class="mb-4">
                 <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
                     <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" class="form-control border-0 py-3" placeholder="Nama perusahaan, posisi, atau lokasi..." value="{{ request('search') }}">
@@ -41,7 +41,7 @@
                         <i class="bi bi-robot fs-2 text-primary me-3"></i>
                         <div>
                             <h6 class="fw-bold mb-1">AI Recommendation Active</h6>
-                            <p class="small mb-0 opacity-75">Menampilkan lowongan yang relevan dengan keahlian Anda sebagai alumni <strong>{{ auth()->user()->major }}</strong>.</p>
+                            <p class="small mb-0 opacity-75">Menampilkan lowongan yang relevan dengan keahlian Anda sebagai alumni <strong>{{ auth()->check() ? auth()->user()->major : '-' }}</strong>.</p>
                         </div>
                     </div>
                 </div>

@@ -1,358 +1,373 @@
 @extends('layouts.app')
 @section('content')
-<div class="container py-5">
-    <div class="row g-4">
-        <!-- Sidebar Column -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm text-center p-4 bg-white" style="border-top: 5px solid #ffcc00; border-radius: 15px;">
-                <div class="position-relative d-inline-block mx-auto mb-3">
-                    <img src="{{ $user->profile_picture_url }}" 
-                         class="rounded-circle border border-4 border-light shadow-sm" width="120" height="120" style="object-fit: cover;">
-                </div>
-                <h4 class="fw-bold mb-1">{{ $user->name }}</h4>
-                <p class="text-muted small mb-3">Angkatan {{ $user->graduation_year }} • {{ $user->major }}</p>
-                <hr class="opacity-10">
-                <div class="d-grid gap-2">
-                    <a href="/alumni/profile" class="btn btn-outline-dark rounded-0 fw-bold py-2"><i class="bi bi-person-gear me-2"></i>EDIT PROFIL</a>
-                    <a href="{{ route('alumni.card') }}" class="btn btn-warning rounded-0 fw-bold py-2 shadow-sm"><i class="bi bi-qr-code-scan me-2"></i>KARTU DIGITAL SAYA</a>
-                    <a href="/alumni" class="btn btn-outline-dark rounded-0 fw-bold py-2"><i class="bi bi-person-lines-fill me-2"></i>DIREKTORI REKAN</a>
-                    <a href="/alumni/messages" class="btn btn-outline-dark rounded-0 fw-bold py-2"><i class="bi bi-envelope me-2"></i>PESAN SAYA</a>
-                    <a href="{{ route('alumni.business.index') }}" class="btn btn-primary rounded-0 fw-bold py-2 shadow-sm text-white mt-1"><i class="bi bi-shop me-2"></i>BISNIS ALUMNI</a>
-                </div>
+
+<style>
+    /* Dark Mode Bento Grid Styling */
+    .bento-dashboard {
+        background-color: #050505; /* Deep black */
+        color: #f8fafc;
+        min-height: 100vh;
+        padding: 3rem 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .bento-grid-wrapper {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+    }
+
+    .bento-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bento-card:hover {
+        transform: translateY(-5px) scale(1.01);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 20px rgba(99, 102, 241, 0.15); /* Soft neon glow */
+    }
+
+    .bento-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 40%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        z-index: 0;
+    }
+
+    .bento-card:hover::before {
+        opacity: 1;
+    }
+
+    .bento-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Grid Spans */
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+
+    @media (max-width: 991px) {
+        .span-8, .span-6, .span-4, .span-3 { grid-column: span 12; }
+    }
+
+    /* specific accents */
+    .accent-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .bg-gradient-glass {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+        border: 1px solid rgba(79, 70, 229, 0.3);
+    }
+    
+    .radar-sonar-active {
+        width: 80px;
+        height: 80px;
+        background: rgba(6, 182, 212, 0.2);
+        border-radius: 50%;
+        position: relative;
+        animation: sonar 2s infinite;
+    }
+    .radar-sonar-active::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 15px; height: 15px;
+        background: #06b6d4;
+        border-radius: 50%;
+        box-shadow: 0 0 20px #06b6d4;
+    }
+    @keyframes sonar {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(3); opacity: 0; }
+    }
+    .animate-pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+        0% { opacity: 0.5; }
+        50% { opacity: 1; }
+        100% { opacity: 0.5; }
+    }
+    .skeleton-shimmer {
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+</style>
+
+<div class="bento-dashboard">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-black mb-1 tracking-tighter text-white" style="font-size: 2.5rem;">ALUMNI <span class="accent-gradient">DASHBOARD</span></h2>
+                <p class="text-white-50 mb-0">Selamat datang kembali, mari bangun koneksi masa depan.</p>
             </div>
-            
-            <div class="card border-0 shadow-sm mt-4 p-4 text-white" style="background: #1a1a1a; border-radius: 15px;">
-                <h6 class="fw-bold mb-3" style="color: #ffcc00;"><i class="bi bi-shield-check me-2"></i>STATUS KEANGGOTAAN</h6>
-                @if($user->status === 'pending')
-                <div class="d-flex align-items-center mb-3">
-                    <div class="h5 mb-0 fw-bold text-warning">Menunggu Verifikasi</div>
-                    <i class="bi bi-hourglass-split ms-2 text-warning"></i>
-                </div>
-                <p class="small opacity-75 mb-0">Akses Anda masih dibatasi. Admin sedang mengecek profil Anda.</p>
-                @else
-                <div class="d-flex align-items-center mb-3">
-                    <div class="h5 mb-0 fw-bold">Verified Member</div>
-                    <i class="bi bi-check-circle-fill ms-2" style="color: #ffcc00;"></i>
-                </div>
-                <p class="small opacity-75 mb-0">ID: ILUNI-{{ str_pad($user->id, 5, '0', STR_PAD_LEFT) }}</p>
-                @endif
-            </div>
-
-            <!-- Phase 6: Badges & Gamification -->
-            <div class="card border-0 shadow-sm mt-4 p-4 glass-card" style="border-radius: 15px;">
-                <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-patch-check-fill text-primary me-2"></i>BADGE & PENCAPAIAN</h6>
-                <div class="d-flex flex-wrap gap-2 text-center">
-                    @forelse($userBadges as $badge)
-                        <div class="badge-item p-2 rounded-3" style="width: 80px; background: rgba(67, 97, 238, 0.05); border: 1px solid rgba(67, 97, 238, 0.1);">
-                            <i class="bi {{ $badge->icon }} fs-3 text-primary d-block mb-1"></i>
-                            <span class="small fw-bold text-dark" style="font-size: 0.6rem;">{{ $badge->name }}</span>
-                        </div>
-                    @empty
-                        <p class="small text-muted mb-0 italic text-center w-100">Lengkapi profil untuk dapat badge!</p>
-                    @endforelse
-                </div>
-            </div>
-
-            <!-- Meilisearch Networking Sidebar -->
-            <div class="card border-0 shadow-sm mt-4 p-4" style="border-radius: 15px; background: #f8fafc;">
-                <h6 class="fw-bold mb-3 text-dark d-flex justify-content-between">
-                    <span><i class="bi bi-people-fill text-primary me-2"></i>TEMAN SE-JURUSAN</span>
-                    <i class="bi bi-lightning-charge-fill text-warning small"></i>
-                </h6>
-                <div id="sidebar-networking-list">
-                    <div class="text-center py-3">
-                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                    </div>
-                </div>
-                <hr class="opacity-10 my-3">
-                <a href="/alumni" class="btn btn-link link-primary p-0 small fw-bold text-decoration-none w-100 text-center">CARI REKAN LAIN <i class="bi bi-arrow-right small"></i></a>
-            </div>
-
-            <!-- Alumni Radar (Nearby) -->
-            <div class="card border-0 shadow-sm mt-4 p-4 text-white overflow-hidden position-relative" style="border-radius: 15px; background: #0f172a;">
-                <div class="position-relative z-1">
-                    <h6 class="fw-bold mb-3" style="color: #ffcc00;"><i class="bi bi-radar me-2"></i>ALUMNI RADAR</h6>
-                    
-                    <div id="radar-initial" class="text-center py-4">
-                        <div class="radar-sonar-static mx-auto mb-4">
-                            <i class="bi bi-geo-alt-fill fs-1 text-warning"></i>
-                        </div>
-                        <p class="small opacity-75 mb-4">Temukan rekan alumni yang berada di sekitar lokasi Anda saat ini.</p>
-                        <button onclick="activateRadar()" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill">AKTIFKAN RADAR</button>
-                    </div>
-
-                    <div id="radar-scanning" class="text-center py-4 d-none">
-                        <div class="radar-sonar-active mx-auto mb-4"></div>
-                        <p class="small fw-bold text-warning mb-0 animate-pulse">MENYISIR AREA...</p>
-                    </div>
-
-                    <div id="radar-results" class="d-none">
-                        <div id="radar-list" class="mt-2">
-                            <!-- Results will be injected here -->
-                        </div>
-                        <button onclick="resetRadar()" class="btn btn-link link-light p-0 small opacity-50 text-decoration-none w-100 mt-3">NONAKTIFKAN RADAR</button>
-                    </div>
-                </div>
-
-                <!-- Sonar Background -->
-                <div class="position-absolute top-100 start-50 translate-middle opacity-10 pointer-events-none" style="width: 400px; height: 400px;">
-                    <div class="radar-sonar-active"></div>
+            <div class="d-none d-md-block text-end">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="position-relative d-flex" style="width: 12px; height: 12px;">
+                        <span class="animate-pulse position-absolute inline-flex h-100 w-100 rounded-circle bg-info opacity-75"></span>
+                        <span class="relative inline-flex rounded-circle h-100 w-100 bg-info"></span>
+                    </span>
+                    <span class="small fw-bold text-info">{{ $onlineCount ?? 0 }} alumni aktif</span>
                 </div>
             </div>
         </div>
 
-        <!-- Main Column -->
-        <div class="col-lg-8">
-            @if($user->status === 'pending')
-            <div class="alert alert-warning border-0 shadow-sm mb-4" style="border-radius: 15px; border-left: 5px solid #ffcc00 !important;">
-                <h5 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> Akun Belum Diverifikasi</h5>
-                <p class="mb-0 small">Anda belum bisa menggunakan fitur Forum, Pekerjaan, dan Direktori. Mohon tunggu proses validasi data Anda oleh Administrator.</p>
-            </div>
-            @endif
+        @if($user->status === 'pending')
+        <div class="alert bg-warning bg-opacity-10 border border-warning text-warning rounded-4 shadow-sm mb-4">
+            <h5 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i> Akun Belum Diverifikasi</h5>
+            <p class="mb-0 small opacity-75">Anda belum bisa menggunakan fitur Forum, Pekerjaan, dan Direktori. Mohon tunggu proses validasi data Anda oleh Administrator.</p>
+        </div>
+        @endif
 
-            <h2 class="section-heading mt-0 mb-4">DASHBOARD ALUMNI</h2>
-
-            <!-- NEW: Futuristic Features Section -->
-            <div class="row g-3 mb-5">
-                <div class="col-12">
-                    <div class="p-4 rounded-4 position-relative overflow-hidden shadow-sm" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
-                        <div class="position-relative z-1">
-                            <h5 class="fw-black mb-3 text-uppercase tracking-wider" style="color: #ffcc00; font-size: 0.8rem;">STEMAN NEXT-GEN FEATURES 🛸</h5>
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
-                                        <i class="bi bi-person-badge-fill fs-3 text-warning mb-2 d-block"></i>
-                                        <h6 class="fw-bold mb-1 small">3D Digital ID</h6>
-                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Kartu identitas futuristik dengan teknologi Glassmorphism.</p>
-                                        <a href="{{ route('alumni.card') }}" class="btn btn-warning btn-sm w-100 fw-bold rounded-pill">LIHAT KARTU</a>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
-                                        <i class="bi bi-globe-americas fs-3 text-info mb-2 d-block"></i>
-                                        <h6 class="fw-bold mb-1 small">3D Global Mesh</h6>
-                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Visualisasi jaringan alumni Steman di seluruh dunia secara 3D.</p>
-                                        <a href="{{ route('alumni.network') }}" class="btn btn-info btn-sm w-100 fw-bold rounded-pill text-white">BUKA BOLA DUNIA</a>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
-                                        <i class="bi bi-camera-reels-fill fs-3 text-danger mb-2 d-block"></i>
-                                        <h6 class="fw-bold mb-1 small">Nostalgia Feed</h6>
-                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Bagikan foto lama dan kenangan indah bersama teman seangkatan.</p>
-                                        <a href="{{ route('nostalgia.index') }}" class="btn btn-danger btn-sm w-100 fw-bold rounded-pill">BUKA FEED</a>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10 h-100 transition-all hover-translate-y">
-                                        <i class="bi bi-compass-fill fs-3 text-primary mb-2 d-block"></i>
-                                        <h6 class="fw-bold mb-1 small">Career Navigator</h6>
-                                        <p class="opacity-50 mb-3" style="font-size: 0.65rem;">Prediksi cerdas jalur karir berdasarkan data riil alumni.</p>
-                                        <a href="{{ route('analytics.index') }}" class="btn btn-primary btn-sm w-100 fw-bold rounded-pill">CEK ANALISA</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Abstract decoration -->
-                        <div class="position-absolute end-0 top-0 translate-middle pointer-events-none opacity-10" style="width: 300px; height: 300px; background: radial-gradient(circle, #ffcc00 0%, transparent 70%);"></div>
-                    </div>
-                </div>
-            </div>
+        <div class="bento-grid-wrapper">
             
-            <h4 class="fw-bold mb-4 d-flex align-items-center">
-                <i class="bi bi-star-fill text-warning me-2"></i> QUICK STATS
-            </h4>
-            <div class="row g-3 mb-5">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
-                        <div class="text-muted small text-uppercase fw-bold mb-2">Pekerjaan</div>
-                        <div class="h6 fw-bold mb-0 text-primary">{{ $user->current_job ?? 'Belum Diatur' }}</div>
+            <!-- 1. Profile Highlight (Span 4) -->
+            <div class="bento-card span-4 text-center d-flex flex-column justify-content-center">
+                <div class="position-relative d-inline-block mx-auto mb-3 mt-2">
+                    <img src="{{ $user->profile_picture_url }}" class="rounded-circle border border-2" style="border-color: rgba(255,255,255,0.2); width: 110px; height: 110px; object-fit: cover;">
+                    @if($user->status !== 'pending')
+                    <div class="position-absolute bottom-0 end-0 bg-info rounded-circle border border-2 border-dark" style="width: 24px; height: 24px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-check text-dark" style="font-size: 14px; font-weight: bold;"></i>
                     </div>
+                    @endif
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
-                        <div class="text-muted small text-uppercase fw-bold mb-2">major</div>
-                        <div class="h6 fw-bold mb-0">{{ $user->major }}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-4 h-100" style="background: #fdfdfd; border-radius: 15px;">
-                        <div class="text-muted small text-uppercase fw-bold mb-2">Tahun Lulus</div>
-                        <div class="h6 fw-bold mb-0">{{ $user->graduation_year }}</div>
-                    </div>
+                <h4 class="fw-bold mb-1 text-white">{{ $user->name }}</h4>
+                <p class="text-white-50 small mb-4">Angkatan {{ $user->graduation_year }} • {{ $user->major }}</p>
+                
+                <div class="d-flex gap-2 justify-content-center mt-auto">
+                    <a href="/alumni/profile" class="btn btn-outline-light rounded-pill btn-sm px-4 fw-bold"><i class="bi bi-pencil me-1"></i> Edit Profil</a>
+                    <a href="{{ route('alumni.card') }}" class="btn btn-info rounded-pill btn-sm px-4 fw-bold text-dark"><i class="bi bi-qr-code-scan me-1"></i> 3D Card</a>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-end mb-4">
-                <h4 class="fw-bold mb-0">AI PERSONALIZED PREDICTION</h4>
-            </div>
-
-            <div id="ai-prediction-container" class="card border-0 shadow-sm mb-4 glass-card p-4" style="background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white; border-radius: 20px;">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="icon-glass bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-robot fs-4"></i>
+            <!-- 2. Ecosystem / Quick Links (Span 8) -->
+            <div class="bento-card span-8 bg-gradient-glass d-flex flex-column justify-content-between">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="fw-bold text-info text-uppercase tracking-wider mb-1 small"><i class="bi bi-rocket-takeoff me-2"></i>Steman Next-Gen</h6>
+                        <h3 class="fw-bold text-white mb-0">DIGITAL ECOSYSTEM</h3>
                     </div>
-                    <div class="flex-grow-1">
-                        <div id="ai-prediction-content">
-                            <div class="skeleton-shimmer mb-2" style="height: 20px; width: 80%;"></div>
-                            <div class="skeleton-shimmer" style="height: 20px; width: 60%;"></div>
-                        </div>
-                        <div id="career-snippet-content" class="mt-3 d-none">
-                            <div class="p-2 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                <small class="fw-bold d-block mb-1">DATA INSIGHT:</small>
-                                <small class="opacity-75" id="career-snippet-text"></small>
-                            </div>
-                        </div>
-                        <div id="profile-suggestion-content" class="mt-2 d-none">
-                            <div class="p-2 rounded-3 bg-warning bg-opacity-20 border border-warning border-opacity-20">
-                                <small class="fw-bold d-block mb-1 text-warning"><i class="bi bi-lightbulb-fill me-1"></i> OPTIMALKAN PROFIL:</small>
-                                <small class="text-white" id="profile-suggestion-text"></small>
-                            </div>
-                        </div>
-                    </div>
+                    <i class="bi bi-grid-3x3-gap-fill text-white-50 fs-3"></i>
                 </div>
-            </div>
-
-            <!-- AI Networking Recommendations -->
-            <div id="ai-recommendations-wrapper" class="d-none">
-                <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
-                    <h4 class="fw-bold mb-0">AI NETWORKING MATCHES</h4>
-                    <a href="/alumni" class="text-primary small fw-bold text-decoration-none">LIHAT SEMUA <i class="bi bi-chevron-right small"></i></a>
-                </div>
-
-                <div id="ai-recommendations-container" class="row g-3 mb-5">
-                    <!-- Recommendations will be injected here -->
-                </div>
-            </div>
-            
-            <div id="ai-recommendations-skeleton" class="row g-3 mb-5">
-                <div class="col-md-4"><div class="skeleton-shimmer rounded-4" style="height: 180px;"></div></div>
-                <div class="col-md-4"><div class="skeleton-shimmer rounded-4" style="height: 180px;"></div></div>
-                <div class="col-md-4"><div class="skeleton-shimmer rounded-4" style="height: 180px;"></div></div>
-            </div>
-
-            <h4 class="fw-bold mb-4">INFORMASI KOMUNITAS</h4>
-
-            @if($recommendedJobs->isNotEmpty())
-            <div class="card border-0 shadow-sm mb-5 overflow-hidden" style="border-radius: 15px;">
-                <div class="card-header bg-primary text-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0 text-uppercase tracking-wider"><i class="bi bi-stars me-2"></i> Lowongan Sesuai major {{ $user->major }}</h6>
-                    <a href="/jobs?tab=recommended" class="text-white small fw-bold text-decoration-none">LIHAT SEMUA <i class="bi bi-chevron-right small"></i></a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        @foreach($recommendedJobs as $job)
-                        <a href="{{ $job->external_link ?? route('jobs.show', $job->slug) }}" target="{{ $job->external_link ? '_blank' : '_self' }}" class="list-group-item list-group-item-action border-0 p-3 d-flex align-items-center transition-all">
-                            <div class="me-3 bg-primary-subtle rounded-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                <i class="bi bi-briefcase text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="fw-bold mb-0 text-dark">{{ $job->title }}</h6>
-                                <p class="text-muted small mb-0">{{ $job->company }} · {{ $job->location }}</p>
-                            </div>
-                            <div class="text-end me-3">
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold" style="font-size: 0.7rem;">{{ $job->match_percentage }}% Match</span>
-                            </div>
-                            <i class="bi bi-chevron-right text-muted opacity-50"></i>
+                
+                <div class="row g-3 mt-2">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('alumni.card') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
+                            <i class="bi bi-person-badge fs-2 text-warning mb-2 d-block"></i>
+                            <h6 class="fw-bold mb-0 small">3D Card</h6>
                         </a>
-                        @endforeach
                     </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('alumni.network') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
+                            <i class="bi bi-globe-americas fs-2 text-info mb-2 d-block"></i>
+                            <h6 class="fw-bold mb-0 small">Mesh Map</h6>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('nostalgia.index') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
+                            <i class="bi bi-camera-reels fs-2 text-danger mb-2 d-block"></i>
+                            <h6 class="fw-bold mb-0 small">Nostalgia</h6>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{{ route('analytics.index') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
+                            <i class="bi bi-compass fs-2 text-primary mb-2 d-block"></i>
+                            <h6 class="fw-bold mb-0 small">Navigator</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. AI Insights (Span 6) -->
+            <div class="bento-card span-6 d-flex flex-column">
+                <h6 class="fw-bold text-white mb-3"><i class="bi bi-magic text-info me-2"></i> AI CAREER INSIGHTS</h6>
+                <div id="ai-prediction-content" class="flex-grow-1">
+                    <div class="skeleton-shimmer mb-2" style="height: 15px; width: 90%;"></div>
+                    <div class="skeleton-shimmer mb-2" style="height: 15px; width: 70%;"></div>
+                    <div class="skeleton-shimmer" style="height: 15px; width: 85%;"></div>
+                </div>
+                <div class="row g-2 mt-3">
+                    <div id="career-snippet-content" class="col-12 d-none">
+                        <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10">
+                            <small class="text-white-50" id="career-snippet-text"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Quick Stats (Span 6) -->
+            <div class="bento-card span-6">
+                <h6 class="fw-bold text-white mb-3"><i class="bi bi-bar-chart-fill text-warning me-2"></i> QUICK STATS</h6>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-black bg-opacity-25 border border-white border-opacity-10">
+                        <span class="text-white-50 small fw-bold text-uppercase">Pekerjaan</span>
+                        <span class="fw-bold text-white">{{ $user->current_job ?? 'Belum Diatur' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-black bg-opacity-25 border border-white border-opacity-10">
+                        <span class="text-white-50 small fw-bold text-uppercase">Jurusan</span>
+                        <span class="fw-bold text-white">{{ $user->major }}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-black bg-opacity-25 border border-white border-opacity-10">
+                        <span class="text-white-50 small fw-bold text-uppercase">Tahun Lulus</span>
+                        <span class="fw-bold text-white">{{ $user->graduation_year }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Alumni Radar (Span 4) -->
+            <div class="bento-card span-4 position-relative overflow-hidden">
+                <h6 class="fw-bold text-white mb-3"><i class="bi bi-radar text-success me-2"></i> ALUMNI RADAR</h6>
+                
+                <div id="radar-initial" class="text-center py-4 h-100 d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-geo-alt fs-1 text-white-50 mb-2"></i>
+                    <p class="small text-white-50 mb-4">Temukan rekan di sekitar Anda.</p>
+                    <button onclick="activateRadar()" class="btn btn-outline-success rounded-pill px-4 fw-bold w-100">Aktifkan Radar</button>
+                </div>
+                
+                <div id="radar-scanning" class="text-center py-4 d-none h-100 d-flex flex-column justify-content-center align-items-center">
+                    <div class="radar-sonar-active mx-auto mb-3"></div>
+                    <p class="small fw-bold text-info mb-0 animate-pulse tracking-widest">SCANNING...</p>
+                </div>
+                
+                <div id="radar-results" class="d-none h-100 d-flex flex-column">
+                    <div id="radar-list" class="flex-grow-1 overflow-auto pe-2" style="max-height: 200px;"></div>
+                    <button onclick="resetRadar()" class="btn btn-link text-white-50 p-0 small text-decoration-none w-100 mt-2"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+                </div>
+            </div>
+
+            <!-- 6. AI Networking Matches (Span 8) -->
+            <div class="bento-card span-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-white mb-0"><i class="bi bi-people-fill text-primary me-2"></i> AI NETWORKING MATCHES</h6>
+                    <a href="/alumni" class="text-info small fw-bold text-decoration-none">Lihat Semua <i class="bi bi-chevron-right"></i></a>
+                </div>
+
+                <div id="ai-recommendations-wrapper" class="d-none">
+                    <div id="ai-recommendations-container" class="row g-3">
+                        <!-- Recommendations injected here -->
+                    </div>
+                </div>
+                
+                <div id="ai-recommendations-skeleton" class="row g-3">
+                    <div class="col-md-4"><div class="skeleton-shimmer" style="height: 160px;"></div></div>
+                    <div class="col-md-4"><div class="skeleton-shimmer" style="height: 160px;"></div></div>
+                    <div class="col-md-4"><div class="skeleton-shimmer" style="height: 160px;"></div></div>
+                </div>
+            </div>
+
+            <!-- 7. Job Recommendations (Span 6) -->
+            @if($recommendedJobs->isNotEmpty())
+            <div class="bento-card span-6">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-white mb-0"><i class="bi bi-briefcase-fill text-warning me-2"></i> REKOMENDASI KARIR</h6>
+                    <a href="/jobs?tab=recommended" class="text-warning small fw-bold text-decoration-none">Lihat Semua</a>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    @foreach($recommendedJobs->take(3) as $job)
+                    <a href="{{ $job->external_link ?? route('jobs.show', $job->slug) }}" target="{{ $job->external_link ? '_blank' : '_self' }}" class="text-decoration-none p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-10 d-flex align-items-center transition-all hover-translate-y">
+                        <div class="me-3 bg-warning bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-briefcase text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold text-white mb-0" style="font-size: 0.9rem;">{{ $job->title }}</h6>
+                            <p class="text-white-50 small mb-0">{{ $job->company }}</p>
+                        </div>
+                        <span class="badge bg-success bg-opacity-25 text-success rounded-pill">{{ $job->match_percentage }}% Match</span>
+                    </a>
+                    @endforeach
                 </div>
             </div>
             @endif
 
-            <!-- Global Alumni Distribution Map -->
-            <div class="mb-4">
+            <!-- 8. Latest News (Span 6) -->
+            <div class="bento-card span-6">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-white mb-0"><i class="bi bi-newspaper text-danger me-2"></i> BERITA TERKINI</h6>
+                    <a href="/news" class="text-danger small fw-bold text-decoration-none">Semua Berita</a>
+                </div>
+                <div class="row g-3">
+                    @foreach($latestNews->take(2) as $item)
+                    <div class="col-6">
+                        <a href="/news/{{ $item->slug }}" class="d-block text-decoration-none">
+                            <div class="rounded-3 overflow-hidden mb-2" style="height: 100px; background: #222;">
+                                @if($item->thumbnail)
+                                    <img src="{{ $item->thumbnail }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ $item->title }}">
+                                @else
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center"><i class="bi bi-image text-white-50"></i></div>
+                                @endif
+                            </div>
+                            <h6 class="text-white fw-bold small mb-1 lh-sm" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ $item->title }}</h6>
+                            <span class="text-white-50" style="font-size: 0.7rem;">{{ $item->created_at->format('d/m/Y') }}</span>
+                        </a>
+                    </div>
+                    @endforeach
+                    @if($latestNews->isEmpty())
+                        <div class="col-12 text-center py-3"><p class="text-white-50 small mb-0">Belum ada berita.</p></div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 9. Map Wrapper (Span 12) -->
+            <div class="bento-card span-12 p-0 overflow-hidden" style="min-height: 350px;">
+                <div class="position-absolute top-0 start-0 p-3 z-1">
+                    <h6 class="fw-bold text-white shadow-sm px-3 py-2 rounded-pill bg-black bg-opacity-50 backdrop-blur"><i class="bi bi-globe-americas text-info me-2"></i> GLOBAL DISTRIBUTION</h6>
+                </div>
                 <x-alumni-map 
                     id="user-dashboard-map" 
                     :locations="$alumniLocations" 
                     :nationalCount="$nationalCount" 
                     :internationalCount="$internationalCount" 
-                    height="350px"
+                    height="100%"
                 />
             </div>
 
-            <div class="row g-4">
-                @foreach($latestNews as $item)
-                <div class="col-md-6">
-                    <div class="news-card card h-100" style="border: 1px solid #eee;">
-                        @if($item->thumbnail)
-                            <img src="{{ $item->thumbnail }}" class="card-img-top" alt="{{ $item->title }}" loading="lazy">
-                        @else
-                            <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 150px;">
-                                <i class="bi bi-image"></i>
-                            </div>
-                        @endif
-                        <div class="card-body p-3">
-                            <div class="date-tag mb-1" style="font-size: 0.7rem;">{{ $item->created_at->format('d/m/Y') }}</div>
-                            <h6 class="fw-bold mb-1">{{ \Illuminate\Support\Str::limit($item->title, 40) }}</h6>
-                            <a href="/news/{{ $item->slug }}" class="btn btn-link link-dark fw-bold p-0 small text-decoration-none">BACA <i class="bi bi-chevron-right small"></i></a>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-                @if($latestNews->isEmpty())
-                <div class="col-12 text-center py-4 bg-light rounded-3">
-                    <p class="text-muted mb-0">Belum ada berita komunitas terbaru.</p>
-                </div>
-                @endif
-            </div>
-
-            <!-- Phase 5: Career Path Timeline -->
-            <div class="card border-0 shadow-sm glass-card p-4 mb-5" style="border-radius: 15px;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold mb-0"><i class="bi bi-calendar-range text-primary me-2"></i>Timeline Karir & Pendidikan</h5>
-                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size: 0.7rem;">Update History</button>
-                </div>
-                <div class="timeline ps-3" style="border-left: 2px solid rgba(67, 97, 238, 0.2);">
-                    <div class="timeline-item position-relative mb-4">
-                        <div class="position-absolute bg-primary rounded-circle" style="width: 12px; height: 12px; left: -27px; top: 6px; border: 3px solid #fff;"></div>
-                        <h6 class="fw-bold mb-1">Sekarang</h6>
-                        <p class="small text-muted mb-0">
-                            {{ $user->current_job ?? 'Belum ada data pekerjaan' }}
-                            @if($user->company_university) at {{ $user->company_university }} @endif
-                        </p>
-                    </div>
-                    <div class="timeline-item position-relative">
-                        <div class="position-absolute bg-secondary bg-opacity-50 rounded-circle" style="width: 12px; height: 12px; left: -27px; top: 6px; border: 3px solid #fff;"></div>
-                        <h6 class="fw-bold mb-1">Tahun Lulus ({{ $user->graduation_year }})</h6>
-                        <p class="small text-muted mb-0">Lulus dari SMKN 2 Ternate - major {{ $user->major }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-5 p-5 text-center bg-light" style="border-radius: 20px; border: 2px dashed #ddd;">
-                <i class="bi bi-calendar-check display-4 text-muted mb-3 d-block"></i>
-                <h5 class="fw-bold">BELUM ADA AGENDA REUNI</h5>
-                <p class="text-muted mb-0">Halaman ini akan diperbarui segera setelah agenda kegiatan alumni dipublikasikan oleh Pengurus.</p>
-            </div>
         </div>
     </div>
 </div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Force dark mode logic for dashboard if required, or ensure body has dark theme visually
+    document.documentElement.classList.add('dark');
+
     fetch('{{ route('dashboard.ai.data') }}')
         .then(response => response.json())
         .then(data => {
             // 1. Update Prediction
             const predictionContent = document.getElementById('ai-prediction-content');
             if (data.aiPrediction) {
-                predictionContent.innerHTML = `<p class="small opacity-75 mb-0">${data.aiPrediction}</p>`;
+                predictionContent.innerHTML = `<p class="small text-white-50 mb-0 lh-lg">${data.aiPrediction}</p>`;
             } else {
-                predictionContent.innerHTML = `<p class="small opacity-75 mb-0">Berdasarkan data profil, Anda memiliki potensi besar di bidang {{ $user->major }}. Rekomendasi: Ambil sertifikasi keahlian tambahan.</p>`;
+                predictionContent.innerHTML = `<p class="small text-white-50 mb-0 lh-lg">Berdasarkan data profil, Anda memiliki potensi besar di bidang {{ $user->major }}. Terus tingkatkan keahlian Anda.</p>`;
             }
 
             // 2. Update Career Snippet
             if (data.careerSnippet) {
                 document.getElementById('career-snippet-content').classList.remove('d-none');
-                document.getElementById('career-snippet-text').innerHTML = `Mayoritas alumni {{ $user->major }} kini sukses sebagai <b>${data.careerSnippet.pekerjaan}</b>`;
-            }
-
-            // 2b. Update Profile Suggestion
-            if (data.profileSuggestion) {
-                document.getElementById('profile-suggestion-content').classList.remove('d-none');
-                document.getElementById('profile-suggestion-text').innerText = data.profileSuggestion;
+                document.getElementById('career-snippet-text').innerHTML = `Insight: Mayoritas alumni {{ $user->major }} kini fokus pada <b>${data.careerSnippet.pekerjaan}</b>`;
             }
 
             // 3. Update Recommendations
@@ -365,20 +380,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.aiRecommendations.forEach(rec => {
                     html += `
                     <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm p-3 position-relative overflow-hidden transition-all hover-translate-y" style="border-radius: 20px; background: white;">
+                        <div class="p-3 h-100 rounded-4 border border-white border-opacity-10 bg-black bg-opacity-25 transition-all hover-translate-y d-flex flex-column">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="${rec.profile_picture}" class="rounded-circle me-3" width="50" height="50" style="object-fit: cover;">
+                                <img src="${rec.profile_picture}" class="rounded-circle me-3 border border-secondary" width="45" height="45" style="object-fit: cover;">
                                 <div>
-                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${rec.name}</h6>
-                                    <p class="text-muted mb-0" style="font-size: 0.7rem;">${rec.major}</p>
+                                    <h6 class="fw-bold mb-0 text-white" style="font-size: 0.85rem;">${rec.name}</h6>
+                                    <p class="text-white-50 mb-0" style="font-size: 0.7rem;">${rec.major}</p>
                                 </div>
                             </div>
-                            <div class="p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-10 mb-3">
-                                <p class="mb-0 text-dark" style="font-size: 0.75rem; line-height: 1.4;">
-                                    <i class="bi bi-magic text-primary me-1"></i> ${rec.ai_reason}
+                            <div class="mb-3 flex-grow-1">
+                                <p class="mb-0 text-white-50" style="font-size: 0.75rem; line-height: 1.4;">
+                                    <i class="bi bi-stars text-info me-1"></i> ${rec.ai_reason}
                                 </p>
                             </div>
-                            <a href="/alumni/${rec.id}" class="btn btn-outline-primary btn-sm rounded-pill fw-bold w-100 mt-auto">LIHAT PROFIL</a>
+                            <a href="/alumni/${rec.id}" class="btn btn-outline-info btn-sm rounded-pill fw-bold w-100 mt-auto" style="font-size:0.75rem;">LIHAT PROFIL</a>
                         </div>
                     </div>`;
                 });
@@ -392,30 +407,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('AI Dashboard Loading Error:', error);
             document.getElementById('ai-recommendations-skeleton').classList.add('d-none');
-        });
-
-    // 4. Sidebar Networking (Meilisearch)
-    fetch('{{ route("alumni.networking.recommendations") }}')
-        .then(response => response.json())
-        .then(data => {
-            const list = document.getElementById('sidebar-networking-list');
-            if (data.success && data.recommendations.length > 0) {
-                let html = '';
-                data.recommendations.forEach(rec => {
-                    html += `
-                        <div class="d-flex align-items-center mb-3 transition-all hover-translate-y">
-                            <img src="${rec.profile_picture}" class="rounded-circle me-3 border" width="40" height="40" style="object-fit: cover;">
-                            <div class="flex-grow-1 overflow-hidden">
-                                <h6 class="fw-bold mb-0 text-dark text-truncate" style="font-size: 0.8rem;">${rec.name}</h6>
-                                <p class="text-muted mb-0 text-truncate" style="font-size: 0.65rem;">${rec.current_job} • ${rec.graduation_year}</p>
-                            </div>
-                            <a href="/alumni/${rec.id}" class="btn btn-sm btn-light border-0 rounded-circle text-primary ms-2"><i class="bi bi-chevron-right"></i></a>
-                        </div>`;
-                });
-                list.innerHTML = html;
-            } else {
-                list.innerHTML = '<p class="small text-muted text-center mb-0">Belum ada rekan disarankan.</p>';
-            }
         });
 });
 
@@ -443,20 +434,20 @@ function activateRadar() {
                         let html = '';
                         data.recommendations.forEach(rec => {
                             html += `
-                            <div class="d-flex align-items-center mb-3 p-2 bg-white bg-opacity-10 rounded-3 transition-all hover-translate-y">
-                                <img src="${rec.profile_picture}" class="rounded-circle me-3 border border-warning" width="35" height="35" style="object-fit: cover;">
+                            <div class="d-flex align-items-center mb-2 p-2 bg-white bg-opacity-10 rounded-3 transition-all">
+                                <img src="${rec.profile_picture}" class="rounded-circle me-2 border border-info" width="30" height="30" style="object-fit: cover;">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h6 class="fw-bold mb-0 text-white text-truncate" style="font-size: 0.75rem;">${rec.name}</h6>
-                                    <p class="mb-0 text-warning text-truncate" style="font-size: 0.6rem;">
-                                        <i class="bi bi-geo-alt-fill me-1"></i>${rec.distance} km • ${rec.graduation_year}
+                                    <p class="mb-0 text-info text-truncate" style="font-size: 0.6rem;">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>${rec.distance} km
                                     </p>
                                 </div>
-                                <a href="/alumni/${rec.id}" class="btn btn-sm btn-warning rounded-pill px-2 py-0" style="font-size: 0.6rem;">LIHAT</a>
+                                <a href="/alumni/${rec.id}" class="btn btn-sm btn-info rounded-pill px-2 py-0 fw-bold text-dark" style="font-size: 0.6rem;">LIHAT</a>
                             </div>`;
                         });
                         list.innerHTML = html;
                     } else {
-                        list.innerHTML = '<p class="small opacity-75 text-center py-2">Tidak ada alumni ditemukan di sekitar Anda.</p>';
+                        list.innerHTML = '<p class="small text-white-50 text-center py-2">Tidak ada alumni ditemukan di sekitar.</p>';
                     }
                 })
                 .catch(err => {
@@ -481,48 +472,4 @@ function resetRadar() {
 }
 </script>
 @endpush
-
-<style>
-.radar-sonar-active {
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 204, 0, 0.2);
-    border-radius: 50%;
-    position: relative;
-    animation: sonar 2s infinite;
-}
-.radar-sonar-active::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    background: #ffcc00;
-    border-radius: 50%;
-    box-shadow: 0 0 20px #ffcc00;
-}
-@keyframes sonar {
-    0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(2.5); opacity: 0; }
-}
-.animate-pulse {
-    animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-}
-.skeleton-shimmer {
-    background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
-</style>
 @endsection

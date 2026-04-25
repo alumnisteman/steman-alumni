@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use Laravel\Scout\Searchable;
+
 class Post extends Model
 {
-    use HasFactory, SoftDeletes, HasContentProtection;
+    use HasFactory, SoftDeletes, HasContentProtection, Searchable;
 
     protected $fillable = [
         'user_id',
@@ -58,5 +60,30 @@ class Post extends Model
     {
         if (!$user) return false;
         return $this->likes()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Get the indexable data array for the model.
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'content' => $this->content,
+            'caption' => $this->content, // Alias for searching
+            'type' => $this->type,
+            'user_id' => (int) $this->user_id,
+            'created_at' => $this->created_at ? $this->created_at->timestamp : null,
+        ];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::created(fn ($model) => $model->searchable());
+        static::updated(fn ($model) => $model->searchable());
+        static::deleted(fn ($model) => $model->unsearchable());
     }
 }

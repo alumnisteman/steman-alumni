@@ -24,6 +24,8 @@ class AuthService
      */
     public function login(array $credentials, bool $remember = false): bool
     {
+        $credentials['is_active'] = true;
+        $credentials['status'] = 'approved';
         return Auth::attempt($credentials, $remember);
     }
 

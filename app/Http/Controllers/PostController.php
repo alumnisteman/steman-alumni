@@ -140,10 +140,11 @@ class PostController extends Controller
             $post->increment('likes_count');
             $status = 'liked';
             
-            // Update scores in precomputed feeds
-            \App\Models\Feed::where('post_id', $post->id)->update([
-                'score' => app(\App\Services\FeedService::class)->calculateScore($post)
-            ]);
+            // Record interest for heuristics
+            app(\App\Services\InterestService::class)->recordInterest(Auth::user(), $post, 2);
+
+            // Trigger feed regeneration
+            \App\Jobs\GenerateFeedJob::dispatch(Auth::id());
 
             // Award points for receiving a like (only if user exists and is not self)
             if ($post->user && $post->user->exists && $post->user->id !== Auth::id()) {
@@ -174,10 +175,11 @@ class PostController extends Controller
 
         $post->increment('comments_count');
 
-        // Update scores in precomputed feeds
-        \App\Models\Feed::where('post_id', $post->id)->update([
-            'score' => app(\App\Services\FeedService::class)->calculateScore($post)
-        ]);
+        // Record interest for heuristics
+        app(\App\Services\InterestService::class)->recordInterest(Auth::user(), $post, 3);
+
+        // Trigger feed regeneration
+        \App\Jobs\GenerateFeedJob::dispatch(Auth::id());
 
         // AI Moderation
         \App\Jobs\ModerateContentWithAI::dispatch($comment);

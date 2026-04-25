@@ -47,4 +47,27 @@ class MentorController extends Controller
             'mentors' => $mentors
         ]);
     }
+
+    public function register(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'mentor_expertise' => 'required|string|max:255',
+            'mentor_bio'       => 'nullable|string',
+        ]);
+
+        $user->is_mentor = true;
+        $user->mentor_expertise = $request->mentor_expertise;
+        $user->mentor_bio = $request->mentor_bio;
+        // Optionally assign a default badge for new mentors
+        $badges = $user->badges ?? [];
+        if (!in_array('Mentor', $badges)) {
+            $badges[] = 'Mentor';
+            $user->badges = $badges;
+        }
+        $user->save();
+
+        return back()->with('success', 'Anda telah terdaftar sebagai Mentor!');
+    }
 }

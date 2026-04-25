@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.admin')
+@section('admin-content')
 <div class="container py-4">
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -21,7 +21,7 @@
 
     <div class="row">
         <div class="col-lg-8">
-            <form action="/admin/settings" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-5" style="border-radius: 20px;">
+            <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-5" style="border-radius: 20px;">
                 @csrf
                 @method('PUT')
 
@@ -52,3 +52,4 @@
     </div>
 </div>
 @endsection
+

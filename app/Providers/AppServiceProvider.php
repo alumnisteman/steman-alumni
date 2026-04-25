@@ -4,10 +4,15 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiting\Limit;
 use App\Models\Major;
+use App\Models\News;
+use App\Models\Gallery;
+use App\Models\User;
+use App\Observers\ActivityObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,6 +45,14 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') === 'production') {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        Paginator::useBootstrapFive();
+
+        // Register Global Observers
+        News::observe(ActivityObserver::class);
+        Gallery::observe(ActivityObserver::class);
+        User::observe(ActivityObserver::class);
+
         RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(300)->by($request->ip());
         });
@@ -62,6 +75,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Cache settings globally
+        /*
         View::composer(['layouts.app', 'welcome'], function ($view) {
             try {
                 $settings = \Illuminate\Support\Facades\Cache::remember('site_settings', 3600, function () {
@@ -73,8 +87,9 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('settings', []);
             }
         });
+        */
 
         // Use dedicated Composer class for ads
-        View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);
+        // View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);
     }
 }

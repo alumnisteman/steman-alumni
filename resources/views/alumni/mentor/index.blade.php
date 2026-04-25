@@ -61,6 +61,51 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Mentor Registration Section -->
+            @if(!auth()->user()->is_mentor)
+            <div class="card border-0 shadow-sm mt-4 rounded-4 bg-primary text-white text-center p-4">
+                <h5 class="fw-bold mb-2">Ingin Berbagi Pengalaman?</h5>
+                <p class="mb-3 opacity-75">Bantu alumni lain mencapai impian mereka dengan menjadi Mentor.</p>
+                <button type="button" class="btn btn-light rounded-pill fw-bold px-4 mx-auto" data-bs-toggle="modal" data-bs-target="#mentorRegisterModal">
+                    Daftar Jadi Mentor
+                </button>
+            </div>
+            @else
+            <div class="card border-0 shadow-sm mt-4 rounded-4 bg-success text-white text-center p-4">
+                <h5 class="fw-bold mb-0"><i class="bi bi-patch-check-fill me-2"></i> Anda terdaftar sebagai Mentor Aktif</h5>
+            </div>
+            @endif
+
+        </div>
+    </div>
+</div>
+
+<!-- Mentor Registration Modal -->
+<div class="modal fade" id="mentorRegisterModal" tabindex="-1" aria-labelledby="mentorRegisterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold" id="mentorRegisterModalLabel">Pendaftaran Mentor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('alumni.mentor.register') }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Keahlian Utama (Expertise)</label>
+                        <input type="text" name="mentor_expertise" class="form-control" placeholder="Contoh: Web Development, Project Management..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pesan Mentor (Bio)</label>
+                        <textarea name="mentor_bio" class="form-control" rows="3" placeholder="Pesan singkat untuk mentee Anda..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Daftar Sekarang</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

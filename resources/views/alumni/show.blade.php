@@ -21,6 +21,15 @@
                         </span>
                     </div>
                     @endif
+                    @if($user->badges && is_array($user->badges) && count($user->badges) > 0)
+                    <div class="mt-2 d-flex flex-wrap justify-content-center gap-2">
+                        @foreach($user->badges as $badge)
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-3 py-1">
+                            <i class="bi bi-award-fill me-1"></i> {{ $badge }}
+                        </span>
+                        @endforeach
+                    </div>
+                    @endif
                 </div>
                 
                 <div class="card-body p-5">
@@ -104,8 +113,13 @@
                         <p class="text-dark" style="white-space: pre-line;">{{ $user->bio ?? 'Belum ada informasi tambahan.' }}</p>
                     </div>
 
-                    <div class="text-center mt-5 pt-4 border-top">
-                        <a href="/alumni" class="btn btn-outline-dark rounded-pill px-5">Kembali ke Daftar Alumni</a>
+                    <div class="text-center mt-5 pt-4 border-top d-flex justify-content-center gap-3">
+                        <a href="/alumni" class="btn btn-outline-dark rounded-pill px-4">Kembali</a>
+                        @if(auth()->id() !== $user->id)
+                        <a href="/chat?user={{ $user->id }}" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                            <i class="bi bi-chat-dots-fill me-2"></i> Kirim Pesan
+                        </a>
+                        @endif
                     </div>
                 </div>
             </div>

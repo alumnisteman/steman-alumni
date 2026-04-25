@@ -18,7 +18,7 @@
             @endif
 
 
-            <form action="/admin/news" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
+            <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
                 @csrf
                 <div class="mb-3">
                     <label class="form-label small fw-bold">Judul Berita</label>
@@ -57,3 +57,4 @@
     </div>
 </div>
 @endsection
+

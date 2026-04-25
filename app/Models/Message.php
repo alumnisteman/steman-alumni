@@ -13,9 +13,21 @@ class Message extends Model
     protected $fillable = [
         'sender_id',
         'receiver_id',
+        'parent_id',
         'target_year',
         'message',
+        'is_read',
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(Message::class, 'parent_id');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(Message::class, 'parent_id');
+    }
 
     public function sender()
     {

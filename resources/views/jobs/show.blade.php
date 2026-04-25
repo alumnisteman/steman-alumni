@@ -64,15 +64,47 @@
                             Anda akan diarahkan ke link pendaftaran di platform eksternal.
                         </p>
                     @else
-                        <button class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm disabled">
-                            APPLY VIA EMAIL
+                        <button class="btn btn-success btn-lg rounded-pill fw-bold py-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#applyModal">
+                            ONE-CLICK APPLY <i class="bi bi-send-fill ms-2"></i>
                         </button>
+                        <p class="small text-muted text-center mt-2 px-3">
+                            Resume Anda akan dikirim secara otomatis berdasarkan Profil Alumni Anda.
+                        </p>
                     @endif
                 </div>
             </div>
 
             <!-- Sidebar Ad Slot -->
             <x-ad-slot position="sidebar" aspectRatio="1/1" />
+        </div>
+    </div>
+</div>
+
+<!-- Apply Modal -->
+<div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title fw-bold" id="applyModalLabel">Kirim Lamaran (One-Click Apply)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('jobs.apply', $job->slug) }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10 rounded-3 mb-4">
+                        <i class="bi bi-info-circle-fill me-2"></i> Profil alumni Anda (termasuk kontak dan jurusan) akan otomatis dikirim sebagai Resume. Pastikan profil Anda sudah lengkap!
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pesan Pengantar (Cover Letter) <span class="text-muted fw-normal">- Opsional</span></label>
+                        <textarea name="cover_letter" class="form-control rounded-3" rows="4" placeholder="Jelaskan secara singkat mengapa Anda cocok untuk posisi ini..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 pb-4 px-4 d-flex justify-content-between">
+                    <a href="{{ route('public.profile') }}" class="btn btn-outline-secondary rounded-pill px-4">Update Profil Dulu</a>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">Kirim Lamaran Sekarang</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

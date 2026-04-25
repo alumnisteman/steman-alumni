@@ -2,16 +2,44 @@
 
 @section('admin-content')
 <div class="container-fluid px-4 py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h2 class="fw-black text-dark mb-1">REGISTRASI PROGRAM MASUK</h2>
-            <p class="text-muted">Kelola pendaftaran alumni untuk berbagai program institusi.</p>
+            <p class="text-muted mb-0">Kelola pendaftaran alumni untuk berbagai program institusi.</p>
         </div>
-        <div>
-             <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill border">
+        <div class="d-flex gap-2">
+             <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill border d-flex align-items-center">
                 <i class="bi bi-people-fill text-primary me-2"></i> {{ $registrations->total() }} Pendaftar
             </span>
         </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <form action="{{ route('admin.registrations.index') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Cari nama, email, atau program..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">Semua Status</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark w-100 rounded-3">Filter</button>
+            </div>
+            @if(request()->anyFilled(['search', 'status']))
+            <div class="col-md-2">
+                <a href="{{ route('admin.registrations.index') }}" class="btn btn-outline-secondary w-100 rounded-3">Reset</a>
+            </div>
+            @endif
+        </form>
     </div>
 
     @if(session('success'))
@@ -99,9 +127,9 @@
                                             
                                             <hr>
 
-                                            <form action="{{ route('admin.registrations.update', $reg->id) }}" method="POST">
+                                            <form action="{{ route('admin.registrations.updateStatus', $reg->id) }}" method="POST">
                                                 @csrf
-                                                @method('PUT')
+                                                @method('PATCH')
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">Update Status</label>
                                                     <select name="status" class="form-select rounded-3">
@@ -119,6 +147,16 @@
                                                     <button type="button" class="btn btn-light py-3 px-4 rounded-pill fw-bold" data-bs-dismiss="modal">BATAL</button>
                                                 </div>
                                             </form>
+                                            
+                                            <div class="col-12 mt-4 text-center">
+                                                <form action="{{ route('admin.registrations.destroy', $reg->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pendaftaran ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-link text-danger text-decoration-none small">
+                                                        <i class="bi bi-trash me-1"></i> Hapus Permanen Data Ini
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -145,3 +183,4 @@
     </div>
 </div>
 @endsection
+

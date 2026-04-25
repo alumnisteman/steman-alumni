@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use App\Jobs\LogActivity;
+use App\Mail\JobApplicationMail;
 
 class JobController extends Controller
 {
@@ -168,5 +170,40 @@ class JobController extends Controller
     {
         $job = JobVacancy::where('slug', $slug)->firstOrFail();
         return view('jobs.show', compact('job'));
+    }
+
+    // Public: Apply (One-Click Apply)
+    public function apply(Request $request, $slug)
+    {
+        $job = JobVacancy::where('slug', $slug)->firstOrFail();
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Silakan login untuk melamar pekerjaan.');
+        }
+
+        $request->validate([
+            'cover_letter' => 'nullable|string|max:1000'
+        ]);
+
+        // Send Email to Admin/HR
+        $adminEmail = setting('contact_email', 'admin@alumni-steman.my.id');
+        
+        try {
+            Mail::to($adminEmail)->send(new JobApplicationMail($user, $job, $request->cover_letter));
+            
+            LogActivity::dispatch(
+                $user->id,
+                'Apply Job',
+                'Applied for job: ' . $job->title . ' at ' . $job->company,
+                $request->ip(),
+                $request->header('User-Agent')
+            );
+            
+            return back()->with('success', 'Lamaran berhasil dikirim! Resume otomatis Anda telah diteruskan ke pihak penyedia lowongan.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Job Apply Error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengirim lamaran. Silakan coba beberapa saat lagi.');
+        }
     }
 }

@@ -33,7 +33,8 @@
                             <th>EMAIL</th>
                             <th>ROLE</th>
                             <th>STATUS</th>
-                            <th>TANGGAL DAFTAR</th>
+                            <th>KEAKTIFAN</th>
+                            <th>TERAKHIR AKTIF</th>
                             <th class="text-end pe-4">AKSI</th>
                         </tr>
                     </thead>
@@ -67,10 +68,33 @@
                                     <span class="badge bg-warning text-dark rounded-pill px-3">PENDING</span>
                                 @endif
                             </td>
-                            <td>{{ $user->created_at->format('d M Y') }}</td>
+                            <td>
+                                <form action="{{ route('admin.users.toggleActive', $user->id) }}" method="POST" class="m-0">
+                                    @csrf @method('PATCH')
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" 
+                                               {{ $user->is_active ? 'checked' : '' }} 
+                                               {{ $user->id == auth()->id() ? 'disabled' : '' }}
+                                               onchange="this.form.submit()">
+                                        <label class="form-check-label small {{ $user->is_active ? 'text-success fw-bold' : 'text-danger' }}">
+                                            {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </label>
+                                    </div>
+                                </form>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    @if($user->last_active_at)
+                                        {{ $user->last_active_at->diffForHumans() }}
+                                    @else
+                                        <span class="text-muted italic">Belum pernah</span>
+                                    @endif
+                                </small>
+                            </td>
                             <td class="text-end pe-4">
                                 @if(!(auth()->user()->role === 'editor' && $user->role === 'admin'))
-                                <button type="button" class="btn btn-sm btn-outline-warning me-1"
+                                <button type="button" class="btn btn-sm btn-outline-warning me-1 position-relative"
+                                    style="z-index: 10;"
                                     data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}">
                                     <i class="bi bi-pencil-fill"></i> Edit
                                 </button>
@@ -181,7 +205,7 @@
             </div>
             <div class="modal-footer border-0 bg-light justify-content-center" style="border-radius: 0 0 15px 15px;">
                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                <form action="/admin/users/{{ $user->id }}" method="POST" class="d-inline">
+                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger px-4 fw-bold">
                         <i class="bi bi-trash-fill me-1"></i>Ya, Hapus Sekarang
@@ -201,7 +225,7 @@
         <h5 class="modal-title fw-bold" id="editUserModalLabel{{ $user->id }}">Edit Profil: {{ $user->name }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form action="/admin/users/{{ $user->id }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="modal-body p-4">
@@ -403,3 +427,4 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 @endsection
+

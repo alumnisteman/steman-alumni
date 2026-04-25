@@ -22,7 +22,7 @@
                     <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
 
-                <form action="/register" method="POST">
+                <form action="{{ route('register') }}" method="POST">
                     @csrf
                     <div style="display:none !important;">
                         <input type="text" name="hp_field" tabindex="-1" autocomplete="off">

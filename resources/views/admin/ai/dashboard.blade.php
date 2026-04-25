@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', '🤖 AI Control Panel')
 
-@section('content')
+@section('admin-content')
 <div class="row mb-5 py-4 px-2" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 20px; color: white;">
     <div class="col-md-8">
         <h1 class="fw-bold mb-2">🤖 AI Control Panel</h1>
@@ -161,3 +161,4 @@
     }
 </style>
 @endsection
+

@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
+@section('admin-content')
 <div class="container py-4">
     <div class="mb-4">
         <a href="{{ route('admin.jobs.index') }}" class="text-decoration-none text-muted small mb-2 d-inline-block">
@@ -71,3 +71,4 @@
     </div>
 </div>
 @endsection
+

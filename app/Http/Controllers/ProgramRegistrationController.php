@@ -61,11 +61,25 @@ class ProgramRegistrationController extends Controller
     /**
      * List all registrations (Admin side)
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $registrations = ProgramRegistration::with(['user', 'program'])
-            ->latest()
-            ->paginate(20);
+        $query = ProgramRegistration::with(['user', 'program']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })->orWhereHas('program', function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $registrations = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.programs.registrations', compact('registrations'));
     }
@@ -84,6 +98,14 @@ class ProgramRegistrationController extends Controller
             'status' => $request->status,
             'admin_notes' => $request->admin_notes,
         ]);
+
+        // Generate Ticket if approved and is an event
+        if ($request->status == 'approved' && $registration->program->is_event && !$registration->ticket_code) {
+            $ticketCode = 'STMN-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . $registration->id;
+            $registration->update([
+                'ticket_code' => $ticketCode
+            ]);
+        }
 
         LogActivity::dispatch(
             Auth::id(),

@@ -3,15 +3,19 @@
 @section('title', 'Global Network - STEMAN Alumni')
 
 @push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
-    #map {
+    #globeViz {
         height: 80vh;
         width: 100%;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        background: #1a1a1a;
+        background: #000;
         z-index: 1;
+        cursor: grab;
+    }
+    
+    #globeViz:active {
+        cursor: grabbing;
     }
 
     .map-container {
@@ -58,24 +62,14 @@
         100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
     }
 
-    /* Alumni Marker Styles */
-    .alumni-marker {
-        background: white;
-        border: 2px solid #3b82f6;
-        border-radius: 50%;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    }
-
-    .leaflet-popup-content-wrapper {
-        background: rgba(15, 23, 42, 0.95) !important;
-        color: white !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .leaflet-popup-tip {
-        background: rgba(15, 23, 42, 0.95) !important;
+    .globe-tooltip {
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        font-family: sans-serif;
+        pointer-events: none;
     }
 </style>
 @endpush
@@ -92,7 +86,7 @@
     </div>
 
     <div class="map-card relative">
-        <div id="map"></div>
+        <div id="globeViz"></div>
         
         <div class="map-overlay-info d-none d-md-block">
             <h3 class="font-bold text-lg mb-2">STEMAN Alumni Mesh</h3>
@@ -108,6 +102,12 @@
                     <div class="text-xs font-semibold text-blue-400 mb-1">TOTAL KONEKSI</div>
                     <div class="text-2xl font-bold" id="connection-count">0</div>
                 </div>
+                
+                <hr class="border-gray-700 my-3">
+                
+                <a href="{{ route('matchmaking.index') }}" class="btn btn-primary w-100 rounded-pill fw-bold" style="background: linear-gradient(45deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);">
+                    <i class="bi bi-fire me-2"></i> Cari Partner (Matchmaking)
+                </a>
             </div>
         </div>
     </div>
@@ -115,89 +115,103 @@
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="//unpkg.com/globe.gl"></script>
 <script>
-    function initMap() {
-        if (typeof L === 'undefined') {
-            setTimeout(initMap, 200); // Retry if not yet loaded
-            return;
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('globeViz');
         
-        // Initialize Map
-        const map = L.map('map', {
-            zoomControl: false,
-            attributionControl: false
-        }).setView([0.7856, 127.3719], 3);
+        // Initialize 3D Globe
+        const world = Globe()(container)
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+            .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+            .showAtmosphere(true)
+            .atmosphereColor('#3b82f6')
+            .atmosphereAltitude(0.15)
+            .pointOfView({ lat: 0.7856, lng: 127.3719, altitude: 2.5 });
 
-        // Add Dark Mode Tiles
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19
-        }).addTo(map);
+        // Resize globe when window resizes
+        window.addEventListener('resize', () => {
+            world.width(container.clientWidth).height(container.clientHeight);
+        });
 
-        // Fetch Data from API - Fixed Route Name
         fetch("{{ route('api.map.data') }}")
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                if(data.success) {
+                if(data.success && data.alumni) {
                     const origin = data.origin;
                     document.getElementById('connection-count').innerText = data.alumni.length;
 
-                    // Add Origin Hub Marker
-                    const hubIcon = L.divIcon({
-                        className: 'hub-icon',
-                        iconSize: [12, 12]
-                    });
-                    L.marker([origin.lat, origin.lng], { icon: hubIcon })
-                        .addTo(map)
-                        .bindPopup(`<b>${origin.name}</b><br>The Central Hub`);
+                    // 1. Prepare Arcs (Lines from Hub to Alumni)
+                    const arcsData = data.alumni.map(alumni => ({
+                        startLat: origin.lat,
+                        startLng: origin.lng,
+                        endLat: alumni.lat,
+                        endLng: alumni.lng,
+                        color: ['rgba(255, 255, 255, 0)', 'rgba(59, 130, 246, 1)']
+                    }));
 
-                    // Add Alumni Markers & Mesh Lines
+                    world
+                        .arcsData(arcsData)
+                        .arcColor('color')
+                        .arcDashLength(0.4)
+                        .arcDashGap(4)
+                        .arcDashInitialGap(() => Math.random() * 5)
+                        .arcDashAnimateTime(1500)
+                        .arcStroke(0.5);
+
+                    // 2. Prepare Labels/Markers
+                    // Add Hub
+                    const labelsData = [{
+                        lat: origin.lat,
+                        lng: origin.lng,
+                        name: origin.name,
+                        city: 'Ternate',
+                        isHub: true,
+                        size: 2,
+                        color: '#fbbf24' // Warning/Gold
+                    }];
+
+                    // Add Alumni
                     data.alumni.forEach(alumni => {
-                        const alumniIcon = L.divIcon({
-                            className: 'alumni-marker',
-                            html: `<img src="${alumni.avatar}" style="width:100%;height:100%;object-fit:cover;">`,
-                            iconSize: [30, 30],
-                            iconAnchor: [15, 15]
+                        labelsData.push({
+                            lat: alumni.lat,
+                            lng: alumni.lng,
+                            name: alumni.name,
+                            city: alumni.city,
+                            major: alumni.major,
+                            year: alumni.year,
+                            isHub: false,
+                            size: 1,
+                            color: '#3b82f6' // Blue
+                        });
+                    });
+
+                    world
+                        .labelsData(labelsData)
+                        .labelLat(d => d.lat)
+                        .labelLng(d => d.lng)
+                        .labelText(d => d.isHub ? 'HUB' : '') // Only show text for Hub, dots for alumni
+                        .labelSize(d => d.size)
+                        .labelDotRadius(d => d.isHub ? 1 : 0.5)
+                        .labelColor(d => d.color)
+                        .labelResolution(2)
+                        .labelLabel(d => {
+                            if(d.isHub) return `<div class="globe-tooltip"><b>${d.name}</b><br>Central Server</div>`;
+                            return `
+                                <div class="globe-tooltip text-center">
+                                    <div class="font-bold text-white mb-1">${d.name}</div>
+                                    <div class="text-xs text-gray-400 mb-1">${d.major} - Lulus ${d.year}</div>
+                                    <div class="text-xs text-blue-400"><i class="bi bi-geo-alt-fill"></i> ${d.city}</div>
+                                </div>
+                            `;
                         });
 
-                        // Marker
-                        L.marker([alumni.lat, alumni.lng], { icon: alumniIcon })
-                            .addTo(map)
-                            .bindPopup(`
-                                <div class="text-center p-2">
-                                    <img src="${alumni.avatar}" class="w-12 h-12 rounded-full mx-auto mb-2 border-2 border-blue-500">
-                                    <div class="font-bold">${alumni.name}</div>
-                                    <div class="text-xs text-gray-400">${alumni.major} - Lulus ${alumni.year}</div>
-                                    <div class="text-xs text-blue-400 mt-1"><i class="fas fa-map-marker-alt"></i> ${alumni.city}</div>
-                                </div>
-                            `);
-
-                        // Create Mesh Line (Curved effect using opacity/weight)
-                        const linePoints = [
-                            [origin.lat, origin.lng],
-                            [alumni.lat, alumni.lng]
-                        ];
-                        
-                        L.polyline(linePoints, {
-                            color: '#3b82f6',
-                            weight: 1.5,
-                            opacity: 0.3,
-                            dashArray: '5, 10',
-                            lineCap: 'round'
-                        }).addTo(map);
-                    });
-
-                    // Refit map bounds if there are alumni
-                    if(data.alumni.length > 0) {
-                        try {
-                            const group = new L.featureGroup(data.alumni.map(a => L.marker([a.lat, a.lng])));
-                            map.fitBounds(group.getBounds().pad(0.5));
-                        } catch(e) {}
-                    }
+                    // Auto-rotate the globe slowly
+                    world.controls().autoRotate = true;
+                    world.controls().autoRotateSpeed = 0.5;
                 }
             });
-    }
-    
-    document.addEventListener('DOMContentLoaded', initMap);
+    });
 </script>
 @endpush

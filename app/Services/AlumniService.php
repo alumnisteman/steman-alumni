@@ -187,17 +187,19 @@ class AlumniService
      */
     public function getWelcomeData()
     {
-        return Cache::remember('welcome_data', 600, function () {
+        // We cache static content but fetch live data separately
+        $staticData = Cache::remember('welcome_data_static', 3600, function () {
             $aiService = new \App\Services\AIPredictionService();
             $mapAnalytics = User::getMapAnalytics();
 
             return [
                 'latestNews' => \App\Models\News::where('status', 'published')->latest()->take(3)->get(),
-                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->latest()->take(4)->get(),
-                'latestVideos' => \App\Models\Gallery::where('type', 'video')->latest()->take(2)->get(),
+                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->where('status', 'published')->latest()->take(4)->get(),
+                'latestVideos' => \App\Models\Gallery::where('type', 'video')->where('status', 'published')->latest()->take(2)->get(),
                 'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
                 'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
                 'successStories' => \App\Models\SuccessStory::where('is_published', true)->orderBy('order')->take(3)->get(),
+                'totalAlumni' => \App\Models\User::where('role', 'alumni')->count(),
                 'mapAnalytics' => $mapAnalytics,
                 'alumniLocations' => $mapAnalytics['alumniLocations'],
                 'nationalCount' => $mapAnalytics['nationalCount'],
@@ -205,5 +207,34 @@ class AlumniService
                 'aiInsights' => $aiService->getGlobalInsights(),
             ];
         });
+
+        // Add Live Data (Not cached or short cache)
+        $liveData = [
+            'onlineCount' => $this->getOnlineAlumniCount(),
+            'onlineAvatars' => $this->getOnlineAlumniAvatars(),
+            'featuredAvatars' => User::active()->inRandomOrder()->take(5)->get()->map(fn($u) => $u->profile_picture_url)->toArray(),
+            'recentActivities' => \App\Models\ActivityLog::with('user')->whereNotNull('user_id')->latest()->take(10)->get(),
+        ];
+
+        return array_merge($staticData, $liveData);
+    }
+
+    public function getOnlineAlumniAvatars()
+    {
+        return Cache::remember('online_avatars', 60, function() {
+            return User::online()
+                ->select('id', 'name', 'profile_picture')
+                ->get()
+                ->map(fn($u) => $u->profile_picture_url)
+                ->toArray();
+        });
+    }
+
+    /**
+     * Get real-time online alumni count
+     */
+    public function getOnlineAlumniCount()
+    {
+        return User::online()->count();
     }
 }

@@ -22,6 +22,13 @@ class ProgramRegistration extends Model
         'motivation',
         'attachment_path',
         'admin_notes',
+        'ticket_code',
+        'checked_in_at',
+        'qr_code_path',
+    ];
+
+    protected $casts = [
+        'checked_in_at' => 'datetime',
     ];
 
     /**

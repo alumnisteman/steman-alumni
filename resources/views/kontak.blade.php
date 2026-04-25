@@ -63,7 +63,7 @@
             </div>
             
             @auth
-                @if(auth()->user()->canAccessAdminPanel())
+                @if(auth()->check() && auth()->user()->canAccessAdminPanel())
                     <div class="mt-4">
                         <button type="button" class="btn btn-primary w-100 py-3 rounded-pill shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#editKontakModal">
                             <i class="bi bi-pencil-square me-2"></i>EDIT KONTAK
@@ -98,7 +98,7 @@
                 <h3 class="fw-black mb-4">Kirim Pesan</h3>
                 <p class="text-muted mb-5">Besar harapan kami untuk mendapatkan kritik dan saran membangun dalam rangka meningkatkan kualitas penyajian informasi. Jangan sungkan untuk menghubungi kami.</p>
                 
-                <form action="/kontak/pesan" method="POST" class="row g-4">
+                <form action="{{ route('kontak.pesan') }}" method="POST" class="row g-4">
                     @csrf
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">NAMA LENGKAP <span class="text-danger">*</span></label>
@@ -128,7 +128,7 @@
 </div>
 
 @auth
-    @if(auth()->user()->canAccessAdminPanel())
+    @if(auth()->check() && auth()->user()->canAccessAdminPanel())
     <!-- Modal Edit Kontak -->
     <div class="modal fade" id="editKontakModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -137,7 +137,7 @@
                     <h5 class="modal-title fw-black">EDIT INFORMASI KONTAK</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="/admin/settings" method="POST">
+                <form action="{{ route('admin.settings.update') }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="modal-body p-4">

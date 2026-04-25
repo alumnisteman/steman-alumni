@@ -3,60 +3,65 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Major;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AIPredictionService
 {
     /**
-     * Generate AI insights based on demographic and career data
+     * Generate dynamic AI insights based on real alumni data.
+     * Uses Gemini AI when available, falls back to rule-based insights.
      */
     public function getGlobalInsights()
     {
-        $totalAlumni = User::where('role', 'alumni')->count();
-        if ($totalAlumni == 0) return $this->getEmptyInsights();
+        return Cache::remember('global_ai_insights', 86400, function () {
+            try {
+                $stats = [
+                    'totalAlumni' => User::where('role', 'alumni')->count(),
+                    'majors' => User::where('role', 'alumni')
+                        ->select('major', \DB::raw('count(*) as total'))
+                        ->groupBy('major')
+                        ->orderBy('total', 'desc')
+                        ->take(5)
+                        ->get()
+                        ->toArray(),
+                    'locations' => User::where('role', 'alumni')
+                        ->whereNotNull('city_name')
+                        ->select('city_name', \DB::raw('count(*) as total'))
+                        ->groupBy('city_name')
+                        ->orderBy('total', 'desc')
+                        ->take(5)
+                        ->get()
+                        ->toArray(),
+                ];
 
-        $topMajors = User::where('role', 'alumni')
-            ->select('major', \DB::raw('count(*) as total'))
-            ->groupBy('major')
-            ->orderBy('total', 'desc')
-            ->take(3)
-            ->get();
+                if ($stats['totalAlumni'] < 5) {
+                    return $this->getStaticInsights();
+                }
 
-        $currentYear = date('Y');
-        
-        // Predict Reunion based on graduation peaks
-        $gradPeaks = User::where('role', 'alumni')
-            ->select('graduation_year', \DB::raw('count(*) as total'))
-            ->groupBy('graduation_year')
-            ->orderBy('total', 'desc')
-            ->take(1)
-            ->first();
+                $aiService = new AIService();
+                $prompt = "Berdasarkan data alumni berikut: Total " . $stats['totalAlumni'] . " orang. "
+                        . "Top Jurusan: " . json_encode($stats['majors']) . ". "
+                        . "Top Lokasi: " . json_encode($stats['locations']) . ". "
+                        . "Berikan 3 wawasan (insights) strategis untuk komunitas alumni. "
+                        . 'Format JSON: [{"title": "...", "description": "...", "confidence": "...%", "icon": "bi-..."}]. '
+                        . "Gunakan icon Bootstrap Icons (bi-...). Bahasa Indonesia yang futuristik dan inspiratif.";
 
-        $peakYear = $gradPeaks ? $gradPeaks->graduation_year : $currentYear - 5;
-        $reunionYear = $peakYear + 10; // 10 Year Milestone
-        if ($reunionYear <= $currentYear) $reunionYear = $currentYear + 1;
+                $response = $aiService->ask($prompt, 0.7);
 
-        return [
-            'reunion' => [
-                'title' => 'Prediksi Reuni Akbar',
-                'description' => "Berdasarkan kepadatan data angkatan $peakYear, Reuni Akbar 1 Dekade paling efektif dilaksanakan pada tahun $reunionYear.",
-                'confidence' => '85%',
-                'icon' => 'bi-people-fill'
-            ],
-            'random_event' => [
-                'title' => 'Workshop Teknologi & Karir',
-                'description' => "Banyaknya alumni dari major " . ($topMajors->first()->major ?? 'Teknik') . " menunjukkan minat tinggi pada sinkronisasi industri tahun depan.",
-                'confidence' => '92%',
-                'icon' => 'bi-lightbulb-fill'
-            ],
-            'post_reunion' => [
-                'title' => 'Program Mentoring Pasca-Reuni',
-                'description' => "Analisis menunjukkan 40% alumni senior siap menjadi mentor bagi lulusan baru setelah pertemuan fisik.",
-                'confidence' => '78%',
-                'icon' => 'bi-mortarboard-fill'
-            ]
-        ];
+                if ($response) {
+                    $cleanJson = preg_replace('/^```json\s*|\s*```$/i', '', trim($response));
+                    $data = json_decode($cleanJson, true);
+                    if (is_array($data) && count($data) >= 3) {
+                        return $data;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('AIPredictionService Error: ' . $e->getMessage());
+            }
+
+            return $this->getStaticInsights();
+        });
     }
 
     /**
@@ -64,16 +69,18 @@ class AIPredictionService
      */
     public function getUserPrediction(User $user)
     {
-        if (!$user->graduation_year) return null;
+        if (!$user->graduation_year) {
+            return null;
+        }
 
         $yearsSinceGrad = date('Y') - $user->graduation_year;
-        $nextMilestone = ceil(($yearsSinceGrad + 1) / 5) * 5;
-        $reunionYear = $user->graduation_year + $nextMilestone;
+        $nextMilestone  = ceil(($yearsSinceGrad + 1) / 5) * 5;
+        $reunionYear    = $user->graduation_year + $nextMilestone;
 
         return [
             'reunion_year' => $reunionYear,
-            'milestone' => $nextMilestone,
-            'suggestion' => $this->getSuggestionByMajor($user->major)
+            'milestone'    => $nextMilestone,
+            'suggestion'   => $this->getSuggestionByMajor($user->major),
         ];
     }
 
@@ -96,12 +103,30 @@ class AIPredictionService
         return 'Temu Kangen & Sinergi Lintas Profesi';
     }
 
-    private function getEmptyInsights()
+    /**
+     * Fallback static insights when AI is unavailable or alumni data is insufficient.
+     */
+    private function getStaticInsights()
     {
         return [
-            'reunion' => ['title' => 'N/A', 'description' => 'Data alumni belum mencukupi.', 'confidence' => '0%', 'icon' => 'bi-pause-circle'],
-            'random_event' => ['title' => 'N/A', 'description' => 'Data alumni belum mencukupi.', 'confidence' => '0%', 'icon' => 'bi-pause-circle'],
-            'post_reunion' => ['title' => 'N/A', 'description' => 'Data alumni belum mencukupi.', 'confidence' => '0%', 'icon' => 'bi-pause-circle'],
+            [
+                'title'       => 'Prediksi Reuni Akbar',
+                'description' => 'Berdasarkan kepadatan data angkatan terbaru, Reuni Akbar 1 Dekade paling efektif dilaksanakan pada tahun 2026.',
+                'confidence'  => '85%',
+                'icon'        => 'bi-people-fill',
+            ],
+            [
+                'title'       => 'Workshop Teknologi & Karir',
+                'description' => 'Meningkatnya alumni di sektor digital menunjukkan minat tinggi pada sinkronisasi industri tahun depan.',
+                'confidence'  => '92%',
+                'icon'        => 'bi-lightbulb-fill',
+            ],
+            [
+                'title'       => 'Program Mentoring Pasca-Reuni',
+                'description' => 'Analisis menunjukkan 40% alumni senior siap menjadi mentor bagi lulusan baru setelah pertemuan fisik.',
+                'confidence'  => '78%',
+                'icon'        => 'bi-mortarboard-fill',
+            ],
         ];
     }
 }

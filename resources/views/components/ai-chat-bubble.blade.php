@@ -1,5 +1,13 @@
 <!-- STEMAN AI Assistant Floating Bubble -->
-<div id="ai-assistant-wrapper" style="position: fixed; bottom: 20px; right: 20px; z-index: 99999;">
+<div id="ai-assistant-wrapper" style="position: fixed; bottom: 85px; right: 20px; z-index: 99999; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
+    
+    <!-- Ghost Tab (Visible when hidden) -->
+    <div id="ai-ghost-tab" class="d-none bg-warning shadow-sm d-flex align-items-center justify-content-center cursor-pointer" 
+         onclick="reviveAIBuddy()"
+         style="position: fixed; right: -5px; bottom: 100px; width: 35px; height: 60px; border-radius: 20px 0 0 20px; border: 2px solid white; cursor: pointer;">
+        <i class="bi bi-robot text-dark fs-5"></i>
+    </div>
+
     <!-- Chat Window (Initial status: Hidden) -->
     <div id="ai-chat-window" class="shadow-lg overflow-hidden d-none animate__animated" style="width: 350px; border-radius: 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); margin-bottom: 20px;">
         <!-- Header -->
@@ -38,28 +46,67 @@
     </div>
 
     <!-- Floating Trigger Button -->
-    <button id="ai-chat-trigger" class="btn btn-warning rounded-circle shadow-lg d-flex align-items-center justify-content-center animate__animated animate__pulse animate__infinite" 
-            onclick="toggleAIChat()" style="width: 60px; height: 60px; border: 4px solid white;">
-        <i class="bi bi-robot fs-3 text-dark"></i>
-    </button>
+    <div id="ai-trigger-group" class="position-relative">
+        <button id="ai-chat-dismiss" class="btn btn-danger btn-sm rounded-circle position-absolute" 
+                onclick="dismissAIBuddy()"
+                style="top: -10px; right: -5px; width: 22px; height: 22px; padding: 0; font-size: 10px; z-index: 10; border: 2px solid white;">
+            <i class="bi bi-x"></i>
+        </button>
+        <button id="ai-chat-trigger" class="btn btn-warning rounded-circle shadow-lg d-flex align-items-center justify-content-center animate__animated animate__pulse animate__infinite" 
+                onclick="toggleAIChat()" style="width: 60px; height: 60px; border: 4px solid white;">
+            <i class="bi bi-robot fs-3 text-dark"></i>
+        </button>
+    </div>
 </div>
 
 <script>
-    function toggleAIChat() {
-        const window = document.getElementById('ai-chat-window');
-        const trigger = document.getElementById('ai-chat-trigger');
+    function dismissAIBuddy() {
+        const wrapper = document.getElementById('ai-assistant-wrapper');
+        const ghost = document.getElementById('ai-ghost-tab');
         
-        if (window.classList.contains('d-none')) {
-            window.classList.remove('d-none');
-            window.classList.add('animate__fadeInUp');
+        wrapper.style.transform = 'translateX(150px)';
+        wrapper.style.opacity = '0';
+        setTimeout(() => {
+            wrapper.classList.add('d-none');
+            ghost.classList.remove('d-none');
+            ghost.classList.add('animate__animated', 'animate__slideInRight');
+        }, 500);
+    }
+
+    function reviveAIBuddy() {
+        const wrapper = document.getElementById('ai-assistant-wrapper');
+        const ghost = document.getElementById('ai-ghost-tab');
+        
+        ghost.classList.add('animate__slideOutRight');
+        setTimeout(() => {
+            ghost.classList.add('d-none');
+            ghost.classList.remove('animate__slideOutRight');
+            wrapper.classList.remove('d-none');
+            setTimeout(() => {
+                wrapper.style.transform = 'translateX(0)';
+                wrapper.style.opacity = '1';
+            }, 10);
+        }, 300);
+    }
+
+    function toggleAIChat() {
+        const win = document.getElementById('ai-chat-window');
+        const trigger = document.getElementById('ai-chat-trigger');
+        const dismissBtn = document.getElementById('ai-chat-dismiss');
+        
+        if (win.classList.contains('d-none')) {
+            win.classList.remove('d-none');
+            win.classList.add('animate__fadeInUp');
             trigger.classList.remove('animate__infinite');
+            dismissBtn.classList.add('d-none');
             document.getElementById('ai-chat-input').focus();
         } else {
-            window.classList.add('animate__fadeOutDown');
+            win.classList.add('animate__fadeOutDown');
             setTimeout(() => {
-                window.classList.remove('animate__fadeOutDown');
-                window.classList.add('d-none');
+                win.classList.remove('animate__fadeOutDown');
+                win.classList.add('d-none');
                 trigger.classList.add('animate__infinite');
+                dismissBtn.classList.remove('d-none');
             }, 300);
         }
     }
@@ -110,7 +157,7 @@
             });
             const data = await resp.json();
             
-            document.getElementById('ai-loading').remove();
+            if(document.getElementById('ai-loading')) document.getElementById('ai-loading').remove();
             
             // Append AI Message
             const aiDiv = document.createElement('div');
@@ -124,7 +171,7 @@
             body.scrollTop = body.scrollHeight;
 
         } catch (e) {
-            document.getElementById('ai-loading').remove();
+            if(document.getElementById('ai-loading')) document.getElementById('ai-loading').remove();
             const errDiv = document.createElement('div');
             errDiv.className = 'text-center small text-danger mb-4 opacity-75';
             errDiv.innerHTML = 'Maaf, koneksi terputus. Coba lagi nanti!';
@@ -137,4 +184,10 @@
     #ai-assistant-wrapper .rounded-4 { border-radius: 18px !important; }
     #ai-chat-body::-webkit-scrollbar { width: 4px; }
     #ai-chat-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+    
+    @media (max-width: 767px) {
+        #ai-assistant-wrapper { bottom: 85px !important; right: 15px !important; }
+        #ai-chat-window { width: calc(100vw - 30px) !important; max-width: 350px; }
+        #ai-ghost-tab { bottom: 100px !important; }
+    }
 </style>

@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    protected $auditService;
+
+    public function __construct(\App\Services\AuditService $auditService)
+    {
+        $this->auditService = $auditService;
+    }
     public function store(Request $request)
     {
         try {
@@ -145,6 +151,12 @@ class UserController extends Controller
             $request->header('User-Agent')
         );
 
+        $this->auditService->log('user_role_updated', [
+            'target_user_id' => $user->id,
+            'new_role' => $user->role,
+            'updated_by' => Auth::user()->name
+        ]);
+
         return back()->with('success', 'Role user berhasil diperbarui.');
     }
 
@@ -189,7 +201,41 @@ class UserController extends Controller
             $request->header('User-Agent')
         );
 
+        $this->auditService->log('user_status_updated', [
+            'target_user_id' => $user->id,
+            'new_status' => $user->status,
+            'updated_by' => Auth::user()->name
+        ]);
+
         return back()->with('success', 'Status user berhasil diperbarui.');
+    }
+
+    public function toggleActive(Request $request, User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Anda tidak bisa menonaktifkan akun Anda sendiri.');
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $action = $user->is_active ? 'Activated' : 'Deactivated';
+
+        LogActivity::dispatch(
+            Auth::id(),
+            'Toggle User Activity',
+            $action . ' user ' . $user->name,
+            $request->ip(),
+            $request->header('User-Agent')
+        );
+
+        $this->auditService->log('user_activity_toggled', [
+            'target_user_id' => $user->id,
+            'is_active' => $user->is_active,
+            'updated_by' => Auth::user()->name
+        ]);
+
+        return back()->with('success', 'Akun ' . $user->name . ' berhasil ' . ($user->is_active ? 'diaktifkan' : 'dinonaktifkan') . '.');
     }
 
     public function verification()

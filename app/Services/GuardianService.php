@@ -64,6 +64,16 @@ class GuardianService
                 Log::info('Guardian: Large log file truncated to save space.');
             }
         }
+
+        // --- SELF-HEALING: PERMISSION HARDENING ---
+        // Ensure critical folders are writable
+        $criticalPaths = [storage_path(), base_path('bootstrap/cache')];
+        foreach ($criticalPaths as $path) {
+            if (File::exists($path) && !is_writable($path)) {
+                @chmod($path, 0775);
+                Log::info("Guardian: Fixed permissions for path: {$path}");
+            }
+        }
     }
 
     /**
@@ -90,11 +100,24 @@ class GuardianService
      */
     private function analyzeLogs()
     {
-        $logPath = storage_path('logs/laravel.log'); // Use main log
-        if (!File::exists($logPath)) return null;
+        // Try to detect the best log file to analyze
+        $possibleLogs = [
+            storage_path('logs/remote-laravel.log'), // Production specific
+            storage_path('logs/laravel.log'),        // Default
+        ];
+        
+        $logPath = null;
+        foreach ($possibleLogs as $path) {
+            if (File::exists($path) && File::size($path) > 0) {
+                $logPath = $path;
+                break;
+            }
+        }
 
-        // Read last 100 lines for analysis
-        $content = shell_exec("tail -n 100 " . escapeshellarg($logPath));
+        if (!$logPath) return null;
+
+        // Read last 100 lines using PHP (Cross-platform)
+        $content = $this->readLastLines($logPath, 100);
         if (empty($content)) return null;
 
         $prompt = "You are the 'Guardian AI' for an Alumni Portal. 
@@ -127,5 +150,40 @@ class GuardianService
         }
 
         return $analysis;
+    }
+    /**
+     * PHP-Native cross-platform tail implementation
+     */
+    private function readLastLines(string $filename, int $lines): string
+    {
+        if (!is_file($filename)) return "";
+        
+        $handle = fopen($filename, "rb");
+        if (!$handle) return "";
+
+        $linecount = 0;
+        $pos = -2; // Skip potential trailing newline
+        $text = [];
+
+        // Seek from end
+        fseek($handle, $pos, SEEK_END);
+        
+        while ($linecount < $lines) {
+            $char = fgetc($handle);
+            if ($char === false) break; // Start of file
+
+            if ($char === "\n") {
+                $linecount++;
+            }
+            
+            $pos--;
+            if (fseek($handle, $pos, SEEK_END) === -1) break;
+        }
+
+        // Read from found position to end
+        $content = fread($handle, abs($pos));
+        fclose($handle);
+        
+        return $content ?: "";
     }
 }

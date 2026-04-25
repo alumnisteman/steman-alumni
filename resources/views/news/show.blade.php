@@ -2,7 +2,7 @@
 @section('meta')
     <meta property="og:title" content="{{ $item->title }}">
     <meta property="og:description" content="{{ Str::limit(strip_tags($item->content), 160) }}">
-    <meta property="og:image" content="{{ $item->thumbnail ? (Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail)) : asset('/assets/images/hero_iluni.png') }}">
+    <meta property="og:image" content="{{ $item->thumbnail ? (Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail)) : asset('/images/hero_iluni.png') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
 @endsection
@@ -73,3 +73,26 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // AI Feed Behavior Tracking
+    let trackStart = Date.now();
+
+    window.addEventListener("beforeunload", () => {
+        let duration = Math.floor((Date.now() - trackStart) / 1000);
+
+        if (duration > 2) { // Only track if they stayed more than 2 seconds
+            let data = new FormData();
+            data.append('type', 'view');
+            data.append('content_id', '{{ $item->id }}');
+            data.append('content_type', 'news');
+            data.append('keyword', '{{ strtolower($item->category) }}');
+            data.append('duration', duration);
+            data.append('_token', '{{ csrf_token() }}');
+
+            navigator.sendBeacon('{{ route("api.track") }}', data);
+        }
+    });
+</script>
+@endpush

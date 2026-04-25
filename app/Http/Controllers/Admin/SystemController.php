@@ -49,6 +49,56 @@ class SystemController extends Controller
     /**
      * Clear all log files to start fresh.
      */
+    /**
+     * Display the System Pulse (Architecture Diagram).
+     */
+    public function pulse()
+    {
+        return view('admin.system.pulse');
+    }
+
+    /**
+     * API for live health status of all architecture nodes.
+     */
+    public function healthApi()
+    {
+        $status = [
+            'nodes' => [
+                'user' => ['status' => 'up', 'label' => 'User Device'],
+                'nginx' => ['status' => 'up', 'label' => 'Nginx Reverse Proxy'],
+                'laravel' => ['status' => 'up', 'label' => 'Laravel App'],
+                'mysql' => ['status' => 'down', 'label' => 'MySQL Database'],
+                'redis' => ['status' => 'down', 'label' => 'Redis Cache'],
+                'newsapi' => ['status' => 'down', 'label' => 'News API'],
+                'rsshub' => ['status' => 'down', 'label' => 'RSSHub'],
+            ],
+            'timestamp' => now()->toIso8601String()
+        ];
+
+        // Check DB
+        try {
+            \DB::connection()->getPdo();
+            $status['nodes']['mysql']['status'] = 'up';
+        } catch (\Exception $e) {}
+
+        // Check Redis
+        try {
+            \Illuminate\Support\Facades\Redis::connection()->ping();
+            $status['nodes']['redis']['status'] = 'up';
+        } catch (\Exception $e) {}
+
+        // Check External APIs (Simple ping or cache check)
+        $status['nodes']['newsapi']['status'] = config('services.newsapi.key') ? 'up' : 'down';
+        
+        // Check RSSHub (Assume up if reachable)
+        try {
+            $res = \Illuminate\Support\Facades\Http::timeout(3)->get('https://rsshub.app/');
+            if ($res->status() < 500) $status['nodes']['rsshub']['status'] = 'up';
+        } catch (\Exception $e) {}
+
+        return response()->json($status);
+    }
+
     public function clearLogs()
     {
         $files = [

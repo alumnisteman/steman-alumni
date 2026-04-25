@@ -23,9 +23,10 @@ class AIService
     public function ask(string $prompt, float $temperature = 0.7, ?string $model = null): ?string
     {
         $models = $model ? [$model] : [
+            'gemini-2.0-flash',
+            'gemini-1.5-flash-latest',
             'gemini-1.5-flash',
             'gemini-1.5-pro',
-            'gemini-2.0-flash-exp',
         ];
 
         foreach ($models as $currentModel) {
@@ -96,11 +97,15 @@ class AIService
             $status = $response->status();
             $body = $response->body();
 
-            // Log full error details for debugging
-            Log::warning("AIService: Gemini API Error ($status) for [$model]", [
-                'url' => "generativelanguage.googleapis.com/{$apiVersion}/models/{$model}",
-                'body' => $body
-            ]);
+            // Differentiate between quota (429) and real errors
+            if ($status === 429) {
+                Log::debug("AIService: Gemini quota exceeded for [$model]. Will fallback to next model.");
+            } else {
+                Log::warning("AIService: Gemini API Error ($status) for [$model]", [
+                    'url' => "generativelanguage.googleapis.com/{$apiVersion}/models/{$model}",
+                    'body' => $body
+                ]);
+            }
 
             return null;
 

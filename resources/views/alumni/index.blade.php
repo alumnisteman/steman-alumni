@@ -7,7 +7,7 @@
             <p class="text-muted">Temukan dan jalin komunikasi dengan jejaring alumni {{ setting('school_name', 'SMKN 2 Ternate') }} di seluruh dunia.</p>
         </div>
         <div class="col-lg-6">
-            <form action="/alumni" method="GET" class="glass-effect p-3 rounded-4 shadow-sm">
+            <form action="{{ route('alumni.index') }}" method="GET" class="glass-effect p-3 rounded-4 shadow-sm">
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
                     <input type="text" name="search" class="form-control border-start-0 ps-0 shadow-none bg-transparent" placeholder="Cari berdasarkan nama, major, atau angkatan..." value="{{ request('search') }}">
@@ -38,7 +38,7 @@
                                 </div>
                             @endif
                         </div>
-                        <h5 class="fw-bold mt-3 mb-1"><a href="/alumni/{{ $user->username ?? $user->id }}" class="text-dark text-decoration-none hover-text-primary">{{ $user->name }}</a></h5>
+                        <h5 class="fw-bold mt-3 mb-1"><a href="{{ route('alumni.show', $user->username ?? $user->id) }}" class="text-dark text-decoration-none hover-text-primary">{{ $user->name }}</a></h5>
                         <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ $user->major ?? 'Umum' }}</div>
                     </div>
                     <div class="card-body pt-0 px-4">
@@ -60,7 +60,7 @@
                     <div class="card-footer border-0 bg-light bg-opacity-50 py-3">
                         <div class="row g-2">
                             <div class="col-6">
-                                <a href="/alumni/{{ $user->username ?? $user->id }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">Lihat Profil</a>
+                                <a href="{{ route('alumni.show', $user->username ?? $user->id) }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">Lihat Profil</a>
                             </div>
                             <div class="col-6">
                                 <a href="mailto:{{ $user->email }}" class="btn btn-primary btn-sm w-100 rounded-pill">Kontak</a>
@@ -74,14 +74,31 @@
                 <div class="glass-effect p-5 rounded-4 d-inline-block">
                     <i class="bi bi-person-x d-block display-4 text-muted mb-3"></i>
                     <h5 class="text-muted">Tidak ada alumni yang sesuai dengan kriteria pencarian.</h5>
-                    <a href="/alumni" class="btn btn-link">Tampilkan Semua</a>
+                    <a href="{{ route('alumni.index') }}" class="btn btn-link">Tampilkan Semua</a>
                 </div>
             </div>
         @endforelse
     </div>
 
-    <div class="mt-5 d-flex justify-content-center">
+    <div class="mt-5 d-flex justify-content-center custom-pagination">
         {{ $alumni->links() }}
     </div>
 </div>
+
+<style>
+    .custom-pagination .pagination {
+        gap: 5px;
+    }
+    .custom-pagination .page-link {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        border-radius: 8px !important;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .custom-pagination .page-item.active .page-link {
+        background-color: var(--bs-primary);
+        color: white;
+    }
+</style>
 @endsection

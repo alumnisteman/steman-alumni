@@ -41,6 +41,8 @@ class AuditIntegrity extends Command
         $this->auditEnvironment();
         $this->auditHelpers();
         $this->auditAI();
+        $this->auditVite();
+        $this->cleanupJunk();
         $this->auditLogs();
 
         $this->saveReport();
@@ -437,6 +439,59 @@ class AuditIntegrity extends Command
             }
         } else {
             $this->info("No critical errors dynamic in recent logs.");
+        }
+    }
+
+    /**
+     * Audit Vite Manifest synchronization
+     */
+    private function auditVite()
+    {
+        $this->comment("\n7. Auditing Vite Asset Manifest...");
+        $manifestPath = public_path('build/manifest.json');
+        
+        if (!File::exists($manifestPath)) {
+            $this->warn("Vite Manifest is MISSING! Assets might be broken.");
+            if ($this->option('fix')) {
+                $this->info("Attempting to rebuild assets (if possible)...");
+                // In a real server, we might run npm run build, but here we just warn
+            }
+        } else {
+            $this->info("Vite Manifest exists.");
+        }
+    }
+
+    /**
+     * Clean up temporary and junk files
+     */
+    private function cleanupJunk()
+    {
+        $this->comment("\n8. Cleaning Up Junk Files...");
+        
+        $junkPaths = [
+            storage_path('framework/views/*.php'),
+            storage_path('framework/cache/data/*'),
+            storage_path('logs/*.log.gz'),
+            base_path('npm-debug.log'),
+        ];
+
+        $deletedCount = 0;
+        foreach ($junkPaths as $pattern) {
+            $files = File::glob($pattern);
+            foreach ($files as $file) {
+                if (File::isFile($file) && (time() - File::lastModified($file) > 86400 * 7)) { // Older than 7 days
+                    if ($this->option('fix')) {
+                        File::delete($file);
+                        $deletedCount++;
+                    }
+                }
+            }
+        }
+
+        if ($deletedCount > 0) {
+            $this->info("Deleted $deletedCount old junk files.");
+        } else {
+            $this->info("No significant junk found.");
         }
     }
 

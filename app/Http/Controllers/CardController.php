@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Models\Business;
 
 class CardController extends Controller
 {
@@ -27,6 +28,12 @@ class CardController extends Controller
             $qrCode = '<div class="text-center p-3 small border rounded bg-light">QR Unavailable</div>';
         }
 
-        return view('alumni.card', compact('user', 'qrCode'));
+        // Fetch businesses that offer alumni discount
+        $discountedBusinesses = Business::where('status', 'approved')
+            ->where('offers_alumni_discount', true)
+            ->latest()
+            ->get();
+
+        return view('alumni.card', compact('user', 'qrCode', 'discountedBusinesses'));
     }
 }

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Cache;
 
 class GalleryController extends Controller
 {
+    use \App\Traits\OptimizesImages;
+
     private function cleanTiktokUrl($url) {
         if (strpos($url, 'vt.tiktok.com') !== false || strpos($url, 'vm.tiktok.com') !== false) {
             $ch = curl_init($url);
@@ -68,20 +70,12 @@ class GalleryController extends Controller
         if ($request->type == 'photo') {
             if (!$request->hasFile('file')) return back()->with('error', 'Foto wajib diunggah.');
             $file = $request->file('file');
-            $fileName = time() . '.webp';
-            $path = 'gallery/' . $fileName;
-
-            if (class_exists(\Intervention\Image\ImageManager::class)) {
-                try {
-                    $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-                    $image = $manager->read($file);
-                    $image->scale(width: 1200); // Gallery photos can be larger for detail
-                    $encoded = $image->toWebp(80);
-                    Storage::disk('public')->put($path, (string) $encoded);
-                } catch (\Exception $e) {
-                    $path = $file->store('gallery', 'public');
-                }
-            } else {
+            
+            try {
+                $path = $this->optimizeAndStoreImage($file, 'gallery', 'public', 80, 1200);
+            } catch (\Exception $e) {
+                // Fallback
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('gallery', $fileName, 'public');
             }
 
@@ -191,20 +185,12 @@ class GalleryController extends Controller
             }
 
             $file = $request->file('file');
-            $fileName = time() . '.webp';
-            $path = 'gallery/' . $fileName;
 
-            if (class_exists(\Intervention\Image\ImageManager::class)) {
-                try {
-                    $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-                    $image = $manager->read($file);
-                    $image->scale(width: 1200);
-                    $encoded = $image->toWebp(80);
-                    Storage::disk('public')->put($path, (string) $encoded);
-                } catch (\Exception $e) {
-                    $path = $file->store('gallery', 'public');
-                }
-            } else {
+            try {
+                $path = $this->optimizeAndStoreImage($file, 'gallery', 'public', 80, 1200);
+            } catch (\Exception $e) {
+                // Fallback
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('gallery', $fileName, 'public');
             }
 

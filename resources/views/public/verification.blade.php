@@ -143,7 +143,7 @@
 
     <div class="cert-container animate-reveal">
         <div class="cert-inner">
-            <img src="{{ asset('assets/img/logo.png') }}" class="school-seal" onerror="this.src='https://ui-avatars.com/api/?name=STEMAN&background=0f172a&color=fff'">
+            <img src="{{ asset('images/logo.jpg') }}" class="school-seal" onerror="this.src='https://ui-avatars.com/api/?name=STEMAN&background=0f172a&color=fff'">
             
             <h1 class="cert-title">Surat Verifikasi Digital</h1>
             <p class="cert-subtitle">Jaringan Alumni SMK Negeri 2 Ternate</p>

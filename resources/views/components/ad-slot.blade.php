@@ -11,8 +11,8 @@
     $ads = getAds($position);
     
     // Fallback images if no ads exist
-    $defaultDesktop = 'https://via.placeholder.com/1280x300?text=Sponsor+Space';
-    $defaultMobile = 'https://via.placeholder.com/600x400?text=Sponsor+Space';
+    $defaultDesktop = 'https://dummyimage.com/1280x300?text=Sponsor+Space';
+    $defaultMobile = 'https://dummyimage.com/600x400?text=Sponsor+Space';
     
     $isMarquee = $running && ($position === 'header' || $position === 'content') && $ads->count() > 0;
     
@@ -46,7 +46,7 @@
                 {{-- Duplicate items for seamless loop in marquee mode --}}
                 @if($isMarquee)
                     @foreach($ads as $ad)
-                        <a href="{{ route('ads.click', $ad->id) }}" target="_blank" class="ad-item ad-link" aria-hidden="true">
+                        <a href="{{ route('ads.click', $ad->id) }}" target="_blank" class="ad-item ad-link" aria-hidden="true" tabindex="-1">
                             <picture>
                                 <source media="(max-width: 767px)" srcset="{{ $ad->image_mobile ?? $ad->image_desktop }}">
                                 <img src="{{ $ad->image_desktop }}" alt="{{ $ad->title }}" class="ad-img" loading="lazy">

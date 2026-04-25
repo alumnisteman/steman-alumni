@@ -12,8 +12,10 @@ use App\Jobs\LogActivity;
 
 class NewsController extends Controller
 {
+    use \App\Traits\OptimizesImages;
+
     // Public Views
-    public function index(Request $request)
+    public function index(Request $request, \App\Services\NewsAggregator $agg, \App\Services\TrendingService $trendService)
     {
         $query = News::where('status', 'published');
         if ($request->filled('search')) {
@@ -21,7 +23,11 @@ class NewsController extends Controller
                   ->orWhere('content', 'like', '%' . $request->search . '%');
         }
         $news = $query->latest()->paginate(9)->withQueryString();
-        return view('news.index', compact('news'));
+        
+        $aggregatedNews = collect($agg->get());
+        $trending = collect($trendService->getTrendingKeywords());
+
+        return view('news.index', compact('news', 'aggregatedNews', 'trending'));
     }
 
     public function show($slug)
@@ -62,19 +68,17 @@ class NewsController extends Controller
         $path = null;
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
-            $imageName = Str::random(40) . '.webp';
             
-            if (class_exists(\Intervention\Image\ImageManager::class)) {
-                $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-                $image = $manager->read($file->getRealPath());
-                $image->scale(width: 1200); // Scale down news photos to 1200px
-                $encoded = $image->toWebp(70); // 70% quality compresses it < 200kb usually
-                Storage::disk('public')->put('news/' . $imageName, (string) $encoded);
-            } else {
-                $imageName = $file->hashName();
-                $file->storeAs('news', $imageName, 'public');
+            try {
+                $path = $this->optimizeAndStoreImage($file, 'news', 'public', 70, 1200);
+            } catch (\Exception $e) {
+                $imageName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('news', $imageName, 'public');
             }
-            $path = '/storage/news/' . $imageName;
+            // Ensure the path starts with /storage/ to match existing DB conventions
+            if (!str_starts_with($path, '/storage/')) {
+                $path = '/storage/' . $path;
+            }
         }
 
         $news = News::create([
@@ -95,7 +99,7 @@ class NewsController extends Controller
         );
         Cache::forget('welcome_data');
 
-        return redirect('/admin/news')->with('success', 'Berita berhasil diterbitkan.');
+        return redirect()->route('admin.news.index')->with('success', 'Berita berhasil diterbitkan.');
     }
 
     public function edit(News $news)
@@ -119,19 +123,15 @@ class NewsController extends Controller
             }
             
             $file = $request->file('thumbnail');
-            $imageName = Str::random(40) . '.webp';
             
-            if (class_exists(\Intervention\Image\ImageManager::class)) {
-                $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-                $image = $manager->read($file->getRealPath());
-                $image->scale(width: 1200); 
-                $encoded = $image->toWebp(70);
-                Storage::disk('public')->put('news/' . $imageName, (string) $encoded);
-            } else {
-                $imageName = $file->hashName();
-                $file->storeAs('news', $imageName, 'public');
+            try {
+                $optimizedPath = $this->optimizeAndStoreImage($file, 'news', 'public', 70, 1200);
+            } catch (\Exception $e) {
+                $imageName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $optimizedPath = $file->storeAs('news', $imageName, 'public');
             }
-            $path = '/storage/news/' . $imageName;
+            
+            $path = str_starts_with($optimizedPath, '/storage/') ? $optimizedPath : '/storage/' . $optimizedPath;
         }
 
         $news->update([
@@ -151,7 +151,7 @@ class NewsController extends Controller
         );
         Cache::forget('welcome_data');
 
-        return redirect('/admin/news')->with('success', 'Berita berhasil diperbarui.');
+        return redirect()->route('admin.news.index')->with('success', 'Berita berhasil diperbarui.');
     }
 
     public function destroy(News $news)
@@ -173,7 +173,7 @@ class NewsController extends Controller
         );
         Cache::forget('welcome_data');
 
-        return back()->with('success', 'Berita berhasil dihapus.');
+        return redirect()->route('admin.news.index')->with('success', 'Berita berhasil dihapus.');
     }
 
     public function togglePublish(News $news)

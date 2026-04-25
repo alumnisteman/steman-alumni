@@ -7,8 +7,8 @@
             <span class="badge bg-primary bg-opacity-10 text-primary ms-2 fw-normal" style="font-size: 0.7rem;">Nasional & Internasional</span>
         </h5>
         <div class="d-flex gap-2">
-            <button id="zoom-indo-{{ $attributes->get('id', 'main') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold border-2">Fokus Indonesia</button>
-            <button id="zoom-world-{{ $attributes->get('id', 'main') }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Dunia</button>
+            <button id="zoom-indo-{{ $attributes->get('id', 'main') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold border-2" aria-label="Fokus peta ke Indonesia">Fokus Indonesia</button>
+            <button id="zoom-world-{{ $attributes->get('id', 'main') }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" aria-label="Fokus peta ke seluruh dunia">Dunia</button>
         </div>
     </div>
     <div class="card-body p-0">
@@ -26,7 +26,8 @@
 </div>
 
 @push('styles')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'" />
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"></noscript>
 <style>
     /* JANGAN override z-index Leaflet internal — biarkan Leaflet yang kelola */
     .custom-div-icon div {
@@ -43,11 +44,22 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function() {
-    function initMap() {
-        const mapId = 'alumni-map-{{ $attributes->get('id', 'main') }}';
-        const el = document.getElementById(mapId);
-        if (!el) return;
+    const mapId = 'alumni-map-{{ $attributes->get('id', 'main') }}';
+    const el = document.getElementById(mapId);
+    if (!el) return;
 
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                initMap();
+                observer.unobserve(el);
+            }
+        });
+    }, { rootMargin: '200px' });
+
+    observer.observe(el);
+
+    function initMap() {
         if (typeof L === 'undefined') {
             console.error('Leaflet not loaded');
             el.innerHTML = '<div class="p-4 text-center text-muted">Peta tidak dapat dimuat. Silakan refresh halaman.</div>';
@@ -63,19 +75,12 @@
             zoomControl: true
         }).setView(initialView, initialZoom);
 
-        // Gunakan CartoDB Light — lebih stabil & cepat di Indonesia
+        // Gunakan CartoDB Light
         const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> &copy; <a href="https://carto.com">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
-
-        // Fallback ke ESRI jika CartoDB gagal
-        tileLayer.on('tileerror', function() {
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '&copy; Esri'
-            }).addTo(map);
-        });
 
         const alumniData = @json($locations ?? []);
 
@@ -90,7 +95,11 @@
                         iconSize: [14, 14],
                         iconAnchor: [7, 7]
                     });
-                    L.marker([alumni.latitude, alumni.longitude], { icon })
+                    L.marker([alumni.latitude, alumni.longitude], { 
+                        icon, 
+                        title: alumni.name,
+                        alt: 'Lokasi Alumni: ' + alumni.name 
+                    })
                         .addTo(map)
                         .bindPopup(`
                             <div style="min-width:150px;padding:4px;">
@@ -103,31 +112,19 @@
             });
         }
 
-        // Force re-render untuk container kompleks
         setTimeout(() => { map.invalidateSize(); }, 300);
-        setTimeout(() => { map.invalidateSize(); }, 1000);
 
         // Zoom controls
         document.getElementById('zoom-indo-{{ $attributes->get('id', 'main') }}').addEventListener('click', () => map.setView([-2.5, 118], 5));
         document.getElementById('zoom-world-{{ $attributes->get('id', 'main') }}').addEventListener('click', () => map.setView([5, 118], 3));
 
         // Dark mode support
-        const baseTilesUrl = {
-            light: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        };
         document.addEventListener('themeChanged', function() {
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const darkUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
             const lightUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
             map.eachLayer(layer => { if (layer.setUrl) layer.setUrl(isDark ? darkUrl : lightUrl); });
         });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMap);
-    } else {
-        initMap();
     }
 })();
 </script>

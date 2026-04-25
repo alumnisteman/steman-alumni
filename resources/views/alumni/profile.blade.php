@@ -12,7 +12,7 @@
                 </div>
             @endif
 
-            <form action="/alumni/profile" method="POST" enctype="multipart/form-data" class="card p-5 shadow-sm border-0">
+            <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="card p-5 shadow-sm border-0">
                 @csrf @method('PUT')
                 
                 <div class="text-center mb-4">

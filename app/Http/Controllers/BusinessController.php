@@ -67,6 +67,8 @@ class BusinessController extends Controller
             'location' => $request->location,
             'logo_url' => $logoUrl,
             'status' => 'pending',
+            'offers_alumni_discount' => $request->has('offers_alumni_discount'),
+            'discount_details' => $request->discount_details,
         ]);
 
         if ($request->hasFile('photos')) {
@@ -119,7 +121,8 @@ class BusinessController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
-        $data = $request->only(['name', 'category', 'description', 'discount_info', 'whatsapp', 'website_url', 'location']);
+        $data = $request->only(['name', 'category', 'description', 'discount_info', 'whatsapp', 'website_url', 'location', 'discount_details']);
+        $data['offers_alumni_discount'] = $request->has('offers_alumni_discount');
 
         if ($request->hasFile('logo')) {
             if ($business->logo_url) {

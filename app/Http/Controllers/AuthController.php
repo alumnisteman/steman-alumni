@@ -24,15 +24,31 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->intended(Auth::user()->dashboardUrl());
         }
+        
         try {
-            $num1 = rand(1, 10);
-            $num2 = rand(1, 10);
-            session(['captcha_answer' => $num1 + $num2]);
-            $captcha_question = "$num1 + $num2";
+            // Prevent regeneration if session already has an answer (fixes Service Worker/Double-fetch issues)
+            if (!session()->has('captcha_answer')) {
+                $num1 = rand(1, 10);
+                $num2 = rand(1, 10);
+                $ans = $num1 + $num2;
+                
+                session(['captcha_answer' => $ans]);
+                session(['captcha_question' => "$num1 + $num2"]);
+                
+                // Immediate verification of session write
+                if (session('captcha_answer') != $ans) {
+                    Log::error('Session write failed in showLogin. Check session driver/permissions.');
+                }
+            }
+
+            $captcha_question = session('captcha_question', '5 + 5');
+            $ans = session('captcha_answer');
+
+
             return view('auth.login', compact('captcha_question'));
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Login view error: ' . $e->getMessage());
-            return view('auth.login', ['captcha_question' => '5 + 5']); // Fallback
+            Log::error('Critical Login View Error: ' . $e->getMessage());
+            return view('auth.login', ['captcha_question' => '5 + 5']); // Hard fallback
         }
     }
     
@@ -55,7 +71,8 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
             'captcha' => ['required', 'numeric', function ($attribute, $value, $fail) {
-                if ($value != session('captcha_answer')) {
+                $sessionValue = session('captcha_answer');
+                if ($value != $sessionValue) {
                     $fail('Jawaban Captcha salah.');
                 }
             }],
@@ -63,6 +80,18 @@ class AuthController extends Controller
         unset($credentials['captcha']);
 
         if ($this->authService->login($credentials)) {
+            $user = Auth::user();
+            $host = $request->getHost();
+            $adminSubdomain = 'admin.' . parse_url(config('app.url'), PHP_URL_HOST);
+
+            // Special Guard: Alumni cannot login via Admin Subdomain
+            if ($host === $adminSubdomain && !in_array($user->role, ['admin', 'editor'])) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->with('error', 'Akun Alumni tidak diperbolehkan masuk melalui Panel Admin. Silakan gunakan portal utama.');
+            }
+
             Log::info('Login success for: ' . $request->email);
             
             LogActivity::dispatch(
@@ -96,10 +125,15 @@ class AuthController extends Controller
         }
         try {
             $majors = Major::orderBy('name')->get(); 
-            $num1 = rand(1, 10);
-            $num2 = rand(1, 10);
-            session(['captcha_answer' => $num1 + $num2]);
-            $captcha_question = "$num1 + $num2";
+            
+            if (!session()->has('captcha_answer')) {
+                $num1 = rand(1, 10);
+                $num2 = rand(1, 10);
+                session(['captcha_answer' => $num1 + $num2]);
+                session(['captcha_question' => "$num1 + $num2"]);
+            }
+
+            $captcha_question = session('captcha_question', '5 + 5');
             return view('auth.register', compact('majors', 'captcha_question')); 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Register view error: ' . $e->getMessage());
@@ -153,6 +187,9 @@ class AuthController extends Controller
                 $request->header('User-Agent')
             );
 
+            // GROWTH HACK: Auto-follow batch mates
+            \App\Jobs\AutoFollowBatchMates::dispatch($user->id);
+
             Auth::login($user);
             return redirect()->intended($user->dashboardUrl());
         } catch (\Exception $e) {
@@ -187,8 +224,12 @@ class AuthController extends Controller
             return redirect('/login')->with('error', 'Token QR tidak valid atau sudah kadaluarsa.');
         }
 
-        if ($user->status === 'pending') {
-            return redirect('/login')->with('error', 'Akun Anda masih dalam proses verifikasi.');
+        if (!$user->is_active) {
+            return redirect('/login')->with('error', 'Akun Anda sedang dinonaktifkan. Silakan hubungi Admin.');
+        }
+        
+        if ($user->status !== 'approved') {
+            return redirect('/login')->with('error', 'Akun Anda belum disetujui atau sedang dalam peninjauan.');
         }
 
         // Perform Login

@@ -51,4 +51,8 @@ return [
         'api_key' => env('GEMINI_API_KEY'),
     ],
 
+    'newsapi' => [
+        'key' => env('NEWS_API_KEY'),
+    ],
+
 ];

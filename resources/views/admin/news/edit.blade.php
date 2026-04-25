@@ -4,7 +4,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="mb-4">
-                <a href="/admin/news" class="text-decoration-none text-muted"><i class="bi bi-arrow-left me-2"></i>Kembali</a>
+                <a href="{{ route('admin.news.index') }}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left me-2"></i>Kembali</a>
                 <h2 class="section-title mt-2">Edit Berita</h2>
             </div>
 
@@ -18,7 +18,7 @@
                 </div>
             @endif
 
-            <form action="/admin/news/{{ $news->id }}" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
+            <form action="{{ route('admin.news.update', $news) }}" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
                 @csrf
                 @method('PUT')
                 <div class="mb-3">
@@ -64,3 +64,4 @@
     </div>
 </div>
 @endsection
+

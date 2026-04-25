@@ -18,12 +18,13 @@ class SettingController extends Controller
                 'general' => 1,
                 'profile' => 2,
                 'hero' => 3,
-                'contact' => 4,
-                'chairman' => 5,
-                'event_chairman' => 6,
-                'secretary' => 7,
-                'program' => 8,
-                'ai' => 9
+                'launch' => 4,
+                'contact' => 5,
+                'chairman' => 6,
+                'event_chairman' => 7,
+                'secretary' => 8,
+                'program' => 9,
+                'ai' => 10
             ];
             return $priority[$key] ?? 100;
         });
@@ -63,22 +64,27 @@ class SettingController extends Controller
                 $path = $request->file($key)->store('uploads/settings', 'public');
                 $value = '/storage/' . $path;
             }
-            // Only update if the key exists in the settings table
-            Setting::where('key', $key)->update(['value' => $value ?? '']);
+            
+            // Use updateOrCreate for better resilience (Self-Healing)
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value ?? '', 'group' => 'general'] // Default group if new
+            );
         }
 
-        // Clear all possible caches so settings reflect immediately (Self-Healing)
+        // Clear all caches so settings reflect immediately
         try { 
             Artisan::call('optimize:clear'); 
             \Illuminate\Support\Facades\Cache::flush();
+            \Illuminate\Support\Facades\Cache::forget('admin_dashboard_stats');
         } catch (\Exception $e) {}
 
-        // Log the activity (non-critical)
+        // Log the activity
         try {
             LogActivity::dispatch(
                 Auth::id(),
                 'Update Settings',
-                'Updated site settings.',
+                'Updated site settings: ' . implode(', ', array_keys($settings)),
                 $request->ip(),
                 $request->header('User-Agent')
             );

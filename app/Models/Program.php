@@ -19,7 +19,16 @@ class Program extends Model
         'content',
         'status',
         'registration_link',
-        'image'
+        'image',
+        'is_event',
+        'event_date',
+        'event_location',
+        'max_slots'
+    ];
+
+    protected $casts = [
+        'is_event' => 'boolean',
+        'event_date' => 'datetime',
     ];
 
     public function getIsActiveAttribute(): bool

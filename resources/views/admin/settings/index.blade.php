@@ -15,7 +15,7 @@
 
     <div class="row">
         <div class="col-lg-8">
-            <form action="/admin/settings" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
+            <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
                 @csrf
                 @method('PUT')
 
@@ -56,6 +56,19 @@
 
                             @if($isLongText)
                                 <textarea name="{{ $item->key }}" class="form-control shadow-sm" rows="4" style="border-radius: 10px;">{{ $item->value }}</textarea>
+                            @elseif($item->key == 'launch_date')
+                                <input type="datetime-local" name="{{ $item->key }}" class="form-control shadow-sm" value="{{ date('Y-m-d\TH:i', strtotime($item->value)) }}" style="border-radius: 10px;">
+                            @elseif($item->key == 'coming_soon_mode')
+                                <div class="form-check form-switch p-3 bg-light rounded-3 shadow-sm border border-light-subtle d-inline-block">
+                                    <input type="hidden" name="{{ $item->key }}" value="off">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="switch-{{ $item->key }}" name="{{ $item->key }}" value="on" {{ $item->value == 'on' ? 'checked' : '' }}>
+                                    <label class="form-check-label fw-bold text-dark" for="switch-{{ $item->key }}">{{ $item->value == 'on' ? 'AKTIF' : 'NON-AKTIF' }}</label>
+                                </div>
+                                <script>
+                                    document.getElementById('switch-{{ $item->key }}').addEventListener('change', function() {
+                                        this.parentElement.querySelector('label').innerText = this.checked ? 'AKTIF' : 'NON-AKTIF';
+                                    });
+                                </script>
                             @elseif($isImage)
                                 <div class="p-3 bg-light border border-light-subtle rounded-3 mb-2">
                                     <div class="d-flex align-items-center gap-3">
@@ -116,3 +129,4 @@
     </div>
 </div>
 @endsection
+

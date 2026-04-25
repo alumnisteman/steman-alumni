@@ -101,7 +101,7 @@
                     <h5 class="fw-bold mb-1">USAHA SEDANG DITINJAU</h5>
                     <p class="mb-0 opacity-75">Ini adalah pratinjau. Profil usaha ini belum tayang untuk publik dan sedang menunggu persetujuan Admin.</p>
                 </div>
-                @if(auth()->user()->role == 'admin')
+                @if(auth()->user()?->role == 'admin')
                     <form action="{{ route('admin.business.approve', $business->id) }}" method="POST" class="ms-auto">
                         @csrf
                         <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">SETUJUI SEKARANG</button>
@@ -199,6 +199,19 @@
                                     <span class="small">+62 {{ $business->whatsapp }}</span>
                                 </div>
                             </div>
+                            
+                            @if($business->offers_alumni_discount)
+                            <div class="card border-0 shadow-sm mt-4 p-4 text-center text-white" style="border-radius: 20px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);">
+                                <div class="mb-2">
+                                    <i class="bi bi-gem display-4" style="text-shadow: 0 4px 10px rgba(0,0,0,0.1);"></i>
+                                </div>
+                                <h5 class="fw-black mb-1" style="text-shadow: 0 2px 5px rgba(0,0,0,0.1);">PRIVILEGE NETWORK</h5>
+                                <p class="small fw-bold mb-3" style="color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">Khusus Pemegang Digital ID Card</p>
+                                <div class="bg-white text-dark p-3 rounded-4 shadow-sm mx-2">
+                                    <p class="mb-0 fw-bold">{{ $business->discount_details }}</p>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                         <div class="col-md-8">
                             <!-- Featured Photos Slider -->
@@ -270,7 +283,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="rounded-4 overflow-hidden shadow-lg">
-                                    <img src="{{ $business->logo_url ?? 'https://via.placeholder.com/600x400' }}" class="w-100">
+                                    <img src="{{ $business->logo_url ?? 'https://dummyimage.com/600x400' }}" class="w-100">
                                 </div>
                             </div>
                         </div>

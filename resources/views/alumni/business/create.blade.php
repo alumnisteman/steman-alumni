@@ -81,6 +81,23 @@
                             @error('description') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
+                        <!-- Alumni Exclusive Discount Section -->
+                        <div class="col-12 mt-4 p-4 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+                            <h6 class="fw-bold text-primary"><i class="bi bi-gem me-2"></i>Privilege Network (Khusus Alumni)</h6>
+                            <p class="small text-muted mb-3">Tingkatkan penjualan Anda dengan memberikan diskon khusus bagi sesama alumni STEMAN yang memiliki Digital ID Card terverifikasi.</p>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="offers_alumni_discount" id="offers_alumni_discount" onchange="toggleDiscountDetails()" {{ old('offers_alumni_discount') ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-dark" for="offers_alumni_discount">Ya, saya ingin memberikan diskon khusus Alumni STEMAN</label>
+                            </div>
+
+                            <div id="discount_details_container" class="{{ old('offers_alumni_discount') ? '' : 'd-none' }}">
+                                <label class="form-label fw-bold text-dark mb-2">Detail Diskon Eksklusif Alumni <span class="text-danger">*</span></label>
+                                <input type="text" name="discount_details" id="discount_details" class="form-control bg-white py-3 px-4 rounded-3 border-primary" placeholder="Contoh: Diskon 15% untuk makan di tempat, atau Potongan Rp 50.000" value="{{ old('discount_details') }}">
+                                <small class="text-muted">Jelaskan benefit yang Anda berikan. Akan muncul di halaman Digital ID Card Alumni.</small>
+                            </div>
+                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-tag-fill me-2 text-danger"></i>Info Diskon (Opsional)</label>
                             <input type="text" name="discount_info" class="form-control bg-light border-0 py-3 px-4 rounded-3" placeholder="Contoh: Diskon 10% Member" value="{{ old('discount_info') }}">
@@ -126,6 +143,21 @@ function previewLogo(input) {
             document.getElementById('logo-preview').style.border = '3px solid #ffcc00';
         }
         reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleDiscountDetails() {
+    var isChecked = document.getElementById('offers_alumni_discount').checked;
+    var container = document.getElementById('discount_details_container');
+    var input = document.getElementById('discount_details');
+    
+    if (isChecked) {
+        container.classList.remove('d-none');
+        input.required = true;
+    } else {
+        container.classList.add('d-none');
+        input.required = false;
+        input.value = '';
     }
 }
 </script>

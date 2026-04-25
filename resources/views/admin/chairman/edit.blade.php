@@ -13,7 +13,7 @@
         </div> 
     @endif
 
-    <form action="/admin/chairman/update" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('admin.chairman.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -231,3 +231,4 @@
     });
 </script>
 @endsection
+

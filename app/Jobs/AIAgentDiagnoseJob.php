@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Services\AutonomousAgent;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+
+class AIAgentDiagnoseJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    protected $errorLog;
+    protected $filePath;
+    protected $lineNumber;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct($errorLog, $filePath, $lineNumber)
+    {
+        $this->errorLog = $errorLog;
+        $this->filePath = $filePath;
+        $this->lineNumber = $lineNumber;
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(AutonomousAgent $agent): void
+    {
+        Log::info("AIAgentDiagnoseJob: Starting diagnosis...");
+        
+        $healed = $agent->diagnoseAndHeal($this->errorLog, $this->filePath, $this->lineNumber);
+
+        if ($healed) {
+            $this->notifyTelegram("🤖 *Steman Autonomous Agent*\n\n✅ Sistem berhasil melakukan self-healing!\n\n*Error Teratasi:* `" . substr($this->errorLog, 0, 150) . "...`\n*Lokasi:* `{$this->filePath}`");
+        } else {
+            // Optional: Notify failure so humans can step in
+            Log::warning("AIAgentDiagnoseJob: AI failed to heal the system automatically for error: " . $this->errorLog);
+            $this->notifyTelegram("🤖 *Steman Autonomous Agent*\n\n⚠️ Gagal melakukan self-healing otomatis.\n\n*Error:* `" . substr($this->errorLog, 0, 150) . "...`\n*Lokasi:* `{$this->filePath}`\n\n*Tindakan:* Mohon bantuan teknis manual.");
+        }
+    }
+
+    private function notifyTelegram($message)
+    {
+        if (config('app.env') === 'production') {
+            $telegramToken = env('TELEGRAM_BOT_TOKEN');
+            $telegramChatId = env('TELEGRAM_CHAT_ID');
+            
+            if ($telegramToken && $telegramChatId) {
+                $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+                @file_get_contents("https://api.telegram.org/bot{$telegramToken}/sendMessage?" . http_build_query([
+                    'chat_id' => $telegramChatId,
+                    'text' => $message,
+                    'parse_mode' => 'Markdown'
+                ]), false, $ctx);
+            }
+        }
+    }
+}

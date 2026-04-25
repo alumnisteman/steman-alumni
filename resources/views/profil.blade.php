@@ -35,7 +35,7 @@
                                         <h2 class="fw-bold mb-0 font-heading">Pesan Untuk Alumni</h2>
                                     </div>
                                     @auth
-                                        @if(auth()->user()->canAccessAdminPanel())
+                                        @if(auth()->check() && auth()->user()->canAccessAdminPanel())
                                             <a href="{{ route('admin.chairman.edit') }}" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm fw-bold border-0">
                                                 <i class="bi bi-pencil-square me-1"></i> EDIT
                                             </a>

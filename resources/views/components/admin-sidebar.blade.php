@@ -1,10 +1,11 @@
 <aside class="admin-sidebar bg-white shadow-sm d-none d-lg-block" style="width: 280px; z-index: 1000; height: 100vh; position: sticky; top: 0; overflow-y: auto;">
     <div class="p-4 border-bottom bg-dark text-white text-center">
+        <img src="{{ asset('images/logo.jpg') }}" height="50" class="mb-3 rounded-pill bg-white p-1" alt="Logo">
         <h5 class="fw-black mb-0 tracking-wider text-uppercase">{{ auth()->user()->role }} PANEL</h5>
         <small class="text-warning opacity-75">STEMAN ALUMNI v4.2-ADS</small>
     </div>
     <div class="p-3 pb-0">
-        <a href="/" class="btn btn-primary w-100 fw-bold shadow-sm rounded-3">
+        <a href="{{ config('app.url') }}" class="btn btn-primary w-100 fw-bold shadow-sm rounded-3">
             <i class="bi bi-globe me-2"></i> Lihat Website
         </a>
     </div>
@@ -47,8 +48,31 @@
                 <span class="badge bg-danger rounded-pill">{{ $pendingRegCount }}</span>
             @endif
         </a>
+        <a href="{{ route('admin.donations.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.donations.*') || request()->routeIs('admin.campaigns.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }} d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-piggy-bank me-3 text-success"></i> Donasi & Dana</span>
+            @php $pendingDonationCount = \App\Models\Donation::where('status', 'pending')->count(); @endphp
+            @if($pendingDonationCount > 0)
+                <span class="badge bg-danger rounded-pill">{{ $pendingDonationCount }}</span>
+            @endif
+        </a>
 
-        <p class="text-muted small fw-bold mb-2 ps-3 opacity-50 mt-4">PENGGUNA</p>
+        <div class="px-3 mt-4 mb-2">
+            <small class="text-uppercase fw-bold text-muted opacity-50" style="font-size: 0.65rem; letter-spacing: 1px;">SYSTEM MANAGEMENT</small>
+        </div>
+        <a href="https://portainer.alumni-steman.my.id" target="_blank" class="nav-link py-3 px-4 d-flex align-items-center text-dark border-start border-4 border-transparent hover-bg-light transition-all">
+            <i class="bi bi-box-seam fs-5 me-3 text-primary"></i>
+            <span class="fw-semibold">Portainer (Docker)</span>
+            <i class="bi bi-box-arrow-up-right ms-auto small opacity-50"></i>
+        </a>
+        <a href="https://meili.alumni-steman.my.id" target="_blank" class="nav-link py-3 px-4 d-flex align-items-center text-dark border-start border-4 border-transparent hover-bg-light transition-all">
+            <i class="bi bi-search fs-5 me-3 text-warning"></i>
+            <span class="fw-semibold">Meilisearch</span>
+            <i class="bi bi-box-arrow-up-right ms-auto small opacity-50"></i>
+        </a>
+
+        <div class="px-3 mt-4 mb-2">
+            <small class="text-uppercase fw-bold text-muted opacity-50" style="font-size: 0.65rem; letter-spacing: 1px;">PENGATURAN</small>
+        </div>
         <a href="{{ route('admin.users.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.users.index') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-people me-3"></i> Database Alumni
         </a>
@@ -78,10 +102,21 @@
         <a href="{{ route('admin.system.logs') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.system.logs') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-terminal me-3 text-dark"></i> Log Sistem
         </a>
+        <a href="{{ route('admin.system.pulse') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.system.pulse') ? 'active bg-info bg-opacity-10 text-info fw-bold' : 'text-dark' }}">
+            <i class="bi bi-activity me-3 text-info"></i> System Pulse
+            <span class="badge bg-info rounded-pill ms-auto" style="font-size:0.6rem">NEW</span>
+        </a>
+        <a href="{{ route('admin.guard.dashboard') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.guard.*') ? 'active bg-primary bg-opacity-10 text-primary fw-bold' : 'text-dark' }}">
+            <i class="bi bi-shield-check me-3 text-primary"></i> System Guard
+            <span class="badge bg-primary rounded-pill ms-auto" style="font-size:0.6rem">LIVE</span>
+        </a>
 
-        <div class="mt-5 pt-5 pb-4 ps-3">
-             <a href="/" class="text-muted small text-decoration-none">
+        <div class="mt-5 pt-3 pb-5 ps-3">
+             <a href="/" class="text-muted small text-decoration-none d-block mb-3">
                 <i class="bi bi-arrow-left me-2"></i> Kembali ke Situs
+             </a>
+             <a href="/logout" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold shadow-sm" onclick="return confirm('Apakah Anda yakin ingin keluar?')">
+                <i class="bi bi-box-arrow-right me-2"></i> Keluar Sesi
              </a>
         </div>
     </div>

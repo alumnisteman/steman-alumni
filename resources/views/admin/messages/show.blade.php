@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
+@section('admin-content')
 <div class="container py-4">
     <div class="mb-4">
         <a href="/admin/messages" class="btn btn-light rounded-pill px-4 mb-3">
@@ -16,7 +16,7 @@
                     Diterima: {{ $message->created_at->format('d M Y, H:i') }} &mdash; {{ $message->created_at->diffForHumans() }}
                 </p>
             </div>
-            <form method="POST" action="/admin/messages/{{ $message->id }}" onsubmit="return confirm('Hapus pesan ini?')">
+            <form method="POST" action="{{ route('admin.messages.destroy', $message->id) }}" onsubmit="return confirm('Hapus pesan ini?')">
                 @csrf @method('DELETE')
                 <button class="btn btn-outline-danger rounded-pill px-4">
                     <i class="bi bi-trash me-2"></i>Hapus
@@ -108,3 +108,4 @@
     </div>
 </div>
 @endsection
+

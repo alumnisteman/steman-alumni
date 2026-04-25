@@ -7,7 +7,7 @@
             <h2 class="section-title mb-1">Editor Banner Utama (Hero)</h2>
             <p class="text-muted">Sesuaikan teks penyambutan dan gambar latar belakang beranda Anda.</p>
         </div>
-        <a href="/admin/dashboard" class="btn btn-outline-secondary rounded-pill px-4">
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
             <i class="bi bi-arrow-left me-2"></i>Kembali
         </a>
     </div>
@@ -22,7 +22,7 @@
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px;">
                 <h5 class="fw-bold mb-4">Form Pengaturan</h5>
-                <form action="/admin/hero" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.hero.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -83,3 +83,4 @@
     }
 </style>
 @endsection
+

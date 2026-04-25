@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('content')
+@section('admin-content')
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -54,7 +54,7 @@
                             <a href="/admin/messages/{{ $msg->id }}" class="btn btn-sm btn-primary rounded-pill px-3 me-1">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <form method="POST" action="/admin/messages/{{ $msg->id }}" class="d-inline" onsubmit="return confirm('Hapus pesan ini?')">
+                            <form method="POST" action="{{ route('admin.messages.destroy', $msg->id) }}" class="d-inline" onsubmit="return confirm('Hapus pesan ini?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
                                     <i class="bi bi-trash"></i>
@@ -80,3 +80,4 @@
     </div>
 </div>
 @endsection
+

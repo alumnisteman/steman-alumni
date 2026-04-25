@@ -1,3 +1,2 @@
 import './bootstrap';
-import * as bootstrap from 'bootstrap';
-window.bootstrap = bootstrap;
+// Bootstrap JS is loaded via CDN in app.blade.php <head>

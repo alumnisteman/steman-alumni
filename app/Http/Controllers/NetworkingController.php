@@ -71,6 +71,11 @@ class NetworkingController extends Controller
      */
     public function nearby(Request $request)
     {
+        // If it's a direct browser request (not AJAX) and no coordinates provided, show the UI
+        if (!$request->ajax() && !$request->has(['lat', 'lng'])) {
+            return view('alumni.nearby');
+        }
+
         $lat = (float) $request->lat;
         $lng = (float) $request->lng;
 

@@ -10,21 +10,55 @@ use Illuminate\Support\Facades\Storage;
 class FeedController extends Controller
 {
     protected $feedService;
+    protected $alumniService;
 
-    public function __construct(FeedService $feedService)
+    public function __construct(FeedService $feedService, \App\Services\AlumniService $alumniService)
     {
         $this->feedService = $feedService;
+        $this->alumniService = $alumniService;
     }
 
     /**
      * Display the alumni feed
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user = auth()->user();
-        $posts = $this->feedService->getFeed($user);
+        try {
+            $user = auth()->user();
+            $page = $request->get('page', 1);
+            $perPage = 10;
+            
+            // FOMO: Count online alumni
+            $onlineCount = $this->alumniService->getOnlineAlumniCount();
 
-        return view('alumni.feed.index', compact('posts'));
+            if (!$user) {
+                // Handle Guest View
+                $posts = \App\Models\Post::where('visibility', 'public')->latest()->paginate($perPage);
+            } else {
+                $posts = $this->feedService->getFeed($user, $page, $perPage);
+            }
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'html' => view('alumni.feed.posts', compact('posts'))->render(),
+                    'hasMore' => count($posts) >= $perPage
+                ]);
+            }
+
+            return view('alumni.feed.index', compact('posts', 'onlineCount'));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Feed Index Error: ' . $e->getMessage());
+            
+            try {
+                $posts = \App\Models\Post::where('visibility', 'public')->latest()->paginate(20);
+                $view = view('alumni.feed.index', compact('posts'))->render();
+                return response($view);
+            } catch (\Throwable $e2) {
+                \Illuminate\Support\Facades\Log::error('Feed Fallback Error: ' . $e2->getMessage());
+                // If even the fallback view fails, return the 500 error view directly
+                return response()->view('errors.500', ['exception_message' => $e2->getMessage()], 500);
+            }
+        }
     }
 
     /**
@@ -35,7 +69,7 @@ class FeedController extends Controller
         $request->validate([
             'content' => 'required|string|max:2000',
             'image' => 'nullable|image|max:5120', // 5MB max
-            'visibility' => 'required|in:public,friends',
+            'visibility' => 'nullable|in:public,friends',
             'is_anonymous' => 'nullable|boolean',
             'type' => 'nullable|string',
         ]);
@@ -46,13 +80,21 @@ class FeedController extends Controller
             $imageUrl = Storage::url($path);
         }
 
-        $this->feedService->createPost(auth()->user(), [
+        $post = $this->feedService->createPost(auth()->user(), [
             'content' => $request->content,
             'image_url' => $imageUrl,
-            'visibility' => $request->visibility,
+            'visibility' => $request->visibility ?? 'public',
             'is_anonymous' => $request->is_anonymous ?? false,
             'type' => $request->type ?? 'memory',
         ]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Postingan berhasil dibagikan!',
+                'id' => $post->id
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Postingan berhasil dibagikan!');
     }

@@ -98,7 +98,7 @@
                             </small>
                         </div>
                     </div>
-                    @if(Auth::id() == $post->user_id || in_array(Auth::user()->role, ['admin', 'editor']))
+                    @if(Auth::check() && (Auth::id() == $post->user_id || in_array(Auth::user()->role, ['admin', 'editor'])))
                     <div class="dropdown">
                         <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
                             <i class="bi bi-three-dots-vertical"></i>
@@ -180,11 +180,12 @@
             </div>
             @endforelse
 
-            <div class="mt-4">
-                {{ $posts->links() }}
+            <div class="mt-4 d-flex justify-content-center">
+                {{ $posts->links('pagination::bootstrap-5') }}
             </div>
         </div>
 
+        @auth
         <!-- Sidebar Right -->
         <div class="col-lg-3 d-none d-lg-block">
             <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -199,13 +200,14 @@
                         </div>
                         <div class="border-start"></div>
                         <div>
-                            <div class="fw-bold">{{ $userPostsCount }}</div>
+                            <div class="fw-bold">{{ $userPostsCount ?? 0 }}</div>
                             <div class="text-muted" style="font-size: 0.7rem;">POST</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        @endauth
     </div>
 </div>
 

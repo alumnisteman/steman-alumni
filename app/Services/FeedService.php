@@ -8,7 +8,9 @@ use App\Models\Feed;
 use App\Models\Follow;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use App\Jobs\PushPostToFeeds;
+use App\Jobs\GenerateFeedJob;
 
 class FeedService
 {
@@ -26,101 +28,82 @@ class FeedService
             'is_anonymous' => $data['is_anonymous'] ?? false,
         ]);
 
-        // 1. Add to owner's own feed immediately
-        Feed::create([
-            'user_id' => $user->id,
-            'post_id' => $post->id,
-            'score' => $this->calculateScore($post),
-        ]);
+        // We no longer push directly to Feed table as we use precomputed Redis feeds.
+        // Instead, we just invalidate the user's feed cache and trigger a regeneration.
+        try {
+            Redis::del("feed:user:{$user->id}");
+            GenerateFeedJob::dispatch($user->id);
 
-        // 2. Clear owner's Redis cache
-        Cache::forget("feed:user:{$user->id}");
+            // Tell followers to regenerate their feeds
+            $followerIds = $user->followers()->pluck('follower_id');
+            foreach ($followerIds as $followerId) {
+                Redis::del("feed:user:{$followerId}");
+                GenerateFeedJob::dispatch($followerId);
+            }
+        } catch (\Exception $e) {
+            Log::warning("Redis unavailable during post creation: " . $e->getMessage());
+        }
 
-        // 3. Dispatch Job for Fan-out to followers
-        PushPostToFeeds::dispatch($post);
+        return $post;
 
         return $post;
     }
 
     /**
-     * The actual Fan-out on Write logic (to be run in background queue)
+     * Legacy Fan-out (Kept for compatibility, but basically unused now)
      */
     public function distributePost(Post $post)
     {
-        $author = $post->user;
-        
-        // Get all follower IDs
-        $followerIds = $author->followers()->pluck('follower_id');
+        // Handled by GenerateFeedJob now
+        Log::info("Post {$post->id} distributed via GenerateFeedJob.");
+    }
 
-        foreach ($followerIds as $followerId) {
-            Feed::updateOrCreate(
-                ['user_id' => $followerId, 'post_id' => $post->id],
-                ['score' => $this->calculateScore($post)]
-            );
-            
-            // Invalidate Redis cache for this follower
-            Cache::forget("feed:user:{$followerId}");
+    /**
+     * Get feed for a user using Precomputed Redis Lists
+     */
+    public function getFeed(User $user, int $page = 1, int $perPage = 10)
+    {
+        $redisKey = "feed:user:{$user->id}";
+        $start = ($page - 1) * $perPage;
+        $end = $start + $perPage - 1;
+        
+        // Cek Redis list
+        $postIds = [];
+        try {
+            $postIds = Redis::lrange($redisKey, $start, $end);
+        } catch (\Exception $e) {
+            Log::warning("Redis unavailable for feed retrieval: " . $e->getMessage());
+            // Force empty postIds to trigger DB fallback below
+            $postIds = [];
         }
         
-        Log::info("Post {$post->id} distributed to " . count($followerIds) . " followers.");
-    }
-
-    /**
-     * Get feed for a user with Redis Caching
-     */
-    public function getFeed(User $user, int $perPage = 20)
-    {
-        $cacheKey = "feed:user:{$user->id}";
-
-        $posts = Cache::remember($cacheKey, 1800, function () use ($user, $perPage) {
-            $feedPosts = Feed::where('user_id', $user->id)
-                ->with(['post.user', 'post.likes', 'post.comments'])
-                ->orderBy('score', 'desc')
-                ->limit($perPage)
-                ->get()
-                ->pluck('post');
-
-            // SMART FEED: If feed is empty or short, add relevant posts from same major/batch/city
-            if ($feedPosts->count() < 10) {
-                $smartPosts = Post::where('user_id', '!=', $user->id)
-                    ->where('visibility', 'public')
-                    ->where(function ($q) use ($user) {
-                        $q->whereHas('user', function ($uq) use ($user) {
-                            $uq->where('major', $user->major)
-                               ->orWhere('graduation_year', $user->graduation_year)
-                               ->orWhere('city_name', $user->city_name);
-                        });
-                    })
-                    ->whereNotIn('id', $feedPosts->pluck('id'))
+        if (empty($postIds)) {
+            if ($page === 1) {
+                // Generate immediately for first time/expired
+                try {
+                    GenerateFeedJob::dispatch($user->id);
+                } catch (\Exception $e) {}
+                
+                // Fallback while generating
+                return Post::where('visibility', 'public')
+                    ->where('user_id', '!=', $user->id)
                     ->with(['user', 'likes', 'comments'])
                     ->latest()
-                    ->limit(10)
+                    ->limit($perPage)
                     ->get();
-                
-                $feedPosts = $feedPosts->concat($smartPosts)->unique('id')->values();
             }
+            return collect();
+        }
 
-            return $feedPosts;
-        });
+        // Ambil post dari database berdasar urutan ID di Redis
+        $posts = Post::whereIn('id', $postIds)
+            ->with(['user', 'likes', 'comments'])
+            ->get();
 
-        return $posts;
-    }
-
-    /**
-     * Ranking Algorithm (Gen Z Style)
-     */
-    public function calculateScore(Post $post)
-    {
-        $likesWeight = 3;
-        $commentsWeight = 5;
-        
-        // Base score from engagement
-        $engagementScore = ($post->likes_count * $likesWeight) + ($post->comments_count * $commentsWeight);
-        
-        // Recency boost (Unix timestamp / 10000 to keep it manageable)
-        $recencyScore = $post->created_at->timestamp / 10000;
-
-        return $engagementScore + $recencyScore;
+        // Restore urutan sesuai array ID dari Redis
+        return $posts->sortBy(function($post) use ($postIds) {
+            return array_search($post->id, $postIds);
+        })->values();
     }
 
     /**
@@ -136,6 +119,10 @@ class FeedService
 
         if ($existing) {
             $existing->delete();
+            
+            // Trigger feed regeneration
+            GenerateFeedJob::dispatch($follower->id);
+            
             return ['status' => 'unfollowed'];
         }
 
@@ -143,6 +130,9 @@ class FeedService
             'follower_id' => $follower->id,
             'following_id' => $target->id,
         ]);
+        
+        // Trigger feed regeneration
+        GenerateFeedJob::dispatch($follower->id);
 
         return ['status' => 'followed'];
     }

@@ -2,688 +2,692 @@
 
 @section('content')
 <style>
-    /* Metode Letterbox Presisi: Terpusat & Utuh 100% */
-    .hero-section.hero-banner-bg {
+    /* Premium Dark Mode Bento Grid for Landing Page */
+    .landing-bento {
+        background-color: #050505;
+        color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
         position: relative;
-        width: 100%;
-        min-height: 500px;
-        overflow: hidden;
-        background-color: #0f172a; /* Slate dark background */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
     }
 
-    /* Penjaga Rasio 1280x670 */
+    /* FIX NAVBAR CLASH */
+    .navbar, .mobile-header, .top-bar { 
+        background: rgba(5, 5, 5, 0.8) !important; 
+        backdrop-filter: blur(10px) !important;
+        border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    .navbar .nav-link, .navbar-brand, .mobile-header a, .mobile-header i { 
+        color: #fff !important; 
+    }
+    .mobile-bottom-nav {
+        background: #0a0a0a !important;
+        border-top-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* CUSTOM GLOWING CURSOR - Only active on desktop and within bento context */
     @media (min-width: 992px) {
-        .hero-section.hero-banner-bg {
-            aspect-ratio: 1280 / 600 !important;
-            min-height: auto;
+        .landing-bento { cursor: none; }
+        .custom-cursor {
+            position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            background: #06b6d4; mix-blend-mode: screen;
+            transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background-color 0.2s;
+            box-shadow: 0 0 20px #06b6d4, 0 0 40px #06b6d4;
+            opacity: 0; /* Hidden until mouse moves */
         }
+        .custom-cursor-trail {
+            position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+            border-radius: 50%; pointer-events: none; z-index: 9998;
+            border: 1px solid rgba(6, 182, 212, 0.5);
+            transform: translate(-50%, -50%); transition: all 0.1s ease-out;
+            opacity: 0;
+        }
+        .cursor-hover { width: 60px; height: 60px; background: rgba(99, 102, 241, 0.5); box-shadow: 0 0 30px #4f46e5; border: none; }
+    }
+    @media (max-width: 991px) {
+        .custom-cursor, .custom-cursor-trail { display: none !important; }
+        .landing-bento { cursor: auto !important; }
     }
 
-    .hero-main-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover !important;
-        object-position: center center !important;
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        display: block;
-        filter: brightness(0.7) contrast(1.1); /* Auto-enhance image */
-        transition: transform 0.5s ease-out;
+    /* Hero Section Specifics */
+    .hero-bento {
+        position: relative; width: 100%; min-height: 90vh;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: #000;
+    }
+    #particleCanvas {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        z-index: 1; pointer-events: none;
+    }
+    .hero-overlay {
+        position: absolute; inset: 0; z-index: 2;
+        background: radial-gradient(circle at center, transparent 0%, #050505 100%);
+    }
+    .hero-content { position: relative; z-index: 10; text-align: center; }
+
+    /* Grid System */
+    .bento-grid-wrapper {
+        display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; padding: 3rem 0;
+    }
+    @media (max-width: 991px) {
+        .bento-grid-wrapper { display: flex; flex-direction: column; gap: 1rem; }
+        .span-8, .span-6, .span-4, .span-3 { grid-column: span 12 !important; width: 100%; }
     }
 
-    .hero-content-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.8) 100%);
+    /* SPOTLIGHT EFFECT CARDS */
+    .bento-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 32px; padding: 2rem;
+        position: relative; overflow: hidden;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .glass-hero-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(12px); /* Efek Kaca Premium */
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 3.5rem;
-        border-radius: 32px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        animation: float 6s ease-in-out infinite; /* Animasi Melayang */
+    /* The spotlight pseudo-element */
+    .bento-card::before {
+        content: ""; position: absolute; inset: 0; border-radius: inherit;
+        background: radial-gradient(
+            800px circle at var(--mouse-x) var(--mouse-y),
+            rgba(255, 255, 255, 0.06),
+            transparent 40%
+        );
+        z-index: 0; opacity: 0; transition: opacity 0.5s; pointer-events: none;
     }
+    .bento-card:hover::before { opacity: 1; }
 
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-15px); }
-        100% { transform: translateY(0px); }
+    /* The glowing border spotlight pseudo-element */
+    .bento-card::after {
+        content: ""; position: absolute; inset: 0; border-radius: inherit;
+        padding: 1px; /* border thickness */
+        background: radial-gradient(
+            400px circle at var(--mouse-x) var(--mouse-y),
+            rgba(6, 182, 212, 0.5),
+            transparent 40%
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        z-index: 0; opacity: 0; transition: opacity 0.5s; pointer-events: none;
     }
-</style>
+    .bento-card:hover::after { opacity: 1; }
 
-@push('styles')
-    <link rel="preload" as="image" href="/storage/uploads/settings/hero.webp">
-@endpush
+    .bento-card > * { position: relative; z-index: 1; }
+    .bento-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
 
-<!-- Hero Section -->
-<div class="hero-section text-center text-white hero-banner-bg">
+    /* Spans */
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+
+    /* Utilities */
+    .fw-black { font-weight: 900; }
+    .tracking-tighter { letter-spacing: -0.05em; }
+    .tracking-widest { letter-spacing: 0.2em; }
+    .text-cyan { color: #06b6d4; }
+    .text-gold { color: #ffcc00; }
     
-    <!-- Layer 1: Main Image Cover -->
-    <img
-        src="{{ setting('hero_background', '/storage/uploads/settings/hero.webp') }}"
-        width="1200"
-        height="600"
-        loading="eager"
-        fetchpriority="high"
-        decoding="async"
-        class="hero-main-img"
-        alt="Alumni Steman">
+    .hover-lift { transition: transform 0.3s; }
+    .hover-lift:hover { transform: translateY(-3px); }
 
-    <!-- Layer 2: Konten Text Overlay -->
-    <div class="hero-content-overlay">
-        <div class="container py-4">
-            <div class="glass-hero-card animate__animated animate__fadeInUp">
-                <div class="badge-hero mb-4 rounded-pill">Official Alumni Portal</div>
-                <h1 class="display-4 display-md-2 fw-black mb-4 hero-title text-uppercase" style="letter-spacing: -1px;">{!! nl2br(e(setting('hero_title', "PENGURUS PUSAT\nIKATAN ALUMNI SMKN 2"))) !!}</h1>
-                <p class="lead fw-medium mb-5 opacity-90 hero-subtitle mx-auto px-3" style="max-width: 800px; color: #cbd5e1;">{{ setting('hero_subtitle', 'MENJALIN JEJARING, MEMBANGUN KONTRIBUSI.') }}</p>
-                <div class="d-flex flex-column flex-md-row justify-content-center gap-3 gap-md-4 mt-2 px-4 px-md-0">
-                    <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-pill shadow-lg hover-lift">JOIN NOW <i class="bi bi-arrow-right ms-2"></i></a>
-                    <a href="/alumni" class="btn btn-outline-light fw-bold px-5 py-3 rounded-pill hover-lift">DIRECTORY</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    .extra-small { font-size: 0.75rem; }
 
-<!-- Chairman Section -->
-<div class="py-4 py-md-5" style="background-color: #f8fafc;">
-    <div class="container py-2 py-md-4">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-4 text-center">
-                <div class="position-relative d-inline-block">
-                     <img src="{{ setting('chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400') }}" 
-                          onerror="this.src='https://ui-avatars.com/api/?name=Ketua+Umum&background=ffcc00&color=000&size=400'"
-                          class="img-fluid rounded-4 shadow-lg border border-5 border-white" 
-                          style="aspect-ratio: 3/4; height: 280px; width: 100%; max-width: 210px; object-fit: cover; object-position: top;" 
-                          alt="Ketua Umum">
-                    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3">
-                        <span class="badge bg-warning text-dark px-4 py-2 rounded-pill shadow-sm fw-bold">KETUA UMUM</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-8">
-                <h6 class="text-primary fw-bold text-uppercase mb-2">Sambutan Ketua Umum</h6>
-                <h2 class="fw-bold mb-4 font-heading">{{ setting('chairman_name', 'Nama Ketua Umum') }}</h2>
-                <div class="lead text-muted mb-4 italic" style="font-size: 1.1rem; line-height: 1.8;">
-                    "{!! nl2br(e(setting('chairman_message', 'Selamat datang di portal resmi Ikatan Alumni SMKN 2 Ternate. Mari kita jalin silaturahmi dan berkontribusi bersama untuk almamater.'))) !!}"
-                </div>
-                <p class="fw-bold text-dark mb-0">Periode Jabatan:</p>
-                <p class="text-muted">{{ setting('chairman_period', '2024 - 2028') }}</p>
-            </div>
-        </div>
-    </div>
-</div>
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    .activity-scroll::-webkit-scrollbar { width: 4px; }
+    .activity-scroll::-webkit-scrollbar-track { background: transparent; }
+    .activity-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-<!-- Visi & Misi Section -->
-<div class="py-5 bg-white">
-    <div class="container py-4 px-4 px-md-2">
-        <div class="row g-4 align-items-stretch">
-            <div class="col-lg-6">
-                <div class="h-100 p-4 p-md-5 rounded-4 shadow-sm border border-light bg-light">
-                    <div class="d-flex align-items-center mb-4 text-primary">
-                        <div class="bg-primary bg-opacity-10 p-3 rounded-4 me-3">
-                            <i class="bi bi-eye-fill fs-2"></i>
-                        </div>
-                        <h2 class="fw-black mb-0">VISI KAMI</h2>
-                    </div>
-                    <div class="lead text-dark opacity-75" style="line-height: 1.8; font-size: 1.1rem;">
-                        {!! nl2br(e(setting('vision', 'Menjadi wadah alumni yang solid, inovatif, dan berkontribusi nyata bagi almamater serta masyarakat luas.'))) !!}
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="h-100 p-4 p-md-5 rounded-4 shadow-sm border border-light" style="background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);">
-                    <div class="d-flex align-items-center mb-4 text-warning">
-                        <div class="bg-warning bg-opacity-10 p-3 rounded-4 me-3">
-                            <i class="bi bi-bullseye fs-2"></i>
-                        </div>
-                        <h2 class="fw-black mb-0">MISI UTAMA</h2>
-                    </div>
-                    <div class="text-dark opacity-75" style="line-height: 1.8; font-size: 1rem;">
-                        {!! nl2br(e(setting('mission', "1. Menjalin komunikasi antar alumni di seluruh penjuru dunia.\n2. Memberikan beasiswa dan dukungan karir bagi lulusan baru.\n3. Berkontribusi dalam pengembangan sarana dan prasarana sekolah."))) !!}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    /* Online Avatars Animation */
+    .avatar-stack { display: flex; align-items: center; }
+    .avatar-stack img { 
+        width: 32px; height: 32px; border-radius: 50%; border: 2px solid #050505; 
+        margin-left: -12px; transition: transform 0.3s;
+    }
+    .avatar-stack img:first-child { margin-left: 0; }
+    .avatar-stack img:hover { transform: translateY(-5px); z-index: 10; }
 
-
-<!-- Event Leadership Duo Section (Chairman & Secretary) -->
-<div class="bg-light py-4 py-md-5">
-    <div class="container py-4 py-md-5">
-        <div class="row g-5">
-            <!-- 1. Ketua Panitia -->
-            <div class="col-lg-6">
-                <div class="h-100 bg-white p-4 p-md-5 rounded-4 shadow-sm border-top border-4 border-primary">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="position-relative me-4">
-                            <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
-                                 class="rounded-circle shadow-sm border border-3 border-white" 
-                                 alt="Ketua Panitia"
-                                 style="height: 100px; width: 100px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 start-50 translate-middle-x">
-                                <span class="badge bg-primary text-white rounded-pill px-2 py-1 x-small shadow-sm">KETUA</span>
-                            </div>
-                        </div>
-                        <div>
-                            <h6 class="text-primary fw-bold text-uppercase mb-1" style="font-size: 0.8rem;">Sambutan Ketua Panitia</h6>
-                            <h4 class="fw-bold mb-0">{{ setting('event_chairman_name', 'Nama Ketua Panitia') }}</h4>
-                            <small class="text-muted">{{ setting('event_chairman_period', 'Event Organizers') }}</small>
-                        </div>
-                    </div>
-                    <div class="message-content position-relative">
-                        <i class="bi bi-quote fs-1 text-primary opacity-10 position-absolute top-0 start-0"></i>
-                        <p class="text-muted mb-0 lh-lg" style="font-style: italic; position: relative; z-index: 1; padding-top: 10px;">
-                            "{!! nl2br(e(setting('event_chairman_message', 'Pesan sambutan dalam rangka kegiatan alumni...'))) !!}"
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Sekretaris Panitia -->
-            <div class="col-lg-6">
-                <div class="h-100 bg-white p-4 p-md-5 rounded-4 shadow-sm border-top border-4 border-success">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="position-relative me-4">
-                            <img src="{{ setting('secretary_photo', 'https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400') }}" 
-                                 class="rounded-circle shadow-sm border border-3 border-white" 
-                                 alt="Sekretaris Panitia"
-                                 style="height: 100px; width: 100px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 start-50 translate-middle-x">
-                                <span class="badge bg-success text-white rounded-pill px-2 py-1 x-small shadow-sm">SEKRETARIS</span>
-                            </div>
-                        </div>
-                        <div>
-                            <h6 class="text-success fw-bold text-uppercase mb-1" style="font-size: 0.8rem;">Sambutan Sekretaris Panitia</h6>
-                            <h4 class="fw-bold mb-0">{{ setting('secretary_name', 'Nama Sekretaris') }}</h4>
-                            <small class="text-muted">{{ setting('secretary_period', 'Event Committee') }}</small>
-                        </div>
-                    </div>
-                    <div class="message-content position-relative">
-                        <i class="bi bi-quote fs-1 text-success opacity-10 position-absolute top-0 start-0"></i>
-                        <p class="text-muted mb-0 lh-lg" style="font-style: italic; position: relative; z-index: 1; padding-top: 10px;">
-                            "{!! nl2br(e(setting('secretary_message', 'Pesan sambutan sekretaris dalam rangka persiapan kegiatan alumni...'))) !!}"
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-    </div>
-</div>
-<!-- Content Advertisement -->
-<div class="container py-4 text-center pb-0">
-    <x-ad-slot position="content" aspectRatio="1280/200" mobileAspectRatio="400/150" />
-</div>
-
-<!-- Global Alumni Network Map - THE NEURAL NETWORK -->
-<div class="neural-network-section py-5 position-relative overflow-hidden">
-    <!-- Cyber Background Elements -->
-    <div class="cyber-grid"></div>
-    <div class="glow-orb"></div>
-
-    <div class="container py-4 py-md-5 position-relative" style="z-index: 2;">
-        <div class="text-center mb-5">
-            <div class="d-inline-flex align-items-center mb-3 bg-primary bg-opacity-10 px-4 py-2 rounded-pill border border-primary border-opacity-25">
-                <span class="ai-pulse me-2"></span>
-                <h6 class="text-primary fw-bold text-uppercase mb-0" style="letter-spacing: 2px;">Live Network Feed</h6>
-            </div>
-            <h2 class="fw-black mb-3 display-5 text-dark">EKSOSISTEM GLOBAL ALUMNI</h2>
-            <div class="section-divider mx-auto mt-2"></div>
-            <p class="text-muted mx-auto lead" style="max-width: 800px;">
-                Algoritma kami memetakan jejak digital alumni di <span class="text-primary fw-bold">berbagai benua</span>. Dari instansi nasional hingga korporasi internasional, membangun <span class="text-dark fw-bold">Neural Network karir</span> terkuat di dunia.
-            </p>
-        </div>
-        
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="stat-glass-card">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-primary"><i class="bi bi-geo-alt-fill"></i></div>
-                        <div>
-                            <h3 class="fw-black mb-0">{{ $nationalCount + $internationalCount }}+</h3>
-                            <small class="text-muted text-uppercase">Nodes Terverifikasi</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-glass-card border-warning">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-warning"><i class="bi bi-globe2"></i></div>
-                        <div>
-                            <h3 class="fw-black mb-0">{{ $internationalCount }}+</h3>
-                            <small class="text-muted text-uppercase">Global Reach (Intl)</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-glass-card border-success">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-success"><i class="bi bi-cpu"></i></div>
-                        <div>
-                            <h3 class="fw-black mb-0">98%</h3>
-                            <small class="text-muted text-uppercase">Career Match Rate</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="map-container-premium shadow-lg border border-4 border-white">
-            <x-alumni-map 
-                id="home-global-map" 
-                :locations="$alumniLocations" 
-                :nationalCount="$nationalCount" 
-                :internationalCount="$internationalCount" 
-                height="550px"
-            />
-            <div class="map-scanner"></div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .neural-network-section {
-        background-color: #f8fafc;
+    @keyframes rotate-avatars {
+        0% { opacity: 0; transform: scale(0.8); }
+        10% { opacity: 1; transform: scale(1); }
+        90% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(0.8); }
+    }
+    .online-avatar-cycle {
+        width: 40px; height: 40px; border-radius: 50%; border: 2px solid #06b6d4;
+        object-fit: cover; animation: rotate-avatars 5s infinite;
     }
 
-    /* Cyber Grid Background */
-    .cyber-grid {
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-                          linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
-        background-size: 50px 50px;
-        z-index: 1;
+    .pulse-avatar { animation: avatar-pulse 2s infinite; }
+    @keyframes avatar-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
 
-    .glow-orb {
-        position: absolute;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1;
-    }
-
-    .stat-glass-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-    .stat-glass-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        margin-right: 1rem;
-        font-size: 1.5rem;
-    }
-
-    .map-container-premium {
-        position: relative;
-        z-index: 10;
-    }
-
-    /* Scanner Effect */
-    .map-scanner {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 5px;
-        background: linear-gradient(to right, transparent, #3b82f6, transparent);
-        box-shadow: 0 0 20px #3b82f6;
-        animation: scan 4s linear infinite;
-        z-index: 20;
-        opacity: 0.5;
-        pointer-events: none;
-    }
-
-    @keyframes scan {
-        0% { top: 0; opacity: 0; }
-        10% { opacity: 0.5; }
-        90% { opacity: 0.5; }
-        100% { top: 100%; opacity: 0; }
-    }
-
-    .ai-pulse {
-        width: 10px;
-        height: 10px;
-        background-color: #3b82f6;
-        border-radius: 50%;
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-        animation: ai-pulse 2s infinite;
-    }
-
-    @keyframes ai-pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-    }
+    /* GSAP reveal classes */
+    .gsap-fade-up { opacity: 0; }
+    .gsap-scroll-card { opacity: 0; }
 </style>
 
-<!-- AI Insights Section -->
-<div class="py-5" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
-    <div class="container py-4">
-        <div class="row align-items-center mb-5">
-            <div class="col-lg-7">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="pulse-container me-3">
-                        <div class="pulse-ring"></div>
-                        <i class="bi bi-cpu-fill fs-4 text-warning"></i>
-                    </div>
-                    <h6 class="text-warning fw-bold text-uppercase mb-0">Smart Analytics</h6>
-                </div>
-                <h2 class="display-5 fw-black mb-3">AI ALUMNI INSIGHTS</h2>
-                <p class="lead opacity-75">Algoritma cerdas kami menganalisis data besar alumni untuk memprediksi tren kolaborasi dan kegiatan masa depan.</p>
-            </div>
-            <div class="col-lg-5 text-lg-end">
-                <div class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
-                    <i class="bi bi-stars me-1"></i> Powering NextGen Networking
+<div class="landing-bento" id="main-grid">
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="custom-cursor-trail"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-bento">
+        <canvas id="particleCanvas"></canvas>
+        <div class="hero-overlay"></div>
+        
+        <div class="container hero-content">
+            <div class="gsap-fade-up">
+                <h6 class="text-cyan fw-bold text-uppercase tracking-widest mb-3">Selamat Datang di Portal Alumni</h6>
+                <h1 class="display-1 fw-black tracking-tighter text-white mb-4" style="line-height: 0.9;">
+                    CONNECT. <span class="text-cyan">INSPIRE.</span><br>CONTRIBUTE.
+                </h1>
+                <p class="lead text-white-50 mx-auto mb-5" style="max-width: 600px;">
+                    Satu wadah untuk ribuan jejak. Kembali, berbagi, dan bangun masa depan bersama almamater tercinta.
+                </p>
+                
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    @guest
+                        <a href="{{ route('register') }}" class="btn btn-cyan btn-lg px-5 py-3 rounded-pill fw-bold text-dark magnetic-el">GABUNG SEKARANG</a>
+                        <a href="{{ route('login') }}" class="btn btn-outline-white btn-lg px-5 py-3 rounded-pill fw-bold magnetic-el">MASUK PORTAL</a>
+                    @else
+                        <a href="{{ route('alumni.dashboard') }}" class="btn btn-cyan btn-lg px-5 py-3 rounded-pill fw-bold text-dark magnetic-el">DASHBOARD SAYA</a>
+                        <a href="{{ route('public.profile') }}" class="btn btn-outline-white btn-lg px-5 py-3 rounded-pill fw-bold magnetic-el">PROFIL DIGITAL</a>
+                    @endguest
                 </div>
             </div>
         </div>
+    </section>
 
-        <div class="row g-4">
-            @foreach($aiInsights as $key => $insight)
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 bg-white bg-opacity-25 rounded-4 p-4 shadow-lg ai-card">
+    <div class="container pb-5">
+        <div class="bento-grid-wrapper">
+            
+            <!-- Quick Stats -->
+            <div class="span-4 gsap-scroll-card">
+                <div class="bento-card h-100 d-flex flex-column justify-content-between">
+                    <div>
                         <div class="d-flex justify-content-between align-items-start mb-4">
-                            <div class="ai-icon-box bg-warning bg-opacity-20 text-warning rounded-3 p-3">
-                                <i class="bi {{ $insight['icon'] }} fs-3"></i>
+                            <div class="bg-cyan bg-opacity-20 p-3 rounded-4 position-relative">
+                                <i class="bi bi-people-fill text-cyan fs-2"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle shadow-sm" style="animation: pulse-green 2s infinite;"></span>
                             </div>
                             <div class="text-end">
-                                <small class="d-block opacity-50">Confidence</small>
-                                <span class="fw-bold text-warning">{{ $insight['confidence'] }}</span>
+                                <span class="text-white-50 small d-block">Global Network</span>
+                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                    @php 
+                                        $displayAvatars = !empty($onlineAvatars) ? $onlineAvatars : ($featuredAvatars ?? []);
+                                        $isOnline = !empty($onlineAvatars);
+                                    @endphp
+                                    
+                                    @if(!empty($displayAvatars))
+                                        <div class="avatar-cycle-container" style="width: 40px; height: 40px; position: relative;">
+                                            <img id="online-avatar-img" src="{{ $displayAvatars[0] }}" 
+                                                 class="rounded-circle border border-2 {{ $isOnline ? 'border-success' : 'border-cyan' }} shadow-sm {{ $isOnline ? 'pulse-avatar' : '' }}" 
+                                                 style="width: 40px; height: 40px; object-fit: cover; transition: all 0.5s ease;">
+                                        </div>
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                const avatars = @json($displayAvatars);
+                                                if (avatars.length > 1) {
+                                                    let current = 0;
+                                                    const img = document.getElementById('online-avatar-img');
+                                                    setInterval(() => {
+                                                        img.style.opacity = '0';
+                                                        img.style.transform = 'scale(0.8)';
+                                                        setTimeout(() => {
+                                                            current = (current + 1) % avatars.length;
+                                                            img.src = avatars[current];
+                                                            img.style.opacity = '1';
+                                                            img.style.transform = 'scale(1)';
+                                                        }, 500);
+                                                    }, 4000);
+                                                }
+                                            });
+                                        </script>
+                                    @endif
+                                    
+                                    @if($isOnline)
+                                        <span class="badge bg-success bg-opacity-10 text-success small fw-bold">
+                                            <span class="pulse-dot me-1" style="background: #22c55e;"></span>
+                                            {{ $onlineCount }} ONLINE
+                                        </span>
+                                    @else
+                                        <span class="badge bg-cyan bg-opacity-10 text-cyan small fw-bold">
+                                            ALUMNI TERDAFTAR
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">{{ $insight['title'] }}</h4>
-                        <p class="opacity-75 mb-0" style="font-size: 0.95rem; line-height: 1.6;">{{ $insight['description'] }}</p>
+                        <h2 class="display-5 fw-black text-white mb-1">{{ $totalAlumni ?? 1250 }}</h2>
+                        <p class="text-white-50">Alumni Terdaftar</p>
                     </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-
-<style>
-    .ai-card { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1) !important; }
-    .ai-card:hover { 
-        transform: translateY(-10px); 
-        background-color: rgba(255,255,255,0.15) !important;
-        border-color: rgba(255,193,7,0.4) !important;
-    }
-    .pulse-container { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
-    .pulse-ring {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: #ffc107;
-        animation: pulse-ring 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-    }
-    @keyframes pulse-ring {
-        0% { transform: scale(.33); opacity: 1; }
-        80%, 100% { transform: scale(1.5); opacity: 0; }
-    }
-</style>
-
-<!-- News Section -->
-<div class="container py-4 py-md-5 mt-2 mt-md-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end mb-4 gap-3">
-        <div>
-            <h2 class="fw-black mb-0">BERITA TERBARU</h2>
-            <p class="text-muted small">Update info kegiatan alumni</p>
-        </div>
-        <a href="/news" class="btn btn-primary btn-sm rounded-pill px-4">Lihat Semua</a>
-    </div>
-    <div class="row g-4">
-        <div class="col-lg-9">
-            <div class="row g-4">
-                @forelse($latestNews as $item)
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-lift">
-                            <img src="{{ $item->thumbnail ?? 'https://via.placeholder.com/400x250' }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ $item->title }}" loading="lazy">
-                            <div class="card-body p-4">
-                                <small class="text-primary fw-bold d-block mb-2">{{ $item->created_at->format('d M Y') }}</small>
-                                <h5 class="fw-bold mb-3"><a href="/news/{{ $item->slug }}" class="text-dark text-decoration-none hover-text-primary">{{ $item->title }}</a></h5>
-                                <p class="text-muted small mb-0">{{ \Illuminate\Support\Str::limit(strip_tags($item->content), 90) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-12 text-center py-5">
-                        <p class="text-muted">Belum ada berita terbaru.</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-        <div class="col-lg-3">
-            <div class="sticky-top" style="top: 100px; z-index: 1;">
-                <h6 class="fw-bold mb-3 text-uppercase small text-muted">Sponsor</h6>
-                <x-ad-slot position="sidebar" aspectRatio="1/1" />
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Loker Section -->
-<div class="bg-light py-4 py-md-5">
-    <div class="container py-2 py-md-4">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end mb-4 gap-3">
-            <div>
-                <h2 class="fw-black mb-0">LOWONGAN KERJA</h2>
-                <p class="text-muted small">Peluang karir khusus alumni</p>
-            </div>
-            <a href="/jobs" class="btn btn-outline-primary btn-sm rounded-pill px-4">Cek Semua Loker</a>
-        </div>
-        <div class="row g-4">
-            @forelse($latestJobs ?? [] as $job)
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-lift">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4">
-                                <i class="bi bi-briefcase-fill fs-3"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="badge bg-secondary mb-2 rounded-pill">{{ $job->type }}</div>
-                                <h5 class="fw-bold mb-1">{{ $job->title }}</h5>
-                                <p class="text-muted small mb-3"><i class="bi bi-building me-1"></i> {{ $job->company }} | <i class="bi bi-geo-alt me-1"></i> {{ $job->location }}</p>
-                                <a href="/jobs/{{ $job->slug }}" class="btn btn-link text-primary p-0 text-decoration-none fw-bold hover-translate-x">Lihat Detail <i class="bi bi-arrow-right ms-1"></i></a>
-                            </div>
+                    <div class="mt-4">
+                        <div class="progress bg-white bg-opacity-10" style="height: 6px; border-radius: 3px;">
+                            <div class="progress-bar bg-cyan" style="width: 85%"></div>
                         </div>
                     </div>
                 </div>
-            @empty
-                <div class="col-12 text-center py-4">
-                    <p class="text-muted">Belum ada lowongan kerja tersedia.</p>
-                </div>
-            @endforelse
-        </div>
-    </div>
-</div>
+            </div>
 
-<!-- Gallery Section -->
-<div class="container py-4 py-md-5 mt-2 mt-md-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end mb-4 gap-3">
-        <div>
-            <h2 class="fw-black mb-0">GALERI STEMAN</h2>
-            <p class="text-muted small">Moment kebersamaan alumni</p>
-        </div>
-        <a href="/gallery" class="btn btn-outline-dark btn-sm rounded-pill px-4">Buka Galeri</a>
-    </div>
-    <div class="row g-3">
-        @foreach($latestPhotos as $photo)
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                    <img src="{{ $photo->file_path }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $photo->title }}" loading="lazy">
+            <!-- News Spotlight -->
+            <div class="span-8 gsap-scroll-card">
+                <div class="bento-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-black text-white m-0">KABAR TERKINI</h4>
+                        <a href="{{ route('news.index') }}" class="text-cyan text-decoration-none small fw-bold magnetic-el">LIHAT SEMUA <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="row g-4">
+                        @foreach($latestNews ?? [] as $news)
+                        <div class="col-md-6">
+                            <a href="{{ route('news.show', $news->slug) }}" class="text-decoration-none group">
+                                <div class="rounded-4 overflow-hidden mb-3" style="height: 160px;">
+                                    <img src="{{ $news->thumbnail ? (Str::startsWith($news->thumbnail, 'http') ? $news->thumbnail : asset($news->thumbnail)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop' }}" class="w-100 h-100 object-fit-cover hover-lift" alt="News">
+                                </div>
+                                <h6 class="text-white fw-bold line-clamp-2">{{ $news->title }}</h6>
+                                <span class="text-white-50 small">{{ $news->created_at->diffForHumans() }}</span>
+                            </a>
+                        </div>
+                        @endforeach
+                        @if($latestNews->isEmpty())
+                            <div class="text-center py-5 w-100">
+                                <p class="text-white-50">Belum ada berita terbaru.</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
-        @endforeach
-    </div>
-</div>
 
-<!-- Success Stories / Hall of Fame -->
-<div class="py-5" style="background-color: #fff;">
-    <div class="container py-4">
-        <div class="text-center mb-5">
-            <h6 class="text-primary fw-bold text-uppercase mb-2">Inspirasi Steman</h6>
-            <h2 class="fw-black mb-0">JEJAK SUKSES ALUMNI</h2>
-            <div class="section-divider mx-auto mt-3"></div>
-            <p class="text-muted mx-auto" style="max-width: 600px;">Kisah nyata perjuangan dan pencapaian alumni yang membanggakan almamater di kancah nasional maupun internasional.</p>
-        </div>
-
-        <div class="row g-4">
-            @forelse($successStories as $story)
-            <div class="col-md-4">
-                <a href="{{ route('success-stories.show', $story->id) }}" class="text-decoration-none card-link h-100">
-                    <div class="card h-100 border-0 shadow-lg rounded-4 overflow-hidden hover-lift success-card">
-                        <div class="success-img-wrapper">
-                            <img src="{{ $story->image_path ? asset('storage/'.$story->image_path) : 'https://ui-avatars.com/api/?name='.urlencode($story->name).'&background=ffcc00&color=000&size=500' }}" 
-                                 class="card-img-top h-100" style="object-fit: cover;" alt="{{ $story->name }}">
-                            <div class="success-overlay p-4">
-                                <span class="badge bg-warning text-dark mb-2">{{ $story->title }}</span>
-                                <h5 class="fw-bold text-white mb-0">{{ $story->name }}</h5>
-                                <small class="text-white opacity-75">{{ $story->major_year }}</small>
+            <!-- Success Stories (Interactive) -->
+            <div class="span-8 gsap-scroll-card">
+                <div class="bento-card" style="min-height: 400px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(5, 5, 5, 1) 100%);">
+                    <div class="row h-100 align-items-center">
+                        <div class="col-lg-7">
+                            <h6 class="text-gold fw-bold mb-3">JEJAK SUKSES</h6>
+                            <h2 class="display-5 fw-black text-white mb-4">Inspirasi Dari<br>Para Pemenang.</h2>
+                            <p class="text-white-50 mb-5">
+                                Simak perjalanan karir alumni {{ setting('school_name', 'SMKN 2 Ternate') }} yang telah berhasil menembus pasar global dan industri ternama.
+                            </p>
+                            <a href="{{ route('success_stories.index') }}" class="btn btn-gold btn-lg px-5 py-3 rounded-pill fw-bold text-dark magnetic-el">BACA KISAH MEREKA</a>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="position-relative">
+                                @foreach($successStories ?? [] as $index => $story)
+                                    <div class="bento-card position-absolute shadow-lg" style="top: {{ $index * 20 }}px; left: {{ $index * 20 }}px; transform: rotate({{ $index * 2 }}deg); width: 100%;">
+                                        <div class="d-flex gap-3 align-items-center">
+                                            <img src="{{ $story->image_path ? asset('storage/'.$story->image_path) : 'https://ui-avatars.com/api/?name='.urlencode($story->name) }}" class="rounded-circle" width="50" height="50">
+                                            <div>
+                                                <h6 class="text-white fw-bold mb-0">{{ $story->name }}</h6>
+                                                <small class="text-cyan">{{ $story->title }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
-                        <div class="card-body p-4 bg-white">
-                            <p class="text-muted italic mb-0" style="font-size: 0.9rem;">"{{ \Illuminate\Support\Str::limit($story->quote, 120) }}"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events & Maps -->
+            <div class="span-4 gsap-scroll-card">
+                <div class="bento-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h4 class="fw-black text-white mb-4">ALUMNI MAP</h4>
+                        <div class="bg-dark rounded-4 p-4 border border-white border-opacity-5 text-center mb-4">
+                            <i class="bi bi-geo-alt text-cyan display-4"></i>
+                        </div>
+                        <p class="text-white-50 small">Pantau persebaran alumni SMKN 2 Ternate di seluruh penjuru dunia secara real-time.</p>
+                    </div>
+                    <a href="{{ route('global.network') }}" class="btn btn-outline-white w-100 rounded-pill py-3 fw-bold magnetic-el">BUKA PETA</a>
+                </div>
+            </div>
+
+            <!-- Job Board Preview -->
+            <div class="span-8 gsap-scroll-card">
+                <div class="bento-card h-100">
+                    <div class="row align-items-center">
+                        <div class="col-lg-4">
+                            <h4 class="fw-black text-white mb-2">PELUANG KARIR</h4>
+                            <p class="text-white-50 small">Eksklusif untuk alumni Steman. Temukan karir impian Anda di sini.</p>
+                            <a href="{{ route('jobs.index') }}" class="btn btn-cyan btn-sm px-4 py-2 rounded-pill fw-bold text-dark mt-3 magnetic-el">EKSPLORASI</a>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="d-flex flex-column gap-2">
+                                @forelse($latestJobs ?? [] as $job)
+                                    <a href="/jobs/{{ $job->slug }}" class="d-flex gap-3 text-decoration-none p-2 rounded-4 hover-lift border border-white border-opacity-10 magnetic-el" style="background: rgba(255, 255, 255, 0.05);">
+                                        <div class="bg-success bg-opacity-25 text-success rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-building fs-5"></i>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <h6 class="text-white fw-bold mb-0 small text-truncate">{{ $job->title }}</h6>
+                                            <p class="text-white-50 extra-small mb-0 text-truncate">{{ $job->company }}</p>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="text-center py-4 text-white-50">Belum ada lowongan.</div>
+                                @endforelse
+                            </div>
                         </div>
                     </div>
-                </a>
+                </div>
             </div>
-            @empty
-            <div class="col-12 text-center py-5">
-                <p class="text-muted">Belum ada kisah sukses yang ditonjolkan.</p>
+
+            <!-- LIVE ACTIVITY FEED (Transparency) -->
+            <div class="span-4 gsap-scroll-card">
+                <div class="bento-card h-100" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-black text-white m-0 small tracking-widest text-uppercase"><i class="bi bi-broadcast text-success me-2"></i>LIVE NETWORK ACTIVITY</h5>
+                        <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
+                    </div>
+                    <div class="activity-scroll pe-2" style="max-height: 280px; overflow-y: auto;">
+                        <div class="d-flex flex-column gap-3">
+                            @forelse($recentActivities ?? [] as $activity)
+                                <div class="d-flex gap-3 align-items-start border-bottom border-white border-opacity-5 pb-3">
+                                    <img src="{{ $activity->user->profile_picture_url ?? 'https://ui-avatars.com/api/?name='.urlencode($activity->user->name ?? 'Guest') }}" 
+                                         class="rounded-circle mt-1" width="32" height="32" style="object-fit: cover;">
+                                    <div>
+                                        <p class="text-white small fw-bold mb-0">{{ $activity->user->name ?? 'User' }}</p>
+                                        <p class="text-white-50 extra-small mb-1">{{ $activity->description }}</p>
+                                        <span class="text-success extra-small fw-bold">{{ $activity->created_at->diffForHumans() }}</span>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-white-50 small text-center py-4">Belum ada aktivitas terbaru.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
             </div>
-            @endforelse
+
+            <!-- AI Insights (Futuristic) -->
+            <div class="span-4 gsap-scroll-card">
+                <div class="bento-card h-100" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(5, 5, 5, 1) 100%);">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="spinner-grow spinner-grow-sm text-cyan" role="status"></div>
+                        <span class="text-cyan small fw-bold tracking-widest">AI PREDICTION</span>
+                    </div>
+                    
+                    @if(!empty($aiInsights))
+                        @php $insight = $aiInsights[array_rand($aiInsights)]; @endphp
+                        <h5 class="text-white fw-black mb-3">{{ $insight['title'] ?? 'Wawasan Masa Depan' }}</h5>
+                        <p class="text-white-50 small mb-4">
+                            {{ $insight['description'] ?? 'AI sedang menganalisis tren karir alumni terbaru...' }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-white bg-opacity-10 rounded-pill text-cyan">Confidence: {{ $insight['confidence'] ?? '90%' }}</span>
+                            <i class="bi {{ $insight['icon'] ?? 'bi-cpu' }} text-white fs-3"></i>
+                        </div>
+                    @else
+                        <h5 class="text-white fw-black mb-3">Menganalisis Data...</h5>
+                        <p class="text-white-50 small">Sistem sedang memproses algoritma networking untuk Anda.</p>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Photo Gallery (Masonry Style) -->
+            <div class="span-12 gsap-scroll-card">
+                <div class="bento-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h4 class="fw-black text-white m-0">LENSA NOSTALGIA</h4>
+                            <p class="text-white-50 small m-0">Momen berharga di setiap sudut sekolah.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('ar.scanner') }}" class="btn btn-warning btn-sm px-4 py-2 rounded-pill fw-bold text-dark magnetic-el"><i class="bi bi-camera-fill me-1"></i> WebAR NOSTALGIA</a>
+                            <a href="{{ route('gallery.index') }}" class="text-cyan text-decoration-none small fw-bold magnetic-el d-flex align-items-center">LIHAT GALERI <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        @forelse($latestPhotos ?? [] as $index => $photo)
+                            <div class="{{ $index == 0 ? 'col-md-6' : 'col-md-3' }}">
+                                <div class="rounded-4 overflow-hidden position-relative group" style="height: 250px;">
+                                    <img src="{{ asset(ltrim($photo->file_path, '/')) }}" class="w-100 h-100 object-fit-cover hover-lift" alt="Gallery">
+                                    <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-gradient-dark opacity-0 group-hover-opacity-100 transition-all">
+                                        <p class="text-white small m-0">{{ $photo->title }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-12 text-center py-5 text-white-50">Belum ada foto galeri.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
-<style>
-    .card-link { display: block; }
-    .success-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .success-img-wrapper { position: relative; height: 320px; overflow: hidden; }
-    .success-overlay {
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
-        z-index: 2;
-    }
-    .success-card:hover { transform: translateY(-15px); }
-</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
-<!-- Join Section -->
-<div class="join-section text-white py-5 mt-5">
-    <div class="container py-5 text-center">
-        <h2 class="display-5 fw-black mb-4" style="color: #ffcc00; text-shadow: 0 10px 20px rgba(0,0,0,0.3);">BELUM TERGABUNG?</h2>
-        <p class="lead mb-5 opacity-75 mx-auto" style="max-width: 800px;">Mari perkuat jaringan alumni {{ setting('school_name', 'SMKN 2 Ternate') }}. Daftarkan diri Anda sekarang untuk mendapatkan info lowongan kerja, networking, dan program pengembangan diri lainnya.</p>
-        <a href="/register" class="btn btn-warning border-0 fw-bold px-5 py-3 rounded-pill shadow-lg hover-lift">GABUNG SEKARANG</a>
-    </div>
-</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Force Dark Mode Theme
+    document.documentElement.classList.add('dark');
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
 
-<style>
-    .join-section {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        background-size: 200% 200%;
-        animation: gradient-shift 15s ease infinite;
-        position: relative;
-        overflow: hidden;
-    }
-
-    @keyframes gradient-shift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    .hover-lift {
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-    }
-    .hover-lift:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
-    }
-</style>
-
-<style>
-    .fw-black { font-weight: 900; }
-    .hero-title { 
-        letter-spacing: -2px; 
-        line-height: 1;
-        text-shadow: 2px 2px 20px rgba(0,0,0,0.5);
-    }
-    .badge-hero {
-        background: #ffcc00;
-        color: #000;
-        display: inline-block;
-        padding: 8px 20px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        font-size: 0.75rem;
-    }
-    .btn-hero {
-        background: #ffcc00;
-        color: #000;
-        transition: all 0.3s ease;
-    }
-    .btn-hero:hover {
-        background: #e6b800;
-        transform: translateY(-5px);
-    }
-    .btn-hero-outline {
-        border: 2px solid #fff;
-        transition: all 0.3s ease;
-    }
-    .btn-hero-outline:hover {
-        background: #fff;
-        color: #000;
-        transform: translateY(-5px);
-    }
-    .shadow-hover { transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease; }
-    .shadow-hover:hover { transform: translateY(-10px); box-shadow: 0 1.5rem 4rem rgba(0,0,0,.15)!important; }
-    .font-heading { font-family: 'Inter', sans-serif; letter-spacing: -0.5px; }
+    // 2. Custom Cursor & Magnetic Elements
+    const cursor = document.querySelector('.custom-cursor');
+    const cursorTrail = document.querySelector('.custom-cursor-trail');
+    const magnetics = document.querySelectorAll('.magnetic-el');
     
-    .section-divider {
-        width: 60px;
-        height: 4px;
-        background: #ffcc00;
-        margin-bottom: 2rem;
+    if (window.matchMedia("(any-hover: hover)").matches && cursor) {
+        let mouseX = 0, mouseY = 0;
+        let trailX = 0, trailY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            cursor.style.opacity = "1";
+            cursorTrail.style.opacity = "1";
+            
+            gsap.to(cursor, { x: mouseX, y: mouseY, duration: 0 });
+        });
+
+        // Spring physics for trail
+        const animateTrail = () => {
+            trailX += (mouseX - trailX) * 0.15;
+            trailY += (mouseY - trailY) * 0.15;
+            
+            cursorTrail.style.x = trailX;
+            cursorTrail.style.y = trailY;
+            
+            gsap.to(cursorTrail, { x: trailX, y: trailY, duration: 0 });
+            requestAnimationFrame(animateTrail);
+        };
+        animateTrail();
+
+        // Magnetic hover logic
+        magnetics.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('cursor-hover');
+                cursorTrail.style.opacity = '0';
+            });
+            el.addEventListener('mousemove', (e) => {
+                const rect = el.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                gsap.to(el, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: "power2.out" });
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('cursor-hover');
+                cursorTrail.style.opacity = '1';
+                gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+            });
+        });
     }
-</style>
+
+    // 3. Spotlight Cards Hover Effect
+    for(const card of document.getElementsByClassName("bento-card")) {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect(),
+                  x = e.clientX - rect.left,
+                  y = e.clientY - rect.top;
+            card.style.setProperty("--mouse-x", `${x}px`);
+            card.style.setProperty("--mouse-y", `${y}px`);
+        });
+    }
+
+    // 4. GSAP Scroll Animations
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero timeline
+    const tl = gsap.timeline();
+    tl.fromTo(".gsap-fade-up", 
+        { y: 50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, stagger: 0.2, ease: "power3.out" }
+    );
+
+    // Scroll reveal for cards
+    gsap.utils.toArray('.gsap-scroll-card').forEach((card, i) => {
+        gsap.fromTo(card, 
+            { y: 50, opacity: 0, scale: 0.95 },
+            { 
+                y: 0, opacity: 1, scale: 1, duration: 0.8, ease: "power3.out",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse"
+                }
+            }
+        );
+    });
+
+    // 5. Interactive Particle Mesh
+    const canvas = document.getElementById('particleCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: -1000, y: -1000, radius: 150 };
+
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Follow mouse ONLY if hover is supported
+        if (window.matchMedia("(any-hover: hover)").matches) {
+            document.addEventListener('mousemove', (e) => {
+                // Avoid getBoundingClientRect on every move
+                // Instead, use page coordinates
+                const rect = canvas.parentElement.getBoundingClientRect();
+                if (rect.bottom > 0) { // Only calculate if hero is visible
+                    mouse.x = e.clientX - rect.left;
+                    mouse.y = e.clientY - rect.top;
+                }
+            });
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce off edges
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // Mouse interaction
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    const force = (mouse.radius - distance) / mouse.radius;
+                    this.x -= dx * force * 0.03;
+                    this.y -= dy * force * 0.03;
+                }
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(6, 182, 212, 0.6)'; // Cyan glow
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const initParticles = () => {
+            particles = [];
+            let particleCount = (canvas.width * canvas.height) / 10000;
+            if (particleCount > 150) particleCount = 150; // Cap for performance
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+            }
+        };
+
+        let animationId;
+        let isVisible = true;
+
+        const animateParticles = () => {
+            if (!isVisible) return; // Pause animation when not visible
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                // Connect nodes
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.strokeStyle = `rgba(6, 182, 212, ${1 - dist / 120})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            animationId = requestAnimationFrame(animateParticles);
+        };
+
+        resizeCanvas();
+
+        // Use IntersectionObserver to pause animation when out of view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    isVisible = true;
+                    animateParticles();
+                } else {
+                    isVisible = false;
+                    cancelAnimationFrame(animationId);
+                }
+            });
+        });
+        observer.observe(canvas.parentElement);
+    }
+});
+</script>
 @endsection

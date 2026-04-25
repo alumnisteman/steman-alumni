@@ -26,4 +26,7 @@
         </div>
     </div>
 </div>
+@if(isset($exception_message))
+    <!-- DEBUG INFO: {{ $exception_message }} -->
+@endif
 @endsection
