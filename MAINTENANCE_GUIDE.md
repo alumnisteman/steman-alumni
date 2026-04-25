@@ -12,13 +12,29 @@ Masuk ke terminal server (`/var/www/steman-alumni`) dan gunakan perintah berikut
 | `./steman-cli.sh restart` | Merestart seluruh sistem jika ada kendala koneksi. |
 | `./steman-cli.sh clean` | Membersihkan cache Laravel (gunakan jika ada perubahan UI yang tidak muncul). |
 | `./steman-cli.sh logs` | Melihat log error secara real-time. |
+| `php artisan steman:check-integrity` | **[NEW]** Audit mendalam 16 titik (Smoke Test, Route, DB). |
+| `php artisan steman:cleanup` | **[NEW]** Pembersihan otomatis file sampah & cache views. |
 | `./steman-cli.sh ssl-fix` | Memaksa pembaruan sertifikat SSL dan reload Nginx. |
-| `./steman-cli.sh update` | Melakukan Full Update (Git Pull + Migrate + Restart). |
-| `./steman-cli.sh db-shell` | Masuk ke terminal database MariaDB. |
 
 ---
 
-## 📤 2. Update Aplikasi (dari Laptop Lokal)
+## 🛡️ 2. System Guard & Resilience Engine (v3)
+Aplikasi kini dilengkapi dengan pengawas otomatis yang berjalan setiap jam.
+
+### Cara Membaca Laporan Audit:
+Jika Anda menerima notifikasi **"Butuh Perhatian Manual"**, jalankan perintah audit di server:
+```bash
+docker exec app php artisan steman:check-integrity
+```
+
+**Titik Audit Utama:**
+- **Active Smoke Tests:** Mencoba akses HTTP ke halaman utama untuk deteksi dini Error 500.
+- **Route Shadowing:** Mendeteksi jika ada halaman yang tertutup oleh route wildcard.
+- **Migration Sync:** Memastikan database tidak tertinggal dari kode (Mismatch).
+
+---
+
+## 📤 3. Update Aplikasi (dari Laptop Lokal)
 Selalu gunakan skrip PowerShell untuk update agar sinkronisasi file tetap terjaga:
 
 ```powershell

@@ -157,9 +157,13 @@ php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force
 php artisan storage:link
+php artisan steman:check-integrity  # Verifikasi instalasi 100%
 php artisan optimize
 exit
 ```
+
+> [!IMPORTANT]
+> **PENTING:** Pastikan `APP_URL` di file `.env` sudah benar (termasuk https://). Jika salah, sistem audit **Smoke Test** akan gagal karena tidak bisa menghubungi server sendiri.
 
 ---
 
@@ -212,7 +216,7 @@ docker compose logs app
 ## 📞 Dukungan
 
 - **Portal Utama:** https://alumni-steman.my.id
-- **Admin:** admin@steman.ac.id
+- **Admin:** alumnisteman@gmail.com
 
 ---
 *Dokumen ini diperbarui untuk sistem tanpa lisensi (Full Version).*
