@@ -349,6 +349,10 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/alumni/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/alumni/profile', [ProfileController::class, 'update'])->name('profile.update');
 
+        // Skill Matchmaking (Tinder UI) - MUST BE BEFORE Wildcard
+        Route::get('/alumni/matchmaking', [\App\Http\Controllers\MatchmakingController::class, 'index'])->name('matchmaking.index');
+        Route::post('/alumni/matchmaking/swipe', [\App\Http\Controllers\MatchmakingController::class, 'swipe'])->name('matchmaking.swipe');
+
         // Wildcard Profile Route (MUST BE LAST in the /alumni/ group)
         Route::get('/alumni/{user}', [AlumniController::class, 'show'])->name('alumni.show');
 
@@ -380,10 +384,6 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         Route::get('/api/alumni/search', [\App\Http\Controllers\PostController::class, 'searchAlumni'])->name('api.alumni.search');
         Route::post('/api/track', [\App\Http\Controllers\Api\TrackingController::class, 'store'])->name('api.track');
         Route::post('/api/track/view', [\App\Http\Controllers\Api\TrackingController::class, 'trackView'])->name('api.track.view');
-
-        // Skill Matchmaking (Tinder UI)
-        Route::get('/alumni/matchmaking', [\App\Http\Controllers\MatchmakingController::class, 'index'])->name('matchmaking.index');
-        Route::post('/alumni/matchmaking/swipe', [\App\Http\Controllers\MatchmakingController::class, 'swipe'])->name('matchmaking.swipe');
 
         // WebAR Nostalgia Scanner
         Route::get('/ar-experience', function () {

@@ -33,6 +33,7 @@ class HealthChecker
             'nginx_down'      => fn() => $this->checkNginx(),
             'audit_broken'    => fn() => $this->checkAuditIntegrity(),
             'route_mismatch'  => fn() => $this->checkRouteIntegrity(),
+            'route_shadowing' => fn() => $this->checkShadowedRoutes(),
         ];
 
         foreach ($checks as $issueKey => $checkFn) {
@@ -180,5 +181,54 @@ class HealthChecker
 
             return !$foundUndefined;
         });
+    }
+
+    /**
+     * Deep check for routes that might be shadowed by wildcards (e.g. /alumni/{user} before /alumni/matchmaking)
+     */
+    private function checkShadowedRoutes(): bool
+    {
+        $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
+        $wildcards = [];
+        $shadowedCount = 0;
+
+        foreach ($routes as $route) {
+            $uri = $route->uri();
+            
+            // Check if this route is shadowed by any previous wildcard
+            foreach ($wildcards as $wc) {
+                if ($this->isShadowed($uri, $wc)) {
+                    Log::warning("Integrity Alert: Route [{$uri}] is shadowed by wildcard [{$wc}] and might be unreachable.");
+                    $shadowedCount++;
+                }
+            }
+
+            // Register as wildcard if it has parameters
+            if (str_contains($uri, '{')) {
+                $wildcards[] = $uri;
+            }
+        }
+
+        return $shadowedCount === 0;
+    }
+
+    private function isShadowed($uri, $wildcard): bool
+    {
+        $uriParts = explode('/', $uri);
+        $wcParts = explode('/', $wildcard);
+
+        if (count($uriParts) !== count($wcParts)) return false;
+
+        for ($i = 0; $i < count($wcParts); $i++) {
+            if (str_contains($wcParts[$i], '{')) {
+                // This is a parameter, it matches anything in the URI at this position
+                continue;
+            }
+            if ($uriParts[$i] !== $wcParts[$i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
