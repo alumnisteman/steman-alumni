@@ -49,6 +49,7 @@ class CheckIntegrity extends Command
         // 3. Application Logic
         $this->runCheck('Routes Compilation', fn() => $this->checkRoutes());
         $this->runCheck('Blade Route Integrity', fn() => $this->checkBladeRoutes());
+        $this->runCheck('Route Shadowing Audit', fn() => $this->checkShadowedAudit());
         $this->runCheck('Meilisearch Search', fn() => $this->checkMeilisearch());
         $this->runCheck('Captcha Stability', fn() => $this->checkCaptchaIntegrity());
 
@@ -292,6 +293,61 @@ class CheckIntegrity extends Command
         }
 
         $this->info('✓ Blade Routes: All referenced routes exist');
+        return true;
+    }
+
+    private function checkShadowedAudit(): bool
+    {
+        $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
+        $wildcards = [];
+        $shadowedCount = 0;
+
+        foreach ($routes as $route) {
+            $uri = $route->uri();
+            $methods = implode('|', $route->methods());
+            $key = $methods . ':' . $uri;
+            
+            // Check if this route is shadowed by any previous wildcard
+            foreach ($wildcards as $wcKey => $wcUri) {
+                if (str_starts_with($wcKey, $methods)) {
+                    if ($this->isShadowed($uri, $wcUri)) {
+                        $this->error("✗ Route Shadowing: [{$uri}] is blocked by wildcard [{$wcUri}]");
+                        $shadowedCount++;
+                    }
+                }
+            }
+
+            // Register as wildcard if it has parameters
+            if (str_contains($uri, '{')) {
+                $wildcards[$key] = $uri;
+            }
+        }
+
+        return $shadowedCount === 0;
+    }
+
+    private function isShadowed($uri, $wildcard): bool
+    {
+        // Don't check against itself
+        if ($uri === $wildcard) return false;
+        
+        // Only static routes can be shadowed
+        if (str_contains($uri, '{')) return false;
+
+        $uriParts = explode('/', $uri);
+        $wcParts = explode('/', $wildcard);
+
+        if (count($uriParts) !== count($wcParts)) return false;
+
+        for ($i = 0; $i < count($wcParts); $i++) {
+            if (str_contains($wcParts[$i], '{')) {
+                continue;
+            }
+            if (!isset($uriParts[$i]) || $uriParts[$i] !== $wcParts[$i]) {
+                return false;
+            }
+        }
+
         return true;
     }
 

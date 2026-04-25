@@ -194,18 +194,23 @@ class HealthChecker
 
         foreach ($routes as $route) {
             $uri = $route->uri();
+            $methods = implode('|', $route->methods());
+            $key = $methods . ':' . $uri;
             
-            // Check if this route is shadowed by any previous wildcard
-            foreach ($wildcards as $wc) {
-                if ($this->isShadowed($uri, $wc)) {
-                    Log::warning("Integrity Alert: Route [{$uri}] is shadowed by wildcard [{$wc}] and might be unreachable.");
-                    $shadowedCount++;
+            // Check if this route is shadowed by any previous wildcard in the same method group
+            foreach ($wildcards as $wcKey => $wcUri) {
+                // Only same methods can shadow each other
+                if (str_starts_with($wcKey, $methods)) {
+                    if ($this->isShadowed($uri, $wcUri)) {
+                        Log::warning("Integrity Alert: Route [{$uri}] is shadowed by wildcard [{$wcUri}] and might be unreachable.");
+                        $shadowedCount++;
+                    }
                 }
             }
 
-            // Register as wildcard if it has parameters
+            // Register as wildcard ONLY if it has parameters
             if (str_contains($uri, '{')) {
-                $wildcards[] = $uri;
+                $wildcards[$key] = $uri;
             }
         }
 
@@ -214,6 +219,12 @@ class HealthChecker
 
     private function isShadowed($uri, $wildcard): bool
     {
+        // Don't check against itself
+        if ($uri === $wildcard) return false;
+        
+        // Only static routes can be shadowed in a problematic way for this audit
+        if (str_contains($uri, '{')) return false;
+
         $uriParts = explode('/', $uri);
         $wcParts = explode('/', $wildcard);
 
@@ -221,10 +232,9 @@ class HealthChecker
 
         for ($i = 0; $i < count($wcParts); $i++) {
             if (str_contains($wcParts[$i], '{')) {
-                // This is a parameter, it matches anything in the URI at this position
                 continue;
             }
-            if ($uriParts[$i] !== $wcParts[$i]) {
+            if (!isset($uriParts[$i]) || $uriParts[$i] !== $wcParts[$i]) {
                 return false;
             }
         }
