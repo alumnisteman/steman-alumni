@@ -9,12 +9,17 @@ use Illuminate\Support\Facades\Http;
 
 class AutonomousAgent
 {
+    /** @var AIService */
+    protected $aiService;
+    
+    /** @var string|null */
     protected $geminiKey;
 
-    public function __construct()
+    public function __construct(AIService $aiService)
     {
+        $this->aiService = $aiService;
         // Consistent with AIService: check .env first, then database setting
-        $this->geminiKey = env('GEMINI_API_KEY');
+        $this->geminiKey = \env('GEMINI_API_KEY');
         if (empty($this->geminiKey)) {
             try {
                 $this->geminiKey = \App\Models\Setting::where('key', 'gemini_api_key')->value('value');
@@ -26,6 +31,11 @@ class AutonomousAgent
 
     /**
      * Analyze the exception and attempt to self-heal
+     * 
+     * @param string $errorLog
+     * @param string $filePath
+     * @param int $lineNumber
+     * @return bool
      */
     public function diagnoseAndHeal($errorLog, $filePath, $lineNumber)
     {
@@ -57,38 +67,39 @@ class AutonomousAgent
         return $this->applyHealInstruction($response, $filePath);
     }
 
+    /**
+     * Ask AI for a solution
+     * 
+     * @param string $prompt
+     * @return array|null
+     */
     private function askGemini($prompt)
     {
         try {
-            $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . $this->geminiKey;
+            // Leverage the robust fallback logic in AIService
+            $text = $this->aiService->ask($prompt, 0.1);
             
-            $response = \Illuminate\Support\Facades\Http::timeout(30)->post($url, [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.1,
-                ]
-            ]);
-
-            if (!$response->successful()) {
-                Log::error('AutonomousAgent: Gemini API error: ' . $response->status());
+            if (!$text) {
                 return null;
             }
 
-            $text = $response->json('candidates.0.content.parts.0.text') ?? '';
             return $this->parseAIResponse($text);
 
         } catch (\Exception $e) {
-            Log::error('AutonomousAgent: Gemini API exception: ' . $e->getMessage());
+            Log::error('AutonomousAgent: AI Service exception: ' . $e->getMessage());
             return null;
         }
     }
 
+    /**
+     * Build the prompt for AI analysis
+     * 
+     * @param string $errorLog
+     * @param string $filePath
+     * @param int $lineNumber
+     * @param string $fileContext
+     * @return string
+     */
     private function buildPrompt($errorLog, $filePath, $lineNumber, $fileContext)
     {
         return "You are an autonomous Laravel 11 self-healing agent. A Fatal Error occurred in the production environment.
@@ -116,6 +127,12 @@ Respond ONLY with a JSON object in this exact format, with no markdown formattin
 Do not wrap the JSON in markdown blocks like ```json.";
     }
 
+    /**
+     * Parse the AI response text into JSON
+     * 
+     * @param string $text
+     * @return array|null
+     */
     private function parseAIResponse($text)
     {
         // Strip markdown if AI misbehaves
@@ -123,6 +140,13 @@ Do not wrap the JSON in markdown blocks like ```json.";
         return json_decode(trim($text), true);
     }
 
+    /**
+     * Apply the heal instruction from AI
+     * 
+     * @param array $instruction
+     * @param string $filePath
+     * @return bool
+     */
     private function applyHealInstruction($instruction, $filePath)
     {
         if (!isset($instruction['type'])) return false;
@@ -152,9 +176,9 @@ Do not wrap the JSON in markdown blocks like ```json.";
             $content = File::get($filePath);
             
             // Backup the file
-            $backupPath = storage_path('app/ai_backups/' . basename($filePath) . '_' . time());
-            if (!File::isDirectory(storage_path('app/ai_backups'))) {
-                File::makeDirectory(storage_path('app/ai_backups'), 0755, true);
+            $backupPath = \storage_path('app/ai_backups/' . basename($filePath) . '_' . time());
+            if (!File::isDirectory(\storage_path('app/ai_backups'))) {
+                File::makeDirectory(\storage_path('app/ai_backups'), 0755, true);
             }
             File::put($backupPath, $content);
 

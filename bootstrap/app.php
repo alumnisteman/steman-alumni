@@ -25,18 +25,26 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        apiPrefix: '', // Remove the default 'api' prefix for clean subdomain usage
+    )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php'
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'alumni' => \App\Http\Middleware\AlumniMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'verified_alumni' => \App\Http\Middleware\EnsureUserIsVerified::class,
+            'cache_response' => \App\Http\Middleware\CacheResponse::class,
         ]);
         // Exempt /logout from CSRF: forcing a logout is not a harmful CSRF attack
         $middleware->validateCsrfTokens(except: ['/logout']);
-        $middleware->appendToGroup('web', 'throttle:global');
+        $middleware->appendToGroup('web', [
+            'throttle:global',
+            \App\Http\Middleware\UpdateUserActivity::class,
+            \App\Http\Middleware\EnsureAdminSubdomainAccess::class,
+        ]);
         $middleware->trustProxies(at: '*');
         //
     })
@@ -78,11 +86,26 @@ return Application::configure(basePath: dirname(__DIR__))
                             'parse_mode' => 'Markdown'
                         ]), false, $ctx);
                     }
+
+                    // --- AUTONOMOUS AGENT HOOK ---
+                    // Dispatch the AI Agent to attempt self-healing
+                    $errorLog = $e->getMessage();
+                    $filePath = $e->getFile();
+                    $lineNumber = $e->getLine();
+
+                    // Only try to heal application files (not framework files)
+                    if (str_contains($filePath, '/app/') || 
+                        str_contains($filePath, '/routes/') || 
+                        str_contains($filePath, '/config/') ||
+                        str_contains($filePath, '/resources/views/')) {
+                        \App\Jobs\AIAgentDiagnoseJob::dispatch($errorLog, $filePath, $lineNumber);
+                    }
                 }
             } catch (\Throwable $fatalInherited) {
                 // Last resort: standard system error log
                 error_log("Laravel Critical Error: " . $e->getMessage());
             }
+
         });
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
             return redirect()->guest('/login')->with('error', 'Sesi login Anda telah berakhir karena batas waktu tidak ada aktivitas. Silakan masuk kembali.');
@@ -113,7 +136,37 @@ return Application::configure(basePath: dirname(__DIR__))
                     return null; // Let standard error pages/redirects handle it
                 }
                 
-                return response()->view('errors.500', [], 500);
+                /*
+                // --- SELF-HEALING MODE ---
+                // Handle specific common fatal errors like missing route cache
+                if (str_contains($e->getMessage(), 'routes-v7.php')) {
+                    try {
+                        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+                        return redirect($request->fullUrl())->with('info', 'Sistem baru saja melakukan pembaruan konfigurasi otomatis.');
+                    } catch (\Throwable $th) {}
+                }
+
+                // If it's a fatal error (like undefined method), show the recovery screen instead of a generic 500
+                return response()->view('errors.soft_fail', [
+                    'message' => 'Sistem mendeteksi inkonsistensi data dan sedang melakukan pemulihan otomatis. Tim teknis telah dinotifikasi.'
+                ], 500); // Change to 500 to maintain correct HTTP status while showing custom view
+                */
             }
         });
+    })->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+        // 1. Core Backups
+        $schedule->command('steman:backup')->dailyAt('02:00')->onOneServer();
+
+        // 2. Performance Optimization
+        $schedule->command('steman:optimize')->dailyAt('03:00')->onOneServer();
+        $schedule->command('system:autofix', ['--force' => true])->weeklyOn(1, '04:00')->onOneServer(); // Every Monday
+
+        // 3. Garbage Collection & Disk Guard
+        $schedule->command('steman:cleanup')->weeklyOn(0, '04:00')->onOneServer(); // Every Sunday
+        $schedule->command('steman:clean-temp')->dailyAt('05:00')->onOneServer();
+        
+        // 4. Log Guard (Hourly) - Prevent Disk Full
+        $schedule->call(function() {
+            \Illuminate\Support\Facades\Artisan::call('system:autofix', ['--force' => true]);
+        })->hourly();
     })->create();

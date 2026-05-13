@@ -27,22 +27,25 @@ class User extends Authenticatable
         });
 
         static::saving(function ($user) {
-            // Auto-Geocoding logic: Trigger if address is provided AND (coords are empty OR address has changed)
+            // Auto-Geocoding logic: Trigger if address/city is provided AND (coords are empty OR address/city has changed)
             $addressChanged = $user->isDirty('address');
-            $needsGeocode = !empty($user->address) && (empty($user->latitude) || empty($user->longitude) || $addressChanged);
+            $cityChanged = $user->isDirty('city_name');
+            
+            $query = $user->address ?: $user->city_name;
+            $needsGeocode = !empty($query) && (empty($user->latitude) || empty($user->longitude) || $addressChanged || $cityChanged);
             
             if ($needsGeocode) {
-                \Illuminate\Support\Facades\Log::info('Geocoding triggered for user ' . $user->id . ' with address: ' . $user->address);
+                \Illuminate\Support\Facades\Log::info('Geocoding triggered for user ' . $user->id . ' with query: ' . $query);
                 try {
                     $aiService = app(\App\Services\AIService::class);
-                    $coords = $aiService->geocode($user->address);
+                    $coords = $aiService->geocode($query);
                     
-                    if ($coords && $coords['lat'] && $coords['lng']) {
+                    if ($coords && isset($coords['lat']) && isset($coords['lng'])) {
                         \Illuminate\Support\Facades\Log::info('Geocoding success for user ' . $user->id . ': ' . $coords['lat'] . ', ' . $coords['lng']);
                         $user->latitude = $coords['lat'];
                         $user->longitude = $coords['lng'];
-                        // Optional: Extract city name if missing
-                        if (empty($user->city_name) || $addressChanged) {
+                        // Optional: Extract city name if missing and we used address
+                        if (empty($user->city_name) && !empty($user->address)) {
                             $user->city_name = explode(',', $user->address)[0];
                         }
                     } else {
@@ -66,6 +69,29 @@ class User extends Authenticatable
         static::created(fn ($model) => $model->searchable());
         static::updated(fn ($model) => $model->searchable());
         static::deleted(fn ($model) => $model->unsearchable());
+
+        // Cascading Deletes to prevent data mismatch / orphaned rows
+        static::deleting(function ($user) {
+            try {
+                $user->posts()->delete();
+                $user->stories()->delete();
+                $user->sessions()->delete();
+                $user->socialLinks()->delete();
+                
+                // If permanent deletion, clean up pivot tables and raw logs
+                if (method_exists($user, 'isForceDeleting') && $user->isForceDeleting()) {
+                    $user->badges()->detach();
+                    $user->followers()->detach();
+                    $user->following()->detach();
+                    \Illuminate\Support\Facades\DB::table('activity_logs')->where('user_id', $user->id)->delete();
+                    \Illuminate\Support\Facades\DB::table('post_comments')->where('user_id', $user->id)->delete();
+                    \Illuminate\Support\Facades\DB::table('post_likes')->where('user_id', $user->id)->delete();
+                    \Illuminate\Support\Facades\DB::table('program_registrations')->where('user_id', $user->id)->delete();
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Cascading delete failed for User ' . $user->id . ': ' . $e->getMessage());
+            }
+        });
     }
 
     /**
@@ -85,6 +111,7 @@ class User extends Authenticatable
         'latitude', 'longitude',
         'qr_login_token',
         'city_name', 'is_active', 'last_active_at', 'show_social',
+        'social_id', 'social_type',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -119,7 +146,7 @@ class User extends Authenticatable
         $alumniLocations = static::where('role', 'alumni')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->get(['name', 'latitude', 'longitude', 'major', 'graduation_year']);
+            ->get(['id', 'name', 'latitude', 'longitude', 'major', 'graduation_year', 'profile_picture']);
 
 
         // Indonesia bounding box — easternmost point Merauke ~141.0°

@@ -50,13 +50,13 @@
                             <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm btn-light rounded-pill px-3 me-2">
                                 <i class="bi bi-pencil-square me-1"></i> Edit
                             </a>
-                            <form action="{{ route('admin.programs.destroy', $program) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus program ini?')">
-                                    <i class="bi bi-trash me-1"></i> Hapus
-                                </button>
-                            </form>
+                             <form id="delete-program-{{ $program->id }}" action="{{ route('admin.programs.destroy', $program) }}" method="POST" class="d-inline">
+                                 @csrf
+                                 @method('DELETE')
+                                 <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-program-{{ $program->id }}')">
+                                     <i class="bi bi-trash me-1" style="pointer-events: none;"></i> Hapus
+                                 </button>
+                             </form>
                         </td>
                     </tr>
                     @empty

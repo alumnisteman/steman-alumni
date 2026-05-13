@@ -114,6 +114,23 @@
 
                         <button type="submit" class="btn btn-login w-100 text-uppercase">MASUK KE DASHBOARD</button>
 
+                        <div class="mt-4 text-center">
+                            <div class="d-flex align-items-center mb-4">
+                                <hr class="flex-grow-1 opacity-25">
+                                <span class="mx-3 small opacity-50">ATAU LOGIN DENGAN</span>
+                                <hr class="flex-grow-1 opacity-25">
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{{ route('social.redirect', 'google') }}" class="btn btn-outline-light border-opacity-10 d-flex align-items-center justify-content-center p-3 rounded-3" style="background: rgba(255,255,255,0.02);">
+                                    <i class="bi bi-google me-2 text-danger"></i> Google Account
+                                </a>
+                                <a href="{{ route('social.redirect', 'linkedin') }}" class="btn btn-outline-light border-opacity-10 d-flex align-items-center justify-content-center p-3 rounded-3" style="background: rgba(255,255,255,0.02);">
+                                    <i class="bi bi-linkedin me-2 text-primary"></i> LinkedIn Profile
+                                </a>
+                            </div>
+                        </div>
+
                         <p class="text-center mt-5 mb-0 opacity-75 small">
                             Belum punya akun? <a href="{{ route('register') }}" class="text-warning fw-bold text-decoration-none">Daftar sekarang</a>
                         </p>

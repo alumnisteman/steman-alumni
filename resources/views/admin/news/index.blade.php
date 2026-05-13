@@ -54,10 +54,11 @@
                                     <i class="bi bi-pencil-square text-primary"></i>
                                 </a>
 
-                                <form action="{{ route('admin.news.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus berita ini?')">
+                                <form id="delete-news-{{ $item->id }}" action="{{ route('admin.news.destroy', $item->id) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Hapus">
-                                        <i class="bi bi-trash text-danger"></i>
+                                    <button type="button" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Hapus"
+                                            onclick="window.Guardian.confirmDelete('delete-news-{{ $item->id }}')">
+                                        <i class="bi bi-trash text-danger" style="pointer-events: none;"></i>
                                     </button>
                                 </form>
 

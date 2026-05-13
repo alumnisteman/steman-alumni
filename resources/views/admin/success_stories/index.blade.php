@@ -56,11 +56,11 @@
                                 <a href="{{ route('admin.success-stories.edit', $story->id) }}" class="btn btn-sm btn-outline-primary rounded-start-pill px-3">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('admin.success-stories.destroy', $story->id) }}" method="POST" class="d-inline">
+                                <form id="delete-story-{{ $story->id }}" action="{{ route('admin.success-stories.destroy', $story->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-end-pill px-3" onclick="return confirm('Hapus kisah ini?')">
-                                        <i class="bi bi-trash"></i>
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-end-pill px-3" onclick="window.Guardian.confirmDelete('delete-story-{{ $story->id }}')">
+                                        <i class="bi bi-trash" style="pointer-events: none;"></i>
                                     </button>
                                 </form>
                             </div>

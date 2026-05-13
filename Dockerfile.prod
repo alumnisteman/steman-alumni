@@ -19,6 +19,7 @@ RUN apk add --no-cache \
     unzip \
     libjpeg-turbo-dev \
     freetype-dev \
+    curl \
     tzdata
 
 

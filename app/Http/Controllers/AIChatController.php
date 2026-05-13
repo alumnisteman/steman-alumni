@@ -47,4 +47,28 @@ class AIChatController extends Controller
             ], 500);
         }
     }
+    /**
+     * Handle AI Content Generation for Admins
+     */
+    public function generateContent(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string|in:news,job',
+            'input' => 'required|string|min:10',
+        ]);
+
+        if (!auth()->user() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $typeLabel = $request->type === 'news' ? 'menulis berita' : 'menulis lowongan kerja';
+            $content = $this->aiService->generateContent($typeLabel, $request->input);
+
+            return response()->json(['content' => $content]);
+        } catch (\Exception $e) {
+            Log::error('AI Content Generation Error: ' . $e->getMessage());
+            return response()->json(['error' => 'AI sedang istirahat sejenak.'], 500);
+        }
+    }
 }

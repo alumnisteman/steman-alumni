@@ -60,9 +60,11 @@
                             <a href="{{ route('admin.campaigns.edit', $c->id) }}" class="btn btn-sm btn-outline-dark rounded-pill px-3 me-1">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form action="{{ route('admin.campaigns.destroy', $c->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus fund ini?')">
+                            <form id="delete-campaign-f-{{ $c->id }}" action="{{ route('admin.campaigns.destroy', $c->id) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="bi bi-trash"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-campaign-f-{{ $c->id }}')">
+                                    <i class="bi bi-trash" style="pointer-events: none;"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -121,9 +123,11 @@
                             <a href="{{ route('admin.campaigns.edit', $c->id) }}" class="btn btn-sm btn-outline-dark rounded-pill px-3 me-1">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form action="{{ route('admin.campaigns.destroy', $c->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus fund ini?')">
+                            <form id="delete-campaign-e-{{ $c->id }}" action="{{ route('admin.campaigns.destroy', $c->id) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="bi bi-trash"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-campaign-e-{{ $c->id }}')">
+                                    <i class="bi bi-trash" style="pointer-events: none;"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>

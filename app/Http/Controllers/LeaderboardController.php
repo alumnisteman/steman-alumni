@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LeaderboardController extends Controller
 {
@@ -13,7 +14,7 @@ class LeaderboardController extends Controller
     public function index()
     {
         // Cache top 10 alumni by points for 30 minutes
-        $data = \Illuminate\Support\Facades\Cache::remember('alumni_leaderboard', 1800, function () {
+        $data = Cache::remember('alumni_leaderboard', 1800, function () {
             $topAlumni = User::where('role', 'alumni')
                 ->where('status', 'approved')
                 ->orderBy('points', 'desc')
@@ -26,7 +27,7 @@ class LeaderboardController extends Controller
             ];
         });
 
-        return view('leaderboard.index', [
+        return \Illuminate\Support\Facades\View::make('leaderboard.index', [
             'podium' => $data['podium'],
             'others' => $data['others']
         ]);

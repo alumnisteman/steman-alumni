@@ -12,6 +12,12 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     deploy:
       replicas: 1
       resources:
@@ -153,7 +159,8 @@ services:
           cpus: '0.20'
           memory: 128M
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     logging:
       driver: "json-file"
       options:
@@ -165,6 +172,7 @@ services:
   certbot:
     image: certbot/certbot:latest
     container_name: steman_certbot
+    restart: always
     volumes:
       - certbot_certs:/etc/letsencrypt
       - certbot_www:/var/www/certbot

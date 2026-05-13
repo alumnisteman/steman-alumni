@@ -9,12 +9,45 @@ use Illuminate\Support\Facades\RateLimiter;
 class AIService
 {
     protected ?string $apiKey;
-    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+    protected ?string $openRouterKey;
+    protected ?string $openRouterModel;
+    protected ?string $openRouterApiBase;
+    protected ?string $deepSeekKey;
+    protected string $baseUrl = 'https://generativelanguage.googleapis.com';
+    protected string $deepSeekUrl = 'https://api.deepseek.com';
+    public ?string $activeProvider = null;
 
     public function __construct(?string $apiKey = null)
     {
-        // Prioritize: Passed key > Setting from Database > Fallback to .env config
-        $this->apiKey = $apiKey ?: setting('gemini_api_key', config('services.gemini.api_key'));
+        // Prioritize: Passed key > .env config > Setting from Database
+        $this->apiKey = $apiKey ?: (\config('services.gemini.api_key') ?: \setting('gemini_api_key'));
+        $this->openRouterKey = \config('services.openrouter.api_key') ?: \env('OPENROUTER_API_KEY');
+        $this->openRouterModel = \config('services.openrouter.model', 'google/gemini-2.0-flash-exp:free'); 
+        $this->openRouterApiBase = \config('services.openrouter.api_base', 'https://openrouter.ai/api/v1');
+        $this->deepSeekKey = \config('services.deepseek.api_key') ?: \env('DEEPSEEK_API_KEY');
+    }
+
+    private function tryDeepSeek(string $prompt, float $temperature): ?string
+    {
+        try {
+            $response = Http::withoutVerifying()->withHeaders([
+                'Authorization' => 'Bearer ' . $this->deepSeekKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(30)->post("{$this->deepSeekUrl}/chat/completions", [
+                'model' => 'deepseek-chat',
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
+                'temperature' => $temperature,
+            ]);
+
+            if ($response->successful()) {
+                return $response->json('choices.0.message.content');
+            }
+        } catch (\Exception $e) {
+            Log::error('AIService: DeepSeek Exception: ' . $e->getMessage());
+        }
+        return null;
     }
 
     /**
@@ -22,24 +55,45 @@ class AIService
      */
     public function ask(string $prompt, float $temperature = 0.7, ?string $model = null): ?string
     {
-        $models = $model ? [$model] : [
-            'gemini-2.0-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-1.5-flash',
-            'gemini-1.5-pro',
-        ];
+        $this->activeProvider = null;
+        $primary = \env('AI_PRIMARY_PROVIDER', 'gemini');
 
-        foreach ($models as $currentModel) {
-            // Attempt with Retry Logic (Max 2 attempts per model)
-            for ($attempt = 1; $attempt <= 2; $attempt++) {
-                $result = $this->tryRequest($prompt, $temperature, $currentModel);
-                if ($result) return $result;
-                
-                // If failed, wait a bit before retry
-                if ($attempt < 2) usleep(500000); // 0.5s
+        // Define provider execution order based on primary choice
+        $providers = $primary === 'openrouter' 
+            ? ['openrouter', 'gemini', 'deepseek'] 
+            : ($primary === 'deepseek' ? ['deepseek', 'gemini', 'openrouter'] : ['gemini', 'deepseek', 'openrouter']);
+
+        foreach ($providers as $provider) {
+            if ($provider === 'gemini') {
+                $models = $model ? [$model] : ['gemini-1.5-flash', 'gemini-2.0-flash-exp'];
+                foreach ($models as $currentModel) {
+                    for ($attempt = 1; $attempt <= 2; $attempt++) {
+                        $result = $this->tryRequest($prompt, $temperature, $currentModel);
+                        if ($result) {
+                            $this->activeProvider = 'Gemini (' . $currentModel . ')';
+                            return $result;
+                        }
+                        if ($attempt < 2) usleep(500000); // 0.5s
+                    }
+                }
+            } elseif ($provider === 'deepseek' && $this->deepSeekKey) {
+                Log::info('AIService: Attempting DeepSeek Direct...');
+                $result = $this->tryDeepSeek($prompt, $temperature);
+                if ($result) {
+                    $this->activeProvider = 'DeepSeek Direct';
+                    return $result;
+                }
+            } elseif ($provider === 'openrouter' && ($this->openRouterKey ?: \env('OPENROUTER_API_KEY'))) {
+                Log::info('AIService: Attempting OpenRouter...', ['model' => $this->openRouterModel]);
+                $result = $this->tryOpenRouter($prompt, $temperature);
+                if ($result) {
+                    $this->activeProvider = 'OpenRouter (' . $this->openRouterModel . ')';
+                    return $result;
+                }
             }
         }
 
+        Log::error('AIService: All AI attempts failed across all configured providers.');
         return null;
     }
 
@@ -61,7 +115,7 @@ class AIService
         
         Keep it concise but impactful.";
 
-        return $this->ask($prompt, 0.8, 'gemini-1.5-flash');
+        return $this->ask($prompt, 0.8, 'gemini-2.5-flash');
     }
 
     /**
@@ -74,45 +128,92 @@ class AIService
             return null;
         }
 
-        try {
-            // Use v1beta for better compatibility with latest models
-            $apiVersion = 'v1beta'; 
-            $url = "https://generativelanguage.googleapis.com/{$apiVersion}/models/{$model}:generateContent?key={$this->apiKey}";
+        // Always use v1beta as it has the widest model support
+        $apiVersions = ['v1beta'];
 
+        foreach ($apiVersions as $apiVersion) {
+            try {
+                $url = "{$this->baseUrl}/{$apiVersion}/models/{$model}:generateContent?key={$this->apiKey}";
+
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->timeout(30)->post($url, [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => [
+                        'temperature' => $temperature,
+                        'maxOutputTokens' => 1024,
+                    ]
+                ]);
+
+                if ($response->successful()) {
+                    $text = $response->json('candidates.0.content.parts.0.text');
+                    return !empty($text) ? $text : null;
+                }
+
+                $status = $response->status();
+                $body = $response->body();
+
+                // If 404, maybe this model is not in this API version, try next version
+                if ($status === 404 && $apiVersion === 'v1beta' && count($apiVersions) > 1) {
+                    Log::debug("AIService: Model [$model] not found in v1beta, trying v1...");
+                    continue; 
+                }
+
+                // Differentiate between quota (429) and real errors
+                if ($status === 429) {
+                    Log::debug("AIService: Gemini quota exceeded for [$model]. Will fallback to next model.");
+                } else {
+                    Log::warning("AIService: Gemini API Error ($status) for [$model] in [$apiVersion]", [
+                        'url' => "{$this->baseUrl}/{$apiVersion}/models/{$model}",
+                        'body' => $body
+                    ]);
+                }
+
+                // If we get a 403 or 400, no point in trying other versions for this model
+                if ($status === 403 || $status === 400) break;
+
+            } catch (\Exception $e) {
+                Log::error("AIService Exception for [$model] in [$apiVersion]: " . $e->getMessage());
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Fallback to OpenRouter (The "Open Claw" integration)
+     */
+    private function tryOpenRouter(string $prompt, float $temperature): ?string
+    {
+        try {
+            $endpoint = rtrim($this->openRouterApiBase, '/') . '/chat/completions';
             $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->openRouterKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->post($url, [
-                'contents' => [['parts' => [['text' => $prompt]]]],
-                'generationConfig' => [
-                    'temperature' => $temperature,
-                    'maxOutputTokens' => 1024,
-                ]
+                'HTTP-Referer' => \config('app.url'),
+                'X-Title' => 'Smart Market OS',
+            ])->timeout(30)->post($endpoint, [
+                'model' => $this->openRouterModel,
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
+                'temperature' => $temperature,
             ]);
 
             if ($response->successful()) {
-                $text = $response->json('candidates.0.content.parts.0.text');
-                return !empty($text) ? $text : null;
+                return $response->json('choices.0.message.content');
             }
 
-            $status = $response->status();
-            $body = $response->body();
-
-            // Differentiate between quota (429) and real errors
-            if ($status === 429) {
-                Log::debug("AIService: Gemini quota exceeded for [$model]. Will fallback to next model.");
-            } else {
-                Log::warning("AIService: Gemini API Error ($status) for [$model]", [
-                    'url' => "generativelanguage.googleapis.com/{$apiVersion}/models/{$model}",
-                    'body' => $body
-                ]);
-            }
-
-            return null;
-
+            Log::warning('AIService: OpenRouter API Error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
         } catch (\Exception $e) {
-            Log::error("AIService Exception for [$model]: " . $e->getMessage());
-            return null;
+            Log::error('AIService: OpenRouter Exception: ' . $e->getMessage());
         }
+
+        return null;
     }
 
     /**
@@ -120,17 +221,21 @@ class AIService
      */
     public function checkHealth(): array
     {
-        if (empty($this->apiKey)) {
-            return ['status' => 'ERROR', 'message' => 'API Key is missing in configuration.'];
+        if (empty($this->apiKey) && empty($this->openRouterKey) && empty($this->deepSeekKey)) {
+            return ['status' => 'ERROR', 'message' => 'No AI API Keys configured.'];
         }
 
-        $result = $this->ask("Hello, are you active? Reply with 'ACTIVE' only.", 0.1, 'gemini-1.5-flash');
+        $result = $this->ask("Hello, are you active? Reply with 'ACTIVE' only.", 0.1);
         
         if ($result && str_contains(strtoupper($result), 'ACTIVE')) {
-            return ['status' => 'HEALTHY', 'message' => 'Gemini API is connected and responding.'];
+            return [
+                'status' => 'HEALTHY', 
+                'message' => 'AI Service is connected and responding.',
+                'provider' => $this->activeProvider ?? 'Unknown'
+            ];
         }
 
-        return ['status' => 'ERROR', 'message' => 'Gemini API is unreachable or returned invalid response.'];
+        return ['status' => 'ERROR', 'message' => 'AI Service is unreachable or returned invalid response.', 'provider' => 'None'];
     }
 
     /**
@@ -157,7 +262,7 @@ class AIService
      */
     public function recommendAlumni(array $userProfile, array $candidates): array
     {
-        $candidateData = collect($candidates)->map(fn($c) => "[ID: {$c['id']}, Name: {$c['name']}, Major: {$c['major']}, Job: {$c['current_job']}]")->join("\n");
+        $candidateData = \collect($candidates)->map(fn($c) => "[ID: {$c['id']}, Name: {$c['name']}, Major: {$c['major']}, Job: {$c['current_job']}]")->join("\n");
         
         $prompt = "You are a professional networking assistant. Based on this user profile:
         Name: {$userProfile['name']}
@@ -187,7 +292,7 @@ class AIService
      */
     public function matchMentor(array $userProfile, array $candidates): array
     {
-        $candidateData = collect($candidates)->map(fn($c) => "[ID: {$c['id']}, Name: {$c['name']}, Major: {$c['major']}, Job: {$c['current_job']}]")->join("\n");
+        $candidateData = \collect($candidates)->map(fn($c) => "[ID: {$c['id']}, Name: {$c['name']}, Major: {$c['major']}, Job: {$c['current_job']}]")->join("\n");
         
         $prompt = "You are an expert career counselor. Based on this user's profile:
         Name: {$userProfile['name']}
@@ -327,5 +432,43 @@ class AIService
         Be friendly and encouraging.";
 
         return $this->ask($prompt, 0.7);
+    }
+    /**
+     * AI Content Helper: Generate or improve text for news/jobs
+     */
+    public function generateContent(string $type, string $input): ?string
+    {
+        $prompt = "You are a creative content writer for a high-end alumni portal. 
+        Help the user $type based on this input: \"$input\".
+        - Tone: Professional, engaging, and modern.
+        - Language: Indonesian.
+        - Output ONLY the result text, no chat or meta comments.
+        - If generating news, make it a compelling news article.
+        - If generating a job description, make it professional and structured.";
+
+        return $this->ask($prompt, 0.7);
+    }
+
+    /**
+     * Generate a professional bio for an alumni.
+     * 
+     * @param string $name
+     * @param string $major
+     * @param string|int $gradYear
+     * @param string $skills
+     * @param string $experience
+     * @return string|null
+     */
+    public function generateProfessionalBio($name, $major, $gradYear, $skills = '', $experience = '')
+    {
+        $prompt = "Generate a short, professional, and inspiring bio for an alumni named {$name}. 
+                   Major: {$major}. 
+                   Graduation Year: {$gradYear}. 
+                   Skills: {$skills}. 
+                   Experience: {$experience}.
+                   The bio should be in Indonesian, maximum 3 sentences, and sound confident yet approachable. 
+                   Return ONLY the bio text.";
+
+        return $this->ask($prompt);
     }
 }

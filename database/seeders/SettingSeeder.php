@@ -155,7 +155,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'hero_background',
-                'value' => '/assets/images/hero_iluni.png',
+                'value' => '/images/hero_iluni.png',
                 'label' => 'Gambar Latar Banner Utama (Hero Background)',
                 'group' => 'hero'
             ],
@@ -184,6 +184,12 @@ class SettingSeeder extends Seeder
                 'value' => 'https://ui-avatars.com/api/?name=Sekretaris+Panitia&background=28a745&color=fff&size=400',
                 'label' => 'Foto Sekretaris',
                 'group' => 'secretary'
+            ],
+            [
+                'key' => 'site_logo',
+                'value' => '/images/logo.jpg',
+                'label' => 'Logo Situs',
+                'group' => 'general'
             ],
         ];
 

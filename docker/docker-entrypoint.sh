@@ -27,12 +27,23 @@ if [ $TRIES -eq $MAX_TRIES ]; then
   exit 1
 fi
 
+# Wait for Redis
+echo "Waiting for Redis (redis:6379)..."
+REDIS_TRIES=0
+until nc -z redis 6379 || [ $REDIS_TRIES -eq 10 ]; do
+  sleep 1
+  REDIS_TRIES=$((REDIS_TRIES+1))
+done
+
 echo "Running Database Migrations..."
 php artisan migrate --force
 
 # --- 4. Performance Tuning (Production) ---
 if [ "$APP_ENV" = "production" ]; then
     echo "Optimizing Laravel for Production..."
+    # Manual purge to avoid Artisan race conditions during boot
+    rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
+    
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
@@ -41,11 +52,10 @@ if [ "$APP_ENV" = "production" ]; then
     php artisan storage:link || true
 fi
 
-# --- 5. Permissions Enforcement ---
-echo "Applying runtime permissions..."
-chmod -R 755 /var/www 2>/dev/null || true
-chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
-chmod -R 775 /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
+# --- 5. Permissions Enforcement (Optimized) ---
+echo "Applying runtime permissions to storage and cache..."
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 # --- 6. Laravel Scheduler (Cron) ---
 echo "Setting up Laravel Scheduler..."
@@ -68,11 +78,10 @@ done
 if [ $MEILI_TRIES -lt $MEILI_MAX ]; then
     echo "Meilisearch is ready. Configuring index settings (geo-sort)..."
     # Configure sortable & filterable attributes for geo radar feature
-    wget -q -O /dev/null \
-        --method=PATCH \
-        --header="Content-Type: application/json" \
-        --header="Authorization: Bearer ${MEILI_KEY}" \
-        --body-data='{"sortableAttributes":["_geo"],"filterableAttributes":["major","graduation_year","id"]}' \
+    curl -s -X PATCH \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${MEILI_KEY}" \
+        -d '{"sortableAttributes":["_geo"],"filterableAttributes":["major","graduation_year","id"]}' \
         "${MEILI_HOST}/indexes/users/settings" || true
     echo "Meilisearch configured. Importing user index..."
     php artisan scout:import "App\Models\User" >> /var/www/storage/logs/scheduler.log 2>&1 &

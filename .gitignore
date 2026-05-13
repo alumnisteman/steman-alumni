@@ -6,6 +6,8 @@
 /vendor
 .env*
 !.env.example
+.env.remote
+.env.production.remote
 .phpunit.result.cache
 docker-compose.override.yml
 docker-compose.yml.bak
@@ -26,6 +28,7 @@ Thumbs.db
 .phpunit.result.cache
 steman_deploy.zip
 laravel_remote.log
+latest_log.txt
 
 # Debug & diagnostic files
 diag_*.php

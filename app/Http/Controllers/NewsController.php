@@ -40,7 +40,16 @@ class NewsController extends Controller
         }
 
         $item = $query->firstOrFail();
-        return view('news.show', compact('item'));
+
+        // Get related news (same category, excluding current item)
+        $related = News::where('status', 'published')
+            ->where('category', $item->category)
+            ->where('id', '!=', $item->id)
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        return view('news.show', compact('item', 'related'));
     }
 
     // Admin Views

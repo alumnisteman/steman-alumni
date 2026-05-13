@@ -40,9 +40,16 @@ class AIAgentDiagnoseJob implements ShouldQueue
         if ($healed) {
             $this->notifyTelegram("🤖 *Steman Autonomous Agent*\n\n✅ Sistem berhasil melakukan self-healing!\n\n*Error Teratasi:* `" . substr($this->errorLog, 0, 150) . "...`\n*Lokasi:* `{$this->filePath}`");
         } else {
-            // Optional: Notify failure so humans can step in
-            Log::warning("AIAgentDiagnoseJob: AI failed to heal the system automatically for error: " . $this->errorLog);
-            $this->notifyTelegram("🤖 *Steman Autonomous Agent*\n\n⚠️ Gagal melakukan self-healing otomatis.\n\n*Error:* `" . substr($this->errorLog, 0, 150) . "...`\n*Lokasi:* `{$this->filePath}`\n\n*Tindakan:* Mohon bantuan teknis manual.");
+            // FALLBACK: If AI fails to heal specific code, perform a global system stabilization
+            Log::warning("AIAgentDiagnoseJob: AI failed to heal code. Triggering SystemAutoFix fallback...");
+            
+            try {
+                \Illuminate\Support\Facades\Artisan::call('system:autofix', ['--force' => true]);
+                $this->notifyTelegram("🤖 *Steman Autonomous Agent*\n\n⚠️ AI gagal memperbaiki kode secara spesifik, namun *SystemAutoFix* telah dijalankan untuk menstabilkan sistem (clear cache, audit DB, optimize).\n\n*Original Error:* `" . substr($this->errorLog, 0, 150) . "...`\n*Status:* Sistem telah distabilkan.");
+            } catch (\Exception $e) {
+                Log::error("AIAgentDiagnoseJob: SystemAutoFix fallback failed: " . $e->getMessage());
+                $this->notifyTelegram("🤖 *Steman Autonomous Agent*\n\n❌ Gagal melakukan self-healing dan stabilisasi otomatis.\n\n*Error:* `" . substr($this->errorLog, 0, 150) . "...`\n\n*Tindakan:* Mohon bantuan teknis manual SEGERA.");
+            }
         }
     }
 

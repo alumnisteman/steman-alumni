@@ -1,0 +1,100 @@
+logger=settings t=2026-05-04T18:11:55.684232584Z level=info msg="Starting Grafana" version=13.0.1 commit=a100054f branch=release-13.0.1 compiled=2026-04-17T01:07:39Z
+logger=settings t=2026-05-04T18:11:55.68538891Z level=info msg="Unified migration configs enforced" storage_type=unified target=[all]
+logger=settings t=2026-05-04T18:11:55.685421721Z level=info msg="Enforcing mode 5 for resource in unified storage" resource=playlists.playlist.grafana.app
+logger=settings t=2026-05-04T18:11:55.685428614Z level=info msg="Enforcing mode 5 for resource in unified storage" resource=folders.folder.grafana.app
+logger=settings t=2026-05-04T18:11:55.685433224Z level=info msg="Enforcing mode 5 for resource in unified storage" resource=dashboards.dashboard.grafana.app
+logger=settings t=2026-05-04T18:11:55.685583987Z level=info msg="Config loaded from" file=/usr/share/grafana/conf/defaults.ini
+logger=settings t=2026-05-04T18:11:55.685602658Z level=info msg="Config loaded from" file=/etc/grafana/grafana.ini
+logger=settings t=2026-05-04T18:11:55.685628194Z level=info msg="Config overridden from command line" arg="default.paths.data=/var/lib/grafana"
+logger=settings t=2026-05-04T18:11:55.685633445Z level=info msg="Config overridden from command line" arg="default.paths.logs=/var/log/grafana"
+logger=settings t=2026-05-04T18:11:55.685637462Z level=info msg="Config overridden from command line" arg="default.paths.plugins=/var/lib/grafana/plugins"
+logger=settings t=2026-05-04T18:11:55.685647909Z level=info msg="Config overridden from command line" arg="default.paths.provisioning=/etc/grafana/provisioning"
+logger=settings t=2026-05-04T18:11:55.685652477Z level=info msg="Config overridden from command line" arg="default.log.mode=console"
+logger=settings t=2026-05-04T18:11:55.685656684Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_DATA=/var/lib/grafana"
+logger=settings t=2026-05-04T18:11:55.685675959Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_LOGS=/var/log/grafana"
+logger=settings t=2026-05-04T18:11:55.685684446Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_PLUGINS=/var/lib/grafana/plugins"
+logger=settings t=2026-05-04T18:11:55.685688507Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_PROVISIONING=/etc/grafana/provisioning"
+logger=settings t=2026-05-04T18:11:55.685692397Z level=info msg="Config overridden from Environment variable" var="GF_SERVER_ROOT_URL=https://admin.alumni-steman.my.id/grafana/"
+logger=settings t=2026-05-04T18:11:55.685697991Z level=info msg="Config overridden from Environment variable" var="GF_SERVER_SERVE_FROM_SUB_PATH=true"
+logger=settings t=2026-05-04T18:11:55.685719057Z level=info msg="Config overridden from Environment variable" var="GF_ANALYTICS_REPORTING_ENABLED=false"
+logger=settings t=2026-05-04T18:11:55.685723237Z level=info msg="Config overridden from Environment variable" var="GF_SECURITY_ADMIN_USER=admin"
+logger=settings t=2026-05-04T18:11:55.685727524Z level=info msg="Config overridden from Environment variable" var="GF_SECURITY_ADMIN_PASSWORD=*********"
+logger=settings t=2026-05-04T18:11:55.685731615Z level=info msg="Config overridden from Environment variable" var="GF_SECURITY_COOKIE_SAMESITE=none"
+logger=settings t=2026-05-04T18:11:55.685735636Z level=info msg="Config overridden from Environment variable" var="GF_SECURITY_ALLOW_EMBEDDING=true"
+logger=settings t=2026-05-04T18:11:55.685739729Z level=info msg="Config overridden from Environment variable" var="GF_SNAPSHOTS_EXTERNAL_ENABLED=false"
+logger=settings t=2026-05-04T18:11:55.685744116Z level=info msg="Config overridden from Environment variable" var="GF_USERS_ALLOW_SIGN_UP=false"
+logger=settings t=2026-05-04T18:11:55.685754073Z level=info msg="Config overridden from Environment variable" var="GF_AUTH_ANONYMOUS_ENABLED=true"
+logger=settings t=2026-05-04T18:11:55.685758233Z level=info msg="Config overridden from Environment variable" var="GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer"
+logger=settings t=2026-05-04T18:11:55.685762275Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_HOME=/usr/share/grafana"
+logger=settings t=2026-05-04T18:11:55.685766411Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_CONFIG=/etc/grafana/grafana.ini"
+logger=settings t=2026-05-04T18:11:55.685770808Z level=info msg=Target target=[all]
+logger=settings t=2026-05-04T18:11:55.685795785Z level=info msg="Path Home" path=/usr/share/grafana
+logger=settings t=2026-05-04T18:11:55.685800178Z level=info msg="Path Data" path=/var/lib/grafana
+logger=settings t=2026-05-04T18:11:55.685804Z level=info msg="Path Logs" path=/var/log/grafana
+logger=settings t=2026-05-04T18:11:55.685807676Z level=info msg="Path Plugins" path="[/var/lib/grafana/plugins /usr/share/grafana/data/plugins-bundled]"
+logger=settings t=2026-05-04T18:11:55.685813948Z level=info msg="Path Provisioning" path=/etc/grafana/provisioning
+logger=settings t=2026-05-04T18:11:55.685834492Z level=info msg="App mode production"
+logger=featuremgmt t=2026-05-04T18:11:55.687287322Z level=info msg=FeatureToggles alertRuleRestore=true alertingBulkActionsInUI=true alertingImportYAMLUI=true alertingListViewV2=true alertingListViewV2PreviewToggle=true alertingMigrationUI=true alertingNavigationV2=true alertingNotificationsStepMode=true alertingQueryAndExpressionsStepMode=true alertingRulePermanentlyDelete=true alertingRuleRecoverDeleted=true alertingRuleVersionHistoryRestore=true alertingSaveStateCompressed=true alertingUIOptimizeReducer=true alertingUIUseBackendFilters=true alertingUIUseFullyCompatBackendFilters=true alertingUseNewSimplifiedRoutingHashAlgorithm=true annotationPermissionUpdate=true awsAsyncQueryCaching=true awsDatasourcesTempCredentials=true azureMonitorEnableUserAuth=true azureMonitorPrometheusExemplars=true azureResourcePickerUpdates=true cloudWatchCrossAccountQuerying=true cloudWatchNewLabelParsing=true cloudWatchRoundUpEndTime=true dashboardDefaultLayoutSelector=true dashboardNewLayouts=true dashboardScene=true dashgpt=true enableSCIM=true externalVizSuggestions=true feedbackButton=true grafanaAdvisor=true grafanaAssistantInProfilesDrilldown=true grafanaconThemes=true improvedExternalSessionHandling=true improvedExternalSessionHandlingSAML=true influxdbBackendMigration=true logsPanelControls=true lokiLabelNamesQueryApi=true lokiQuerySplitting=true multiPropsVariables=true newLogsPanel=true newPanelPadding=true newTimeRangeZoomShortcuts=true newUnconfiguredPanel=true newVizSuggestions=true onlyStoreActionSets=true preventPanelChromeOverflow=true prometheusAzureOverrideAudience=true prometheusTypeMigration=true provisioning=true provisioningFolderMetadata=true publicDashboardsScene=true rememberUserOrgForSso=true renderAuthJWT=true restoreDashboards=true restrictedPluginApis=true sharingDashboardImage=true splashScreen=true timeRangePan=true useSessionStorageForRedirection=true
+logger=sqlstore t=2026-05-04T18:11:55.687439742Z level=info msg="Connecting to DB" dbtype=sqlite3
+logger=sqlstore t=2026-05-04T18:11:55.687449992Z level=info msg="Using SQLite driver" driver=modernc.org/sqlite
+logger=migrator t=2026-05-04T18:11:55.689447316Z level=info msg="Locking database"
+logger=migrator t=2026-05-04T18:11:55.689473307Z level=info msg="Starting DB migrations"
+logger=migrator t=2026-05-04T18:11:55.785895835Z level=info msg="migrations completed" performed=0 skipped=709 duration=3.407953ms
+logger=migrator t=2026-05-04T18:11:55.786428968Z level=info msg="Unlocking database"
+logger=secrets t=2026-05-04T18:11:55.969562066Z level=info msg="Envelope encryption state" currentprovider=secretKey.v1
+logger=plugin.angulardetectorsprovider.dynamic t=2026-05-04T18:11:57.076159468Z level=info msg="Restored cache from database" duration=571.899µs
+logger=accesscontrol.service t=2026-05-04T18:11:57.077604697Z level=info msg="Starting migration to remove deprecated permissions" migration=removeDeprecatedPermissions
+logger=accesscontrol.service t=2026-05-04T18:11:57.078294025Z level=info msg="Completed migration to remove deprecated permissions" migration=removeDeprecatedPermissions totalRemoved=0 duration=691.333µs
+logger=plugin.store t=2026-05-04T18:11:57.078531654Z level=info msg="Loading plugins..."
+logger=plugins.registration t=2026-05-04T18:11:57.89020247Z level=info msg="Plugin registered" pluginId=grafana-exploretraces-app
+logger=plugins.registration t=2026-05-04T18:11:58.380457891Z level=info msg="Plugin registered" pluginId=grafana-lokiexplore-app
+logger=plugins.registration t=2026-05-04T18:11:58.786149236Z level=info msg="Plugin registered" pluginId=grafana-metricsdrilldown-app
+logger=plugins.registration t=2026-05-04T18:11:59.181473736Z level=info msg="Plugin registered" pluginId=grafana-pyroscope-app
+logger=plugins.registration t=2026-05-04T18:12:00.378466979Z level=info msg="Plugin registered" pluginId=elasticsearch
+logger=plugin.store t=2026-05-04T18:12:00.378520126Z level=info msg="Plugins loaded" count=56 duration=3.299992126s
+logger=authz-grpc-server t=2026-05-04T18:12:00.378971562Z level=info msg="cache ttl is 0, using noop cache"
+logger=authz-grpc-server t=2026-05-04T18:12:00.379001244Z level=info msg="cache ttl is 0, using noop cache"
+logger=authz-grpc-server t=2026-05-04T18:12:00.379010499Z level=info msg="cache ttl is 0, using noop cache"
+logger=authz-grpc-server t=2026-05-04T18:12:00.379016983Z level=info msg="cache ttl is 0, using noop cache"
+logger=authz-grpc-server t=2026-05-04T18:12:00.379025271Z level=info msg="cache ttl is 0, using noop cache"
+logger=secret-migrator t=2026-05-04T18:12:00.379423773Z level=info msg="Locking database"
+logger=secret-migrator t=2026-05-04T18:12:00.379446892Z level=info msg="Starting DB migrations"
+logger=secret-migrator t=2026-05-04T18:12:00.380755938Z level=info msg="migrations completed" performed=0 skipped=33 duration=210.745µs
+logger=secret-migrator t=2026-05-04T18:12:00.38115007Z level=info msg="Unlocking database"
+logger=resource-db t=2026-05-04T18:12:00.381948854Z level=info msg="Using database section" db_type=sqlite3
+logger=resource-db t=2026-05-04T18:12:00.382029793Z level=info msg="Initializing Resource DB" db_type=sqlite3 open_conn=0 in_use_conn=0 idle_conn=0 max_open_conn=0
+logger=resource-migrator t=2026-05-04T18:12:00.382557185Z level=info msg="Locking database"
+logger=resource-migrator t=2026-05-04T18:12:00.382599236Z level=info msg="Starting DB migrations"
+logger=resource-migrator t=2026-05-04T18:12:00.471678213Z level=info msg="migrations completed" performed=0 skipped=43 duration=199.574µs
+logger=resource-migrator t=2026-05-04T18:12:00.471978164Z level=info msg="Unlocking database"
+t=2026-05-04T18:12:00.474926026Z level=info caller=logger.go:214 time=2026-05-04T18:12:00.474907221Z msg="Using channel notifier" logger=sql-resource-server
+logger=bleve-backend namespace=default group=advisor.grafana.app resource=checktypes size=5 reason=init t=2026-05-04T18:12:00.476404177Z level=info msg="Building index using memory"
+logger=bleve-backend namespace=default group=advisor.grafana.app resource=checktypes size=5 reason=init t=2026-05-04T18:12:00.480423896Z level=info msg="Finished building index" elapsed=3.983181ms listRV=1777897265524015
+logger=bleve-backend namespace=default group=advisor.grafana.app resource=checktypes size=5 reason=init t=2026-05-04T18:12:00.480467524Z level=info msg="Storing index in cache" key="{Namespace:default Group:advisor.grafana.app Resource:checktypes}" expiration=2026-05-04T18:22:00.480465823Z
+logger=resource-search t=2026-05-04T18:12:00.480551747Z level=info msg="search index initialized" duration_secs=0 total_docs=5
+logger=storage.unified.migrations t=2026-05-04T18:12:00.483559108Z level=info msg="Running migrations for unified storage"
+logger=storage.unified.migrations t=2026-05-04T18:12:00.483640612Z level=info msg="Migration is disabled in config, skipping" migration=shorturls
+logger=storage.unified.migrations t=2026-05-04T18:12:00.483651546Z level=info msg="Migration is disabled in config, skipping" migration=datasource
+logger=storage.unified.migrations t=2026-05-04T18:12:00.483656364Z level=info msg="Migration is disabled in config, skipping" migration=stars
+logger=unifiedstorage-migrator t=2026-05-04T18:12:00.483689376Z level=info msg="Locking database"
+logger=unifiedstorage-migrator t=2026-05-04T18:12:00.483698017Z level=info msg="Starting DB migrations"
+logger=unifiedstorage-migrator t=2026-05-04T18:12:00.484104079Z level=info msg="migrations completed" performed=0 skipped=3 duration=21.94µs
+logger=unifiedstorage-migrator t=2026-05-04T18:12:00.484348078Z level=info msg="Unlocking database"
+logger=storage.unified.migrations t=2026-05-04T18:12:00.48438135Z level=info msg="Unified storage migrations completed successfully"
+logger=annotations t=2026-05-04T18:12:00.485174503Z level=info msg="Starting annotation dashboard_uid migration in background"
+logger=annotations t=2026-05-04T18:12:00.485208312Z level=info msg="Starting batched dashboard_uid migration for annotations (newest first)" batchSize=5000
+logger=annotations t=2026-05-04T18:12:00.485784003Z level=info msg="Completed dashboard_uid migration for annotations" totalUpdated=0
+logger=annotations t=2026-05-04T18:12:00.485811917Z level=info msg="Annotation dashboard_uid migration completed successfully"
+logger=storage.unified.migrations t=2026-05-04T18:12:00.572160846Z level=info msg="Resolved storage mode from migration log" resource=folders.folder.grafana.app mode=unified
+logger=live.push_http t=2026-05-04T18:12:00.580275528Z level=info msg="Live Push Gateway initialization"
+logger=ngalert.notifier t=2026-05-04T18:12:00.583966576Z level=info component=alertmanager orgID=1 msg="template definitions loaded" mimir=0 grafana=0 total=0 maxTemplateOutput=10485760
+logger=ngalert.notifier component=alertmanager orgID=1 t=2026-05-04T18:12:00.587547486Z level=info msg="Applying new configuration to Alertmanager" configHash="{16778549912962373901 16454292769479786371 11334157631281353376 13684829433332818750 9889444224312429563 10278876130067529486 13274274624283075277 5144611013662998819}"
+logger=ngalert.notifier t=2026-05-04T18:12:00.587636518Z level=info component=alertmanager orgID=1 msg="template definitions loaded" mimir=0 grafana=0 total=0 maxTemplateOutput=10485760
+logger=ngalert.writer t=2026-05-04T18:12:00.687665624Z level=info msg="Setting up remote write using data sources" timeout=30s default_datasource_uid=
+logger=ngalert t=2026-05-04T18:12:00.687793693Z level=info msg="Using protobuf-based alert instance store"
+logger=ngalert.state.manager.persist t=2026-05-04T18:12:00.687817253Z level=info msg="Using sync rule state persister (compressed)"
+logger=query_data t=2026-05-04T18:12:00.689308139Z level=info msg="Query Service initialization"
+logger=infra.usagestats.collector t=2026-05-04T18:12:00.97892102Z level=info msg="registering usage stat providers" usageStatsProvidersLen=2
+logger=annotation.app t=2026-05-04T18:12:01.077779783Z level=info msg="Starting annotation cleanup loop" interval=24h0m0s retention=2160h0m0s
+logger=backgroundsvcs.managerAdapter t=2026-05-04T18:12:01.479591819Z level=info msg=starting module=tracing
+logger=backgroundsvcs.managerAdapter t=2026-05-04T18:12:01.479834995Z level=info msg=starting module=grafana-apiserver

@@ -141,6 +141,10 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
             Route::get('/scanner', [\App\Http\Controllers\Admin\ScannerController::class, 'index'])->name('admin.scanner');
             Route::post('/scanner/verify', [\App\Http\Controllers\Admin\ScannerController::class, 'verify'])->name('admin.scanner.verify');
             Route::post('/scanner/award', [\App\Http\Controllers\Admin\ScannerController::class, 'awardPoints'])->name('admin.scanner.award');
+            
+            // Podcast Management
+            Route::resource('/podcasts', \App\Http\Controllers\Admin\PodcastController::class)->except(['show'])->names('admin.podcasts');
+
             Route::get('/system/logs', [\App\Http\Controllers\Admin\SystemController::class, 'logs'])->name('admin.system.logs');
             Route::post('/system/logs/clear', [\App\Http\Controllers\Admin\SystemController::class, 'clearLogs'])->name('admin.system.logs.clear');
             Route::get('/system/pulse', [\App\Http\Controllers\Admin\SystemController::class, 'pulse'])->name('admin.system.pulse');
@@ -151,6 +155,8 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
             Route::get('/system/guard', [\App\Http\Controllers\Admin\SystemGuardController::class, 'dashboard'])->name('admin.guard.dashboard');
             Route::get('/system/guard/status', [\App\Http\Controllers\Admin\SystemGuardController::class, 'status'])->name('admin.guard.status');
             Route::post('/system/guard/maintenance', [\App\Http\Controllers\Admin\SystemGuardController::class, 'maintenance'])->name('admin.guard.maintenance');
+            Route::post('/system/guard/optimize', [\App\Http\Controllers\Admin\SystemGuardController::class, 'optimize'])->name('admin.guard.optimize');
+            Route::post('/system/guard/clear-cache', [\App\Http\Controllers\Admin\SystemGuardController::class, 'clearCache'])->name('admin.guard.clear-cache');
 
             // Donation & Fund Management
             Route::get('/donations', [DonationController::class, 'adminIndex'])->name('admin.donations.index');
@@ -163,6 +169,10 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
             Route::get('/campaigns/{campaign}/edit', [DonationController::class, 'campaignEdit'])->name('admin.campaigns.edit');
             Route::put('/campaigns/{campaign}', [DonationController::class, 'campaignUpdate'])->name('admin.campaigns.update');
             Route::delete('/campaigns/{campaign}', [DonationController::class, 'campaignDestroy'])->name('admin.campaigns.destroy');
+
+            // AI Job Importer
+            Route::post('/jobs/import-ai', [JobController::class, 'importAI'])->name('admin.jobs.import-ai');
+            Route::post('/ai/generate-content', [AIChatController::class, 'generateContent'])->name('admin.ai.generate-content');
         });
     });
 
@@ -205,6 +215,10 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
 
     Route::get('/jejak-sukses', [AlumniController::class, 'successStories'])->name('success_stories.index');
     Route::get('/jejak-sukses/{successStory}', [AlumniController::class, 'successStoryDetail'])->name('success_stories.show');
+
+    // Podcasts Public
+    Route::get('/podcasts', [\App\Http\Controllers\PodcastController::class, 'index'])->name('podcasts.index');
+    Route::get('/podcasts/{slug}', [\App\Http\Controllers\PodcastController::class, 'show'])->name('podcasts.show');
 
     // Donations Public Transparency
     Route::get('/donations', [DonationController::class, 'index'])->name('donations.index');
@@ -276,6 +290,10 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
         // Alumni-Only Features (Specific paths first)
         Route::middleware(['alumni'])->group(function () {
             Route::get('/alumni/dashboard', [AlumniController::class, 'dashboard'])->name('alumni.dashboard');
+            Route::get('/alumni/yearbook', [AlumniController::class, 'yearbook'])->name('alumni.yearbook');
+    Route::post('/alumni/yearbook/message', [AlumniController::class, 'storeYearbookMessage'])->name('alumni.yearbook.message');
+    Route::put('/alumni/yearbook/message/{id}', [AlumniController::class, 'updateYearbookMessage'])->name('alumni.yearbook.message.update');
+    Route::delete('/alumni/yearbook/message/{id}', [AlumniController::class, 'destroyYearbookMessage'])->name('alumni.yearbook.message.destroy');
             Route::get('/alumni/mentor', [\App\Http\Controllers\MentorController::class, 'index'])->name('alumni.mentor.index');
             Route::post('/alumni/mentor/find', [\App\Http\Controllers\MentorController::class, 'find'])->name('alumni.mentor.find');
             Route::post('/alumni/mentor/register', [\App\Http\Controllers\MentorController::class, 'register'])->name('alumni.mentor.register');
@@ -429,6 +447,9 @@ Route::get('/storage/{path}', function ($path) {
 })->where('path', '.*');
 
 
+
+// Prometheus Metrics Endpoint
+Route::get('/metrics', [\App\Http\Controllers\Admin\MetricsController::class, 'prometheus']);
 
 // Health Check Endpoint
 Route::get('/health', function () {

@@ -13,8 +13,24 @@ use Illuminate\Support\Facades\Mail;
 use App\Jobs\LogActivity;
 use App\Mail\JobApplicationMail;
 
+use App\Services\JobAggregatorService;
+
 class JobController extends Controller
 {
+    // AI: Import from URL
+    public function importAI(Request $request, JobAggregatorService $aggregator)
+    {
+        $request->validate(['url' => 'required|url']);
+        
+        $data = $aggregator->processExternalJob($request->url);
+        
+        if (isset($data['error'])) {
+            return response()->json(['success' => false, 'message' => $data['error']], 422);
+        }
+
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
     // Admin: List
     public function adminIndex()
     {
@@ -135,22 +151,26 @@ class JobController extends Controller
         $user = Auth::user();
         $query = JobVacancy::where('status', 'active');
 
-        // Search logic
+        // High Performance Search via Meilisearch
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('company', 'like', '%' . $request->search . '%')
-                  ->orWhere('location', 'like', '%' . $request->search . '%');
-            });
-        }
+            $jobs = JobVacancy::search($request->search)
+                ->where('status', 'active')
+                ->paginate(12)
+                ->withQueryString();
+        } else {
+            $query = JobVacancy::where('status', 'active');
 
-        // Matching Logic (Simplistic AI/Preference)
-        if ($user && $user->major && $request->get('tab') === 'recommended') {
-            $query->where('description', 'like', '%' . $user->major . '%')
-                  ->orWhere('title', 'like', '%' . $user->major . '%');
-        }
+            // Semantic Recommendation Logic
+            if ($user && $request->get('tab') === 'recommended') {
+                $interests = $user->major; // Can be expanded to user interests
+                $query->where(function($q) use ($interests) {
+                    $q->where('description', 'like', '%' . $interests . '%')
+                      ->orWhere('title', 'like', '%' . $interests . '%');
+                });
+            }
 
-        $jobs = $query->latest()->paginate(12)->withQueryString();
+            $jobs = $query->latest()->paginate(12)->withQueryString();
+        }
         
         // Count matches for badge
         $matchCount = 0;

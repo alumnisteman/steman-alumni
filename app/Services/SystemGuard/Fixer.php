@@ -92,6 +92,17 @@ class Fixer
                     $fixed = false;
                     break;
 
+                case 'earth_data_mismatch':
+                    Artisan::call('app:audit-integrity', ['--fix' => true]);
+                    Notifier::send("⚠️ *Data Steman Earth Mismatch*\nKoordinat alumni hilang ditemukan. Auto-healing geocoding dijalankan.", 'warning');
+                    $fixed = true;
+                    break;
+
+                case 'ai_offline':
+                    Notifier::send("🚨 *AI SERVICE OFFLINE*\nSemua layanan AI (Gemini & Fallback) tidak merespons. Fitur cerdas dimatikan sementara.", 'critical');
+                    $fixed = false;
+                    break;
+
                 default:
                     Log::warning("SystemGuard Fixer: Unknown issue [{$issue}]");
                     break;

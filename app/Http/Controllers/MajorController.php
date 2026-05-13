@@ -7,6 +7,8 @@ use App\Models\ActivityLog;
 use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Request as RequestFacade;
 
 class MajorController extends Controller
 {
@@ -14,7 +16,7 @@ class MajorController extends Controller
     public function index()
     {
         $majors = Major::orderBy('group')->orderBy('name')->get();
-        return view('admin.majors.index', compact('majors'));
+        return View::make('admin.majors.index', compact('majors'));
     }
 
     // Admin: Store
@@ -70,8 +72,8 @@ class MajorController extends Controller
             Auth::id(),
             'Delete Major',
             'Deleted major: ' . $name,
-            request()->ip(),
-            request()->header('User-Agent')
+            RequestFacade::ip(),
+            RequestFacade::header('User-Agent')
         );
 
         return back()->with('success', 'major berhasil dihapus.');

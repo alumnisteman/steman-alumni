@@ -1,0 +1,60 @@
+# HELP steman_alumni_total Total registered alumni
+# TYPE steman_alumni_total gauge
+steman_alumni_total 8
+# HELP steman_alumni_online Total alumni currently online (active in last 30m)
+# TYPE steman_alumni_online gauge
+steman_alumni_online 0
+# HELP steman_queue_length Number of jobs in queue
+# TYPE steman_queue_length gauge
+steman_queue_length 0
+# HELP steman_memory_used_mb PHP Memory usage in MB
+# TYPE steman_memory_used_mb gauge
+steman_memory_used_mb 2
+# HELP steman_failed_logins_total Total failed login attempts recorded
+# TYPE steman_failed_logins_total counter
+steman_failed_logins_total 41
+# HELP steman_throttled_logins_total Total login attempts blocked by rate limiter
+# TYPE steman_throttled_logins_total counter
+steman_throttled_logins_total 0
+# HELP steman_bot_detections_total Total bots detected via honeypot
+# TYPE steman_bot_detections_total counter
+steman_bot_detections_total 0
+# HELP steman_self_healing_events_total Total self-healing actions taken by Guardian
+# TYPE steman_self_healing_events_total counter
+steman_self_healing_events_total 0
+# HELP steman_http_errors_total Total application errors in logs
+# TYPE steman_http_errors_total counter
+steman_http_errors_total 0
+# HELP steman_registration_status Users by status
+# TYPE steman_registration_status gauge
+steman_registration_status{status="pending"} 0
+steman_registration_status{status="approved"} 12
+# HELP steman_posts_total Total posts in nostalgia feed
+# TYPE steman_posts_total counter
+steman_posts_total 24
+# HELP steman_posts_velocity_hour Posts created in the last hour
+# TYPE steman_posts_velocity_hour gauge
+steman_posts_velocity_hour 0
+# HELP steman_points_total Sum of all points awarded to alumni
+# TYPE steman_points_total gauge
+steman_points_total 233
+steman_top_alumni_points{rank="1",name="Kurnianto"} 189
+steman_top_alumni_points{rank="2",name="M Fatoni"} 23
+steman_top_alumni_points{rank="3",name="Ahmad Ibrahim"} 21
+steman_top_alumni_points{rank="4",name="Walid Syukur"} 0
+steman_top_alumni_points{rank="5",name="M.fikri"} 0
+# HELP steman_donations_verified_total_amount Sum of all verified donations
+# TYPE steman_donations_verified_total_amount gauge
+steman_donations_verified_total_amount 0
+steman_campaign_progress_percent{title="Dana sumbangan Donatur"} 0
+steman_campaign_collected_amount{title="Dana sumbangan Donatur"} 0.00
+steman_node_status{node="nginx"} 1
+steman_node_status{node="laravel"} 1
+steman_node_status{node="mysql"} 1
+steman_node_status{node="redis"} 1
+steman_node_status{node="newsapi"} 1
+steman_node_status{node="rsshub"} 1
+# HELP steman_geo_distribution Alumni location count
+# TYPE steman_geo_distribution gauge
+steman_geo_distribution{region="national"} 7
+steman_geo_distribution{region="international"} 0

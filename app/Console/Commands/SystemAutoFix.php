@@ -18,15 +18,17 @@ class SystemAutoFix extends Command
     {
         $this->header("STEMAN ALUMNI - AUTOMATED SELF-HEALING SYSTEM");
 
-        // 1. Cleanup Garbage Files
+        // 1. Cleanup Garbage Files & Log Management
         $this->performAction("Cleaning garbage files", function() {
             $deletedCount = 0;
             // Clear logs older than 7 days if they are large
-            $logFile = storage_path('logs/laravel.log');
-            if (File::exists($logFile) && File::size($logFile) > 10 * 1024 * 1024) { // 10MB
-                File::put($logFile, '');
-                $this->info("  [FIXED] laravel.log was too large (>10MB), truncated.");
-                $deletedCount++;
+            $logFiles = File::glob(storage_path('logs/*.log'));
+            foreach ($logFiles as $logFile) {
+                if (File::exists($logFile) && File::size($logFile) > 20 * 1024 * 1024) { // 20MB
+                    File::put($logFile, '');
+                    $this->info("  [FIXED] " . basename($logFile) . " was too large (>20MB), truncated.");
+                    $deletedCount++;
+                }
             }
 
             // Clean compiled views older than 30 days
@@ -41,7 +43,19 @@ class SystemAutoFix extends Command
                 }
             }
 
-            $this->info("  [OK] Garbage cleanup complete. Deleted: {$deletedCount} files.");
+            // Clean stale sessions (older than 2 days)
+            $sessionPath = storage_path('framework/sessions');
+            if (File::isDirectory($sessionPath)) {
+                $files = File::files($sessionPath);
+                foreach ($files as $file) {
+                    if (time() - $file->getMTime() > 86400 * 2) {
+                        File::delete($file->getPathname());
+                        $deletedCount++;
+                    }
+                }
+            }
+
+            $this->info("  [OK] Garbage cleanup complete. Total handled: {$deletedCount} items.");
         });
 
         // 2. Fix Database Issues (Migrations & Cache)
@@ -117,8 +131,8 @@ class SystemAutoFix extends Command
             }
         });
 
-        // 5. Heal null/broken user data
-        $this->performAction("Healing User Data Integrity", function() {
+        // 5. Heal null/broken user data & Data Mismatch Guard
+        $this->performAction("Healing Data Mismatch", function() {
             // Users with null names
             $fixed = \App\Models\User::whereNull('name')->orWhere('name', '')->update(['name' => 'Alumni Anonim']);
             if ($fixed > 0) $this->info("  [FIXED] {$fixed} user(s) with missing name.");
@@ -129,7 +143,31 @@ class SystemAutoFix extends Command
                 ->update(['major' => 'Umum']);
             if ($fixed2 > 0) $this->info("  [FIXED] {$fixed2} alumni with missing major.");
 
-            $this->info("  [OK] User data integrity check complete.");
+            // PRUNING ORPHANED RECORDS (Data Mismatch Prevention)
+            // 1. Delete posts whose users no longer exist
+            $orphanedPosts = DB::table('posts')
+                ->whereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                          ->from('users')
+                          ->whereRaw('users.id = posts.user_id');
+                })->delete();
+            if ($orphanedPosts > 0) $this->info("  [CLEANED] {$orphanedPosts} orphaned post(s) removed.");
+
+            // 2. Delete messages where sender/receiver are missing
+            $orphanedMsgs = DB::table('messages')
+                ->whereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                          ->from('users')
+                          ->whereRaw('users.id = messages.sender_id');
+                })
+                ->orWhereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                          ->from('users')
+                          ->whereRaw('users.id = messages.receiver_id');
+                })->delete();
+            if ($orphanedMsgs > 0) $this->info("  [CLEANED] {$orphanedMsgs} orphaned message(s) removed.");
+
+            $this->info("  [OK] Data mismatch guard finished.");
         });
 
         // 6. Secure Permissions
@@ -147,6 +185,16 @@ class SystemAutoFix extends Command
                     }
                 }
             }
+
+            // Hardening Ownership
+            try {
+                $this->info("  [ACTION] Ensuring www-data ownership...");
+                @exec('chown -R www-data:www-data ' . storage_path());
+                @exec('chown -R www-data:www-data ' . base_path('bootstrap/cache'));
+            } catch (\Exception $e) {
+                // Ignore if not permitted
+            }
+
             if ($ok) $this->info("  [OK] Permissions check complete.");
         });
 
@@ -156,9 +204,33 @@ class SystemAutoFix extends Command
             $this->info("  [OK] Application optimized.");
         });
 
+        // 8. Run Deep Integrity Audit (Watchdog)
+        $this->performAction("Running Deep Integrity Audit", function() {
+            Artisan::call('app:audit-integrity', ['--fix' => true]);
+            $this->info("  [OK] Deep integrity audit completed.");
+        });
+
         $this->newLine();
         $this->info("--- SYSTEM SELF-HEALING COMPLETE ---");
         Log::info("SystemAutoFix executed successfully at " . now()->toIso8601String());
+        $this->notify("SystemAutoFix successfully executed on " . config('app.url'));
+    }
+
+    private function notify($message)
+    {
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatId = env('TELEGRAM_CHAT_ID');
+        if (!$token || !$chatId) return;
+
+        try {
+            \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $chatId,
+                'text' => "🛠️ *[SystemAutoFix]*\n" . $message,
+                'parse_mode' => 'Markdown'
+            ]);
+        } catch (\Exception $e) {
+            // Silently fail
+        }
     }
 
     private function header($text)

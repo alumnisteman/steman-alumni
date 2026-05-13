@@ -52,11 +52,11 @@
                                         data-bs-toggle="modal" data-bs-target="#editMajorModal{{ $major->id }}">
                                     <i class="bi bi-pencil me-1"></i> Edit
                                 </button>
-                                <form action="{{ route('admin.majors.destroy', $major) }}" method="POST" class="d-inline">
+                                <form id="delete-major-{{ $major->id }}" action="{{ route('admin.majors.destroy', $major) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus major ini?')">
-                                        <i class="bi bi-trash me-1"></i> Hapus
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-major-{{ $major->id }}')">
+                                        <i class="bi bi-trash me-1" style="pointer-events: none;"></i> Hapus
                                     </button>
                                 </form>
                             </td>

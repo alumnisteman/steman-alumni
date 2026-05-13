@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+use Laravel\Scout\Searchable;
+
 class JobVacancy extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Searchable;
 
     protected $table = 'job_vacancies';
 
@@ -47,6 +49,29 @@ class JobVacancy extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withDefault([
+            'name' => 'Admin STEMAN',
+        ]);
+    }
+
+    /**
+     * Get the indexable data array for the model.
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'title' => $this->title,
+            'company' => $this->company,
+            'location' => $this->location,
+            'description' => $this->description,
+            'content' => $this->content,
+            'type' => $this->type,
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === 'active';
     }
 }

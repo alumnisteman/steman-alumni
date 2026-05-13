@@ -124,11 +124,11 @@
                                     <div class="rounded-3 overflow-hidden shadow-sm shadow-sm" style="height: 100px;">
                                         <img src="{{ $photo->photo_url }}" class="w-100 h-100" style="object-fit: cover;">
                                     </div>
-                                    <form action="{{ route('alumni.business.photo.delete', $photo->id) }}" method="POST" class="position-absolute top-0 end-0 m-1">
+                                    <form id="delete-biz-photo-{{ $photo->id }}" action="{{ route('alumni.business.photo.delete', $photo->id) }}" method="POST" class="position-absolute top-0 end-0 m-1">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm rounded-circle p-1 lh-1 shadow-sm" onclick="return confirm('Hapus foto ini?')">
-                                            <i class="bi bi-x-circle" style="font-size: 0.7rem;"></i>
+                                        <button type="button" class="btn btn-danger btn-sm rounded-circle p-1 lh-1 shadow-sm" onclick="window.Guardian.confirmDelete('delete-biz-photo-{{ $photo->id }}')">
+                                            <i class="bi bi-x-circle" style="font-size: 0.7rem; pointer-events: none;"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -143,10 +143,10 @@
                     <div class="card border-0 shadow-sm p-4 border-top border-5 border-danger" style="border-radius: 25px;">
                         <h6 class="fw-bold text-danger mb-3">ZONE BERBAHAYA</h6>
                         <p class="small text-muted">Menghapus usaha Anda bersifat permanen dan tidak bisa dibatalkan.</p>
-                        <form action="{{ route('alumni.business.destroy', $business->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus usaha ini dari direktori?')">
+                        <form id="delete-biz-{{ $business->id }}" action="{{ route('alumni.business.destroy', $business->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-bold">HAPUS USAHA</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-bold" onclick="window.Guardian.confirmDelete('delete-biz-{{ $business->id }}')">HAPUS USAHA</button>
                         </form>
                     </div>
                 </div>

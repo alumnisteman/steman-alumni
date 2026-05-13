@@ -49,10 +49,10 @@
                                    data-bs-target="#editModal{{ $item->id }}">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <form action="{{ route('admin.gallery.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus media ini?')">
+                                <form id="delete-gallery-{{ $item->id }}" action="{{ route('admin.gallery.destroy', $item->id) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger shadow-sm">
-                                        <i class="bi bi-trash3"></i>
+                                    <button type="button" class="btn btn-sm btn-danger shadow-sm" onclick="window.Guardian.confirmDelete('delete-gallery-{{ $item->id }}')">
+                                        <i class="bi bi-trash3" style="pointer-events: none;"></i>
                                     </button>
                                 </form>
                             </div>

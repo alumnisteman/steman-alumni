@@ -59,9 +59,9 @@
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Setujui</button>
                                             </form>
-                                            <form action="{{ route('admin.business.reject', $biz->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menolak pendaftaran ini?')">
+                                            <form id="reject-biz-p-{{ $biz->id }}" action="{{ route('admin.business.reject', $biz->id) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">Tolak</button>
+                                                <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('reject-biz-p-{{ $biz->id }}')">Tolak</button>
                                             </form>
                                         </div>
                                     </td>
@@ -104,9 +104,9 @@
                                     </td>
                                     <td><span class="badge bg-success rounded-pill">Tayang</span></td>
                                     <td>
-                                        <form action="{{ route('admin.business.reject', $biz->id) }}" method="POST" onsubmit="return confirm('Tarik usaha ini dari publik?')">
+                                        <form id="reject-biz-a-{{ $biz->id }}" action="{{ route('admin.business.reject', $biz->id) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="btn btn-link text-danger p-0">Tarik dari Publik</button>
+                                            <button type="button" class="btn btn-link text-danger p-0" onclick="window.Guardian.confirmDelete('reject-biz-a-{{ $biz->id }}')">Tarik dari Publik</button>
                                         </form>
                                     </td>
                                 </tr>

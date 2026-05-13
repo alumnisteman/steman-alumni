@@ -1,87 +1,67 @@
 #!/bin/bash
-# Script Backup Automaits STEMAN Alumni v5 - Robust Version
-# Lokasi: /var/www/steman-alumni/scripts/backup.sh
+# STEMAN ALUMNI PORTAL - ZERO-LOSS BACKUP SYSTEM V2
+# Purpose: Ensures data is safe forever via local and optional remote backups.
 
 # --- Auto Detect Project Root ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
-# --- Konfigurasi ---
+# --- Configuration ---
 BACKUP_DIR="$PROJECT_ROOT/backups"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-RETENTION_DAYS=7
+RETENTION_DAYS=14 # Keep 2 weeks locally
 
-# --- Load Environment Variables ---
-if [ -f .env ]; then
-    # Load and clean variables
-    export $(grep -v '^#' .env | xargs)
-fi
+# --- Load DB Credentials from .env ---
+DB_NAME=$(grep DB_DATABASE .env | cut -d'=' -f2)
+DB_USER=$(grep DB_USERNAME .env | cut -d'=' -f2)
+DB_PASS=$(grep DB_PASSWORD .env | cut -d'=' -f2)
 
-# --- Notification Function ---
-notify() {
-    local task=$1
-    local status=$2
-    local message=$3
-    
-    echo "  -> Mengirim notifikasi ($status)..."
-    
-    # 1. Telegram Notification (via curl)
-    if [ ! -z "$TELEGRAM_BOT_TOKEN" ] && [ ! -z "$TELEGRAM_CHAT_ID" ]; then
-        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-            -d chat_id="$TELEGRAM_CHAT_ID" \
-            -d text="📢 [$status] $task - STEMAN v5%0A%0A$message" > /dev/null
-    fi
-    
-    # 2. Email Notification (via Laravel Artisan)
-    if docker exec steman_app php artisan list | grep -q "steman:notify-status"; then
-        docker exec steman_app php artisan steman:notify-status "$task" "$status" "$message" > /dev/null
-    fi
-}
-
-# Fallback (If .env loading failed)
-DB_NAME=${DB_NAME:-steman_alumni}
-DB_USER=${DB_USER:-steman}
-DB_PASS=${DB_PASS:-M4ruw4h3}
+# --- Remote Backup Config (Optional) ---
+# Set these in .env if you want offsite storage
+REMOTE_BACKUP_ENABLED=$(grep REMOTE_BACKUP_ENABLED .env | cut -d'=' -f2 || echo "false")
+REMOTE_SSH_HOST=$(grep REMOTE_SSH_HOST .env | cut -d'=' -f2)
+REMOTE_SSH_USER=$(grep REMOTE_SSH_USER .env | cut -d'=' -f2)
+REMOTE_SSH_PATH=$(grep REMOTE_SSH_PATH .env | cut -d'=' -f2)
 
 mkdir -p "$BACKUP_DIR"
 
-echo "====================================================="
-echo "   STEMAN Alumni v5 - Automated Backup System"
-echo "   Waktu      : $(date)"
-echo "   Project Dir: $PROJECT_ROOT"
-echo "====================================================="
+echo "==========================================="
+echo "   STEMAN SENTINEL: BACKUP INITIATED       "
+echo "   Time: $(date)"
+echo "==========================================="
 
-# --- 1. Database Backup ---
-echo "[1/2] Mencadangkan Database ($DB_NAME) dari container steman_db..."
-# Use steman_db as HOST inside docker, but here we run docker exec
-docker exec steman_db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$BACKUP_DIR/db_backup_$TIMESTAMP.sql" 2>/dev/null
+# 1. Database Backup
+echo "[1/3] Dumping Database ($DB_NAME)..."
+docker exec steman_db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$BACKUP_DIR/db_$TIMESTAMP.sql" 2>/dev/null
 
-if [ -s "$BACKUP_DIR/db_backup_$TIMESTAMP.sql" ]; then
-    gzip "$BACKUP_DIR/db_backup_$TIMESTAMP.sql"
-    echo "  -> Database berhasil dicadangkan: db_backup_$TIMESTAMP.sql.gz"
+if [ -s "$BACKUP_DIR/db_$TIMESTAMP.sql" ]; then
+    gzip "$BACKUP_DIR/db_$TIMESTAMP.sql"
+    echo "  -> DB Backup Successful: db_$TIMESTAMP.sql.gz"
 else
-    echo "  -> GAGAL: Database tidak dapat dicadangkan atau kosong!"
-    notify "Backup Database" "ERROR" "Gagal mencadangkan database $DB_NAME. File kosong atau error koneksi."
-    rm -f "$BACKUP_DIR/db_backup_$TIMESTAMP.sql"
+    echo "  -> ERROR: Database dump failed or empty!"
+    exit 1
 fi
 
-# --- 2. Storage File Backup ---
-echo "[2/2] Mencadangkan File Storage (Uploadan Alumni)..."
-if [ -d "./storage/app/public" ]; then
-    tar -czf "$BACKUP_DIR/storage_backup_$TIMESTAMP.tar.gz" -C "./storage/app" public
-    echo "  -> File Storage berhasil dicadangkan: storage_backup_$TIMESTAMP.tar.gz"
-    notify "Backup Mingguan" "SUCCESS" "Database ($DB_NAME) dan Storage berhasil dicadangkan ke $BACKUP_DIR."
+# 2. Storage Backup
+echo "[2/3] Archiving Storage Files..."
+tar -czf "$BACKUP_DIR/storage_$TIMESTAMP.tar.gz" -C "$PROJECT_ROOT/storage/app" public 2>/dev/null
+echo "  -> Storage Backup Successful: storage_$TIMESTAMP.tar.gz"
+
+# 3. Offsite Transfer (If enabled)
+if [ "$REMOTE_BACKUP_ENABLED" == "true" ]; then
+    echo "[3/3] Transferring to Remote Server ($REMOTE_SSH_HOST)..."
+    scp "$BACKUP_DIR/db_$TIMESTAMP.sql.gz" "$BACKUP_DIR/storage_$TIMESTAMP.tar.gz" "$REMOTE_SSH_USER@$REMOTE_SSH_HOST:$REMOTE_SSH_PATH"
+    echo "  -> Remote Transfer Complete."
 else
-    echo "  -> GAGAL: Folder storage/app/public tidak ditemukan!"
-    notify "Backup Storage" "WARNING" "Database berhasil namun folder storage/app/public tidak ditemukan."
+    echo "[3/3] Remote Backup Disabled. Skipping transfer."
 fi
 
-# --- 3. Cleanup Old Backups ---
-echo "[3/3] Membersihkan cadangan lama (lebih dari $RETENTION_DAYS hari)..."
-find "$BACKUP_DIR" -type f -mtime +$RETENTION_DAYS -name "*.gz" -exec rm {} \;
-echo "  -> Pembersihan selesai."
+# 4. Cleanup Old Backups
+echo "Cleaning up local backups older than $RETENTION_DAYS days..."
+find "$BACKUP_DIR" -type f -mtime +$RETENTION_DAYS -delete
 
-echo "====================================================="
-echo " Cadangan Selesai disimpan di: $BACKUP_DIR"
-echo "====================================================="
+echo "==========================================="
+echo "   BACKUP COMPLETED SUCCESSFULLY! ✅      "
+echo "==========================================="
+

@@ -149,10 +149,10 @@
                                             </form>
                                             
                                             <div class="col-12 mt-4 text-center">
-                                                <form action="{{ route('admin.registrations.destroy', $reg->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pendaftaran ini?')">
+                                                <form id="delete-reg-{{ $reg->id }}" action="{{ route('admin.registrations.destroy', $reg->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-link text-danger text-decoration-none small">
+                                                    <button type="button" class="btn btn-link text-danger text-decoration-none small" onclick="window.Guardian.confirmDelete('delete-reg-{{ $reg->id }}')">
                                                         <i class="bi bi-trash me-1"></i> Hapus Permanen Data Ini
                                                     </button>
                                                 </form>

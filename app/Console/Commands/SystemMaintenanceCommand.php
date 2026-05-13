@@ -26,7 +26,10 @@ class SystemMaintenanceCommand extends Command
         $this->optimizeDatabase();
 
         // 4. Verification Check
-        $this->runIntegrityCheck();
+        $success = $this->runIntegrityCheck();
+
+        // 5. Notify Telegram
+        $this->notifyTelegram($success);
 
         $this->info('✅ Maintenance Completed Successfully.');
         return 0;
@@ -41,9 +44,23 @@ class SystemMaintenanceCommand extends Command
             $this->info('- laravel.log truncated.');
         }
         
-        // Remove older log files if any
-        $files = File::glob(storage_path('logs/*.log.*'));
+        // Remove older daily log files (older than 7 days)
+        $files = File::glob(storage_path('logs/laravel-*.log'));
         foreach ($files as $file) {
+            $filename = basename($file);
+            // Extract date: laravel-2026-05-04.log
+            if (preg_match('/laravel-(\d{4}-\d{2}-\d{2})\.log/', $filename, $matches)) {
+                $date = $matches[1];
+                if (strtotime($date) < strtotime('-7 days')) {
+                    File::delete($file);
+                    $this->info("- Old log removed: {$filename}");
+                }
+            }
+        }
+
+        // Remove other trash log files
+        $trashFiles = File::glob(storage_path('logs/*.log.*'));
+        foreach ($trashFiles as $file) {
             File::delete($file);
         }
     }
@@ -66,6 +83,25 @@ class SystemMaintenanceCommand extends Command
             }
             $this->info('- Stale sessions removed.');
         }
+
+        // Clean scratch directory
+        $scratchPath = base_path('scratch');
+        if (File::isDirectory($scratchPath)) {
+            $files = File::files($scratchPath);
+            foreach ($files as $file) {
+                if (time() - $file->getMTime() > (24 * 60 * 60)) {
+                    File::delete($file);
+                }
+            }
+            $this->info('- Old scratch files removed.');
+        }
+
+        // Enforce permissions
+        try {
+            @chmod(storage_path(), 0775);
+            @chmod(base_path('bootstrap/cache'), 0775);
+            $this->info('- Permissions enforced on storage and cache.');
+        } catch (\Exception $e) {}
     }
 
     private function optimizeDatabase()
@@ -81,7 +117,7 @@ class SystemMaintenanceCommand extends Command
         $this->info('- Database tables optimized.');
     }
 
-    private function runIntegrityCheck()
+    private function runIntegrityCheck(): bool
     {
         $this->comment('Running system integrity audit...');
         
@@ -90,14 +126,35 @@ class SystemMaintenanceCommand extends Command
         $issues = $checker->run();
 
         // 2. Deep Audit Check
-        Artisan::call('steman:audit', ['--fix' => true]);
-        $auditOutput = Artisan::output();
-        $this->line($auditOutput);
-
-        if (empty($issues) && Artisan::call('steman:audit') === 0) {
+        $this->call('app:audit-integrity', ['--fix' => true]);
+        
+        $isHealthy = empty($issues);
+        
+        if ($isHealthy) {
             $this->info('✨ Integrity Check: ALL SYSTEMS OPERATIONAL 100%');
         } else {
-            $this->error('⚠ Integrity Check: DEGRADED. Issues found.');
+            $this->error('⚠ Integrity Check: DEGRADED. Issues found: ' . implode(', ', $issues));
+        }
+
+        return $isHealthy;
+    }
+
+    private function notifyTelegram(bool $success)
+    {
+        $this->comment('Sending notification to Telegram...');
+        
+        $status = $success ? 'success' : 'failure';
+        $message = $success 
+            ? 'Portal Steman Alumni optimal dan stabil. Semua sistem (DB, AI, Storage) berjalan 100%.' 
+            : 'Sistem terdeteksi mengalami degradasi. Silakan periksa dashboard admin untuk detail masalah.';
+
+        try {
+            $this->call('steman:notify-maintenance', [
+                'status' => $status,
+                'message' => $message
+            ]);
+        } catch (\Exception $e) {
+            $this->error('Failed to send Telegram notification: ' . $e->getMessage());
         }
     }
 }

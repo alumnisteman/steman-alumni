@@ -33,9 +33,9 @@ class SystemGuardController extends Controller
 
         $overallOk = empty($issues);
 
-        return response()->json([
+        return \response()->json([
             'status'    => $overallOk ? 'OPERATIONAL' : 'DEGRADED',
-            'timestamp' => now()->toIso8601String(),
+            'timestamp' => \now()->toIso8601String(),
             'checks'    => $results,
             'issues'    => $issues,
             'circuits'  => $circuits,
@@ -56,25 +56,69 @@ class SystemGuardController extends Controller
      */
     public function dashboard()
     {
-        return view('admin.system.guard');
+        return \view('admin.system.guard');
     }
 
     /**
-     * Trigger manual system maintenance.
+     * Trigger system optimization.
+     */
+    public function optimize()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            
+            return \response()->json([
+                'status'  => 'success',
+                'message' => 'System Optimization completed.',
+                'details' => $output
+            ]);
+        } catch (\Exception $e) {
+            return \response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear all caches safely.
+     */
+    public function clearCache()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            
+            return \response()->json([
+                'status'  => 'success',
+                'message' => 'Cache and Configuration cleared.',
+                'details' => $output
+            ]);
+        } catch (\Exception $e) {
+            return \response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manual maintenance run.
      */
     public function maintenance()
     {
         try {
-            \Artisan::call('steman:maintenance', ['--force' => true]);
-            $output = \Artisan::output();
+            \Illuminate\Support\Facades\Artisan::call('steman:maintenance', ['--force' => true]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
             
-            return response()->json([
+            return \response()->json([
                 'status'  => 'success',
                 'message' => 'SRE Maintenance completed.',
                 'details' => $output
             ]);
         } catch (\Exception $e) {
-            return response()->json([
+            return \response()->json([
                 'status'  => 'error',
                 'message' => $e->getMessage()
             ], 500);

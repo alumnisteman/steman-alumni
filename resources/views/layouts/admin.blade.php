@@ -12,6 +12,27 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('assets/css/modern-v5.css') }}">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="{{ asset('assets/js/command-palette.js') }}" defer></script>
+    <style>
+        .skeleton-loader {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .lens-item:hover, .lens-item.active {
+            background: rgba(var(--bs-primary-rgb), 0.1) !important;
+            border-left: 4px solid var(--bs-primary) !important;
+        }
+        .gsap-reveal { opacity: 0; transform: translateY(20px); }
+    </style>
     <script>
         window.Guardian = {
             log: function(data) {
@@ -27,16 +48,25 @@
                 try { return fn(); } 
                 catch (e) { console.error(`Guardian suppressed error in ${context}:`, e.message); this.log({ message: e.message, context }); return null; }
             },
-            cleanupModals: function() {
-                const backdrops = document.querySelectorAll('.modal-backdrop');
-                if (backdrops.length > 1) {
-                    for (let i = 0; i < backdrops.length - 1; i++) backdrops[i].remove();
-                    document.body.classList.add('modal-open');
-                }
+            confirmDelete: function(formId) {
+                Swal.fire({
+                    title: 'Hapus data?',
+                    text: "Data yang dihapus tidak dapat dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    background: '#ffffff',
+                    borderRadius: '15px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById(formId).submit();
+                    }
+                });
             }
         };
-        const observer = new MutationObserver(() => window.Guardian.cleanupModals());
-        observer.observe(document.body, { childList: true });
     </script>
 
     <style>

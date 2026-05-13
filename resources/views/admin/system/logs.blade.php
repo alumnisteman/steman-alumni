@@ -7,10 +7,10 @@
             <h2 class="fw-black text-dark mb-1">SISTEM LOGS</h2>
             <p class="text-muted">Pantau aktivitas dan error sistem secara real-time tanpa SSH.</p>
         </div>
-        <form action="{{ route('admin.system.logs.clear') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus semua log?')">
+        <form id="clear-logs-form" action="{{ route('admin.system.logs.clear') }}" method="POST">
             @csrf
-            <button type="submit" class="btn btn-danger rounded-pill px-4">
-                <i class="bi bi-trash3 me-2"></i> Bersihkan Log
+            <button type="button" class="btn btn-danger rounded-pill px-4" onclick="window.Guardian.confirmDelete('clear-logs-form')">
+                <i class="bi bi-trash3 me-2" style="pointer-events: none;"></i> Bersihkan Log
             </button>
         </form>
     </div>

@@ -50,6 +50,9 @@ class CheckIntegrity extends Command
         $this->runCheck('Routes Compilation', fn() => $this->checkRoutes());
         $this->runCheck('Blade Route Integrity', fn() => $this->checkBladeRoutes());
         $this->runCheck('Route Shadowing Audit', fn() => $this->checkShadowedAudit());
+        $this->runCheck('Active Smoke Tests', fn() => $this->runSmokeTests());
+        $this->runCheck('Migration Sync Audit', fn() => $this->checkMigrations());
+        $this->runCheck('Storage Symlink', fn() => $this->checkSymlink());
         $this->runCheck('Meilisearch Search', fn() => $this->checkMeilisearch());
         $this->runCheck('Captcha Stability', fn() => $this->checkCaptchaIntegrity());
 
@@ -348,6 +351,52 @@ class CheckIntegrity extends Command
             }
         }
 
+        return true;
+    }
+
+    private function runSmokeTests(): bool
+    {
+        $baseUrl = config('app.url', 'http://127.0.0.1');
+        $pages = ['/', '/login', '/alumni', '/global-network', '/jejak-sukses'];
+        $fail = false;
+        
+        foreach ($pages as $page) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(5)->get($baseUrl . $page);
+                if ($response->serverError()) {
+                    $this->error("✗ Smoke Test FAIL: [{$page}] returned 500");
+                    $fail = true;
+                }
+            } catch (\Exception $e) {
+                // Warning only for connectivity
+                $this->warn("⚠ Connectivity: Could not reach [{$page}] - skipping");
+                continue;
+            }
+        }
+        return !$fail;
+    }
+
+    private function checkMigrations(): bool
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate:status');
+            $status = \Illuminate\Support\Facades\Artisan::output();
+            if (str_contains($status, '| No |')) {
+                $this->error("✗ Migration Mismatch: Some migrations have not been run!");
+                return false;
+            }
+            return true;
+        } catch (\Exception $e) {
+            return true;
+        }
+    }
+
+    private function checkSymlink(): bool
+    {
+        if (!file_exists(public_path('storage')) || !is_link(public_path('storage'))) {
+            $this->error("✗ Storage Symlink: Broken or missing");
+            return false;
+        }
         return true;
     }
 

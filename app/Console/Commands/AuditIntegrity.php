@@ -42,6 +42,7 @@ class AuditIntegrity extends Command
         $this->auditHelpers();
         $this->auditAI();
         $this->auditVite();
+        $this->auditViewIntegrity();
         $this->cleanupJunk();
         $this->auditLogs();
 
@@ -492,6 +493,63 @@ class AuditIntegrity extends Command
             $this->info("Deleted $deletedCount old junk files.");
         } else {
             $this->info("No significant junk found.");
+        }
+    }
+
+    /**
+     * Audit critical view files for potential truncation (Empty or suspiciously small)
+     */
+    private function auditViewIntegrity()
+    {
+        $this->comment("\n9. Auditing View File Integrity (Watchdog)...");
+        
+        $criticalViews = [
+            'admin/dashboard.blade.php' => 15000, 
+            'welcome.blade.php' => 20000,        
+            'layouts/admin.blade.php' => 3000,    
+            'components/admin-sidebar.blade.php' => 8000,
+            '../../app/Services/AlumniService.php' => 9000, // Logic check
+        ];
+
+        $backupPath = storage_path('app/integrity/views');
+        if (!File::isDirectory($backupPath)) {
+            File::makeDirectory($backupPath, 0755, true);
+        }
+
+        $issuesFound = 0;
+        foreach ($criticalViews as $view => $minSize) {
+            $path = resource_path("views/{$view}");
+            $backupFile = $backupPath . '/' . str_replace('/', '_', $view);
+
+            if (!File::exists($path)) {
+                $this->error("CRITICAL: View file [{$view}] is MISSING!");
+                if ($this->option('fix') && File::exists($backupFile)) {
+                    $this->info("  -> Restoring from backup...");
+                    File::copy($backupFile, $path);
+                } else {
+                    $issuesFound++;
+                }
+                continue;
+            }
+
+            $size = File::size($path);
+            if ($size < $minSize) {
+                $this->error("CRITICAL: View file [{$view}] appears TRUNCATED! (Size: {$size} bytes, Expected > {$minSize})");
+                if ($this->option('fix') && File::exists($backupFile) && File::size($backupFile) >= $minSize) {
+                    $this->info("  -> [RECOVERED] Restoring from healthy backup...");
+                    File::copy($backupFile, $path);
+                } else {
+                    $issuesFound++;
+                }
+            } else {
+                $this->info("View Integrity OK: {$view} ({$size} bytes)");
+                // Update backup with healthy version
+                File::copy($path, $backupFile);
+            }
+        }
+
+        if ($issuesFound > 0) {
+            Log::critical("System Integrity Guard found {$issuesFound} truncated or missing view files!");
         }
     }
 

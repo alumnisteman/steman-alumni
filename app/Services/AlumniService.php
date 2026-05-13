@@ -41,6 +41,7 @@ class AlumniService
         Cache::forget('global_network_data');
         Cache::forget('alumni_graduation_years');
         Cache::forget('welcome_data');
+        Cache::forget('welcome_data_static');
     }
 
     /**
@@ -205,15 +206,19 @@ class AlumniService
                 'nationalCount' => $mapAnalytics['nationalCount'],
                 'internationalCount' => $mapAnalytics['internationalCount'],
                 'aiInsights' => $aiService->getGlobalInsights(),
+                'topAlumni' => \App\Models\User::where('role', 'alumni')->with('badges')->orderBy('points', 'desc')->take(3)->get(),
+                'schoolName' => setting('school_name', 'SMKN 2 Ternate'),
+                'totalPoints' => \App\Models\User::sum('points'),
+                'featuredAvatars' => User::active()->inRandomOrder()->take(5)->get()->map(fn($u) => $u->profile_picture_url)->toArray(),
+                'recentActivities' => \App\Models\ActivityLog::with('user')->whereNotNull('user_id')->latest()->take(10)->get(),
+                'latestPodcasts' => \App\Models\Podcast::where('is_published', true)->latest()->take(3)->get(),
             ];
         });
 
-        // Add Live Data (Not cached or short cache)
+        // Add Live Data (Only real-time counts)
         $liveData = [
             'onlineCount' => $this->getOnlineAlumniCount(),
             'onlineAvatars' => $this->getOnlineAlumniAvatars(),
-            'featuredAvatars' => User::active()->inRandomOrder()->take(5)->get()->map(fn($u) => $u->profile_picture_url)->toArray(),
-            'recentActivities' => \App\Models\ActivityLog::with('user')->whereNotNull('user_id')->latest()->take(10)->get(),
         ];
 
         return array_merge($staticData, $liveData);

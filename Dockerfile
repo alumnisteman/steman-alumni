@@ -15,12 +15,10 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV COMPOSER_MEMORY_LIMIT=-1
 COPY composer*.json ./
 # Run composer with extreme parameters to avoid timeouts/memory issues
-RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts || \
-    (composer config -g repo.packagist composer https://packagist.phpcomposer.com && \
-     composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts)
+RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev
+RUN composer dump-autoload --optimize --no-dev && ls -la /app/vendor/autoload.php
 
 # --- Stage 3: Runner Stage (Final Image) ---
 FROM php:8.4-fpm-alpine
@@ -65,9 +63,11 @@ WORKDIR /var/www
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
-# Copy PHP dependencies
-COPY --from=composer-builder /app/vendor /var/www/vendor
+# Copy Application files first
 COPY . /var/www/
+
+# Copy PHP dependencies (this ensures vendor from builder overrides anything else)
+COPY --from=composer-builder /app/vendor /var/www/vendor
 
 # Copy Frontend assets
 COPY --from=frontend-builder /app/public/build /var/www/public/build

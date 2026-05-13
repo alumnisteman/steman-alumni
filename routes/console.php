@@ -29,9 +29,11 @@ Schedule::call(function () {
 
 // Database Maintenance: Optimize tables weekly on Sunday at 2 AM
 Schedule::call(function () {
-    $tables = ['posts', 'forums', 'comments', 'users', 'contact_messages', 'log_activities', 'ads', 'sessions'];
+    $tables = ['posts', 'forums', 'comments', 'users', 'contact_messages', 'activity_logs', 'log_activities', 'ads', 'sessions', 'galleries', 'news'];
     foreach ($tables as $table) {
-        \Illuminate\Support\Facades\DB::statement("OPTIMIZE TABLE {$table}");
+        try {
+            \Illuminate\Support\Facades\DB::statement("OPTIMIZE TABLE {$table}");
+        } catch (\Exception $e) {}
     }
     \Illuminate\Support\Facades\Log::info("Full Database Optimization Completed: " . implode(', ', $tables));
 })->weeklyOn(0, '02:00');
@@ -99,3 +101,6 @@ Schedule::call(function () {
         \Illuminate\Support\Facades\Log::warning('laravel.log auto-truncated: exceeded 20MB limit.');
     }
 })->hourly()->name('logs:guard-size');
+
+// Automated Garbage Collection: Clean old logs and expired tokens weekly
+Schedule::command('steman:cleanup')->weeklyOn(0, '04:00')->name('steman:cleanup');

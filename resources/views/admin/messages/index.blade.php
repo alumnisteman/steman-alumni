@@ -54,10 +54,10 @@
                             <a href="/admin/messages/{{ $msg->id }}" class="btn btn-sm btn-primary rounded-pill px-3 me-1">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <form method="POST" action="{{ route('admin.messages.destroy', $msg->id) }}" class="d-inline" onsubmit="return confirm('Hapus pesan ini?')">
+                            <form id="delete-msg-{{ $msg->id }}" method="POST" action="{{ route('admin.messages.destroy', $msg->id) }}" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                    <i class="bi bi-trash"></i>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-msg-{{ $msg->id }}')">
+                                    <i class="bi bi-trash" style="pointer-events: none;"></i>
                                 </button>
                             </form>
                         </td>

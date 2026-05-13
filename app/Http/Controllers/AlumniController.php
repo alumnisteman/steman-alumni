@@ -48,6 +48,138 @@ class AlumniController extends Controller
     }
 
     /**
+     * Interactive Digital Yearbook (GSAP + PageFlip)
+     */
+    public function yearbook(Request $request)
+    {
+        $selectedYear = $request->input('year');
+
+        // Ambil semua tahun angkatan yang tersedia
+        $years = \Illuminate\Support\Facades\Cache::remember('yearbook_years_list', 1800, function () {
+            return User::where('role', 'alumni')
+                ->whereNotNull('graduation_year')
+                ->whereIn('status', ['active', 'approved'])
+                ->distinct()
+                ->orderByDesc('graduation_year')
+                ->pluck('graduation_year');
+        });
+
+        // Ambil alumni berdasarkan tahun yang dipilih (atau tahun terbaru jika belum dipilih)
+        $activeYear = $selectedYear ?? ($years->isNotEmpty() ? $years->first() : null);
+
+        $alumni = collect();
+        if ($activeYear) {
+            $alumni = \Illuminate\Support\Facades\Cache::remember("yearbook_alumni_{$activeYear}", 1800, function () use ($activeYear) {
+                return User::where('role', 'alumni')
+                    ->whereIn('status', ['active', 'approved'])
+                    ->where('graduation_year', $activeYear)
+                    ->select(['id', 'name', 'major', 'graduation_year', 'profile_picture', 'bio', 'current_job', 'company_university'])
+                    ->orderBy('name')
+                    ->get();
+            });
+
+            $posts = \Illuminate\Support\Facades\Cache::remember("yearbook_posts_{$activeYear}", 1800, function () use ($activeYear) {
+                return \App\Models\Post::with(['user' => function($q) {
+                        $q->select('id', 'name', 'profile_picture');
+                    }])
+                    ->whereHas('user', function($q) use ($activeYear) {
+                        $q->where('role', 'alumni')
+                          ->whereIn('status', ['active', 'approved'])
+                          ->where('graduation_year', $activeYear);
+                    })
+                    ->latest()
+                    ->take(10) // Ambil 10 cerita terbaik/terbaru
+                    ->get();
+            });
+        }
+
+        return view('alumni.yearbook', compact('years', 'alumni', 'posts', 'activeYear'));
+    }
+
+    /**
+     * Store Yearbook Message
+     */
+    public function storeYearbookMessage(Request $request)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+            'image' => 'nullable|image|max:2048'
+        ]);
+
+        $user = auth()->user();
+
+        if ($user->role !== 'alumni' || !in_array($user->status, ['active', 'approved']) || !$user->graduation_year) {
+            return redirect()->back()->with('error', 'Hanya alumni terverifikasi dengan tahun kelulusan yang dapat menulis di Buku Kenangan.');
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('yearbook_images', 'public');
+            $imagePath = '/storage/' . $imagePath;
+        }
+
+        \App\Models\Post::create([
+            'user_id' => $user->id,
+            'content' => $request->content,
+            'image_url' => $imagePath,
+            'type' => 'memory',
+            'visibility' => 'public',
+            'is_anonymous' => false
+        ]);
+
+        \Illuminate\Support\Facades\Cache::forget("yearbook_posts_{$user->graduation_year}");
+
+        return redirect()->route('alumni.yearbook', ['year' => $user->graduation_year])
+            ->with('success', 'Pesan Buku Kenangan berhasil ditambahkan!');
+    }
+
+    /**
+     * Update Yearbook Message
+     */
+    public function updateYearbookMessage(Request $request, $id)
+    {
+        $post = \App\Models\Post::findOrFail($id);
+
+        if ($post->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Anda tidak diizinkan mengubah kenangan ini.');
+        }
+
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $post->update([
+            'content' => $request->content,
+        ]);
+
+        $user = auth()->user();
+        \Illuminate\Support\Facades\Cache::forget("yearbook_posts_{$user->graduation_year}");
+
+        return redirect()->route('alumni.yearbook', ['year' => $user->graduation_year])
+            ->with('success', 'Kenangan berhasil diperbarui!');
+    }
+
+    /**
+     * Destroy Yearbook Message
+     */
+    public function destroyYearbookMessage($id)
+    {
+        $post = \App\Models\Post::findOrFail($id);
+
+        if ($post->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Anda tidak diizinkan menghapus kenangan ini.');
+        }
+
+        $post->delete();
+
+        $user = auth()->user();
+        \Illuminate\Support\Facades\Cache::forget("yearbook_posts_{$user->graduation_year}");
+
+        return redirect()->route('alumni.yearbook', ['year' => $user->graduation_year])
+            ->with('success', 'Kenangan berhasil dihapus.');
+    }
+
+    /**
      * Show Public Success Stories Listing
      */
     public function successStories()
@@ -135,10 +267,74 @@ class AlumniController extends Controller
     public function network()
     {
         $mapAnalytics = $this->alumniService->getCachedMapAnalytics();
+        
+        // 1. Data untuk Leaderboard Wilayah (Top Regions)
+        $topRegions = User::where('role', 'alumni')
+            ->whereNotNull('city_name')
+            ->select('city_name', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->groupBy('city_name')
+            ->orderByDesc('total')
+            ->take(5)
+            ->get();
+
+        // 2. Data untuk Live Activity (Active in last 15 mins)
+        $liveActivities = User::where('role', 'alumni')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where('last_active_at', '>=', now()->subMinutes(15))
+            ->get(['id', 'name', 'latitude', 'longitude', 'profile_picture']);
+
+        // 3. Data untuk Heatmap (Aggregated by city/coords)
+        $heatmapData = User::where('role', 'alumni')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->select('latitude', 'longitude', \Illuminate\Support\Facades\DB::raw('count(*) as weight'))
+            ->groupBy('latitude', 'longitude')
+            ->get();
+
+        // 4. Data untuk Job Satellites (Active Vacancies)
+        $jobVacancies = \App\Models\JobVacancy::where('status', 'active')
+            ->with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude')])
+            ->latest()
+            ->take(10)
+            ->get()
+            ->filter(fn($job) => $job->user && $job->user->latitude);
+
+        // 5. Data untuk Major Constellations (Lines within same major)
+        $majorConstellations = User::where('role', 'alumni')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get(['id', 'name', 'major', 'latitude', 'longitude'])
+            ->groupBy('major')
+            ->filter(fn($group) => $group->count() > 1);
+
+        // 6. Data untuk Time Capsules (Memory Posts)
+        $timeCapsules = \App\Models\Post::where('type', 'memory')
+            ->with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude')])
+            ->latest()
+            ->take(15)
+            ->get()
+            ->filter(fn($post) => $post->user && $post->user->latitude);
+
+        // 7. Live Feed for Pulse Chat (Latest Public Posts)
+        $liveFeed = \App\Models\Post::where('visibility', 'public')
+            ->with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude', 'profile_picture', 'city_name')])
+            ->latest()
+            ->take(10)
+            ->get()
+            ->filter(fn($post) => $post->user && $post->user->latitude);
+
         return view('network.index', [
             'locations' => $mapAnalytics['alumniLocations'],
             'nationalCount' => $mapAnalytics['nationalCount'],
-            'internationalCount' => $mapAnalytics['internationalCount']
+            'internationalCount' => $mapAnalytics['internationalCount'],
+            'topRegions' => $topRegions,
+            'liveActivities' => $liveActivities,
+            'heatmapData' => $heatmapData,
+            'jobVacancies' => $jobVacancies,
+            'majorConstellations' => $majorConstellations,
+            'timeCapsules' => $timeCapsules,
+            'liveFeed' => $liveFeed
         ]);
     }
     /**

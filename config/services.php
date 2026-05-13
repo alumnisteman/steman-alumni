@@ -17,13 +17,20 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_REDIRECT_URI'),
+        'redirect' => env('GOOGLE_REDIRECT_URI') ?: (request()->getSchemeAndHttpHost() . '/auth/google/callback'),
     ],
 
     'linkedin' => [
         'client_id' => env('LINKEDIN_CLIENT_ID'),
         'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
-        'redirect' => env('LINKEDIN_REDIRECT_URI'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI') ?: (request()->getSchemeAndHttpHost() . '/auth/linkedin/callback'),
+    ],
+    
+    'linkedin-openid' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI') ?: (request()->getSchemeAndHttpHost() . '/auth/linkedin/callback'),
+        'scopes' => ['openid', 'profile', 'email'],
     ],
 
     'postmark' => [
@@ -49,6 +56,12 @@ return [
 
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
+    ],
+
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_KEY'),
+        'api_base' => env('OPENAI_API_BASE', 'https://openrouter.ai/api/v1'),
+        'model' => env('OPENAI_MODEL', 'openrouter/free'),
     ],
 
     'newsapi' => [

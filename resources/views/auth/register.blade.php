@@ -71,6 +71,27 @@
                         @error('captcha') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100">Daftar Akun</button>
+
+                    <div class="mt-4 text-center">
+                        <div class="d-flex align-items-center mb-4">
+                            <hr class="flex-grow-1 opacity-25">
+                            <span class="mx-3 small text-muted">ATAU DAFTAR CEPAT DENGAN</span>
+                            <hr class="flex-grow-1 opacity-25">
+                        </div>
+                        
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a href="{{ route('social.redirect', 'google') }}" class="btn btn-outline-danger w-100 py-2">
+                                    <i class="bi bi-google"></i> Google
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="{{ route('social.redirect', 'linkedin') }}" class="btn btn-outline-primary w-100 py-2">
+                                    <i class="bi bi-linkedin"></i> LinkedIn
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     <p class="text-center mt-3">Sudah punya akun? <a href="/login">Login di sini</a></p>
                 </form>
             </div>

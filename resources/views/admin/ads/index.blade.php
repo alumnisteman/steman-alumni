@@ -73,11 +73,11 @@
                             <a href="{{ route('admin.ads.edit', $ad) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-2">
                                 <i class="bi bi-pencil me-1"></i> Edit
                             </a>
-                            <form action="{{ route('admin.ads.destroy', $ad) }}" method="POST" class="d-inline">
+                            <form id="delete-ad-{{ $ad->id }}" action="{{ route('admin.ads.destroy', $ad) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus iklan ini?')">
-                                    <i class="bi bi-trash me-1"></i> Hapus
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-ad-{{ $ad->id }}')">
+                                    <i class="bi bi-trash me-1" style="pointer-events: none;"></i> Hapus
                                 </button>
                             </form>
                         </td>

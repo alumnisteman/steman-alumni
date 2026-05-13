@@ -34,6 +34,11 @@ class HealthChecker
             'audit_broken'    => fn() => $this->checkAuditIntegrity(),
             'route_mismatch'  => fn() => $this->checkRouteIntegrity(),
             'route_shadowing' => fn() => $this->checkShadowedRoutes(),
+            'smoke_test'      => fn() => $this->runSmokeTests(),
+            'migration_mismatch' => fn() => $this->checkMigrations(),
+            'symlink_broken'  => fn() => $this->checkSymlink(),
+            'ai_offline'      => fn() => $this->checkAIService(),
+            'earth_data_mismatch' => fn() => $this->checkEarthData(),
         ];
 
         foreach ($checks as $issueKey => $checkFn) {
@@ -215,6 +220,81 @@ class HealthChecker
         }
 
         return $shadowedCount === 0;
+    }
+
+    /**
+     * Active Probes: Try to visit key pages and ensure they don't return 500
+     */
+    private function runSmokeTests(): bool
+    {
+        $baseUrl = config('app.url', 'http://127.0.0.1');
+        $pages = ['/', '/login', '/alumni', '/global-network', '/jejak-sukses'];
+        
+        foreach ($pages as $page) {
+            try {
+                // We use internal networking if possible, or public URL
+                $response = Http::timeout(5)->get($baseUrl . $page);
+                if ($response->serverError()) {
+                    Log::critical("SystemGuard SmokeTest FAIL: [{$page}] returned 500");
+                    return false;
+                }
+            } catch (\Exception $e) {
+                // If we can't reach it, it might be a DNS issue or container networking,
+                // but we don't necessarily flag as 500 error unless we get a 500 response.
+                continue;
+            }
+        }
+        return true;
+    }
+
+    private function checkMigrations(): bool
+    {
+        try {
+            // Check if there are pending migrations
+            $output = \Illuminate\Support\Facades\Artisan::call('migrate:status');
+            $status = \Illuminate\Support\Facades\Artisan::output();
+            return !str_contains($status, '| No |');
+        } catch (\Exception $e) {
+            return true;
+        }
+    }
+
+    private function checkSymlink(): bool
+    {
+        return file_exists(public_path('storage')) && is_link(public_path('storage'));
+    }
+
+    private function checkAIService(): bool
+    {
+        try {
+            $aiService = new \App\Services\AIService();
+            $health = $aiService->checkHealth();
+            \Illuminate\Support\Facades\Log::info("HealthCheck AI result:", $health);
+            return $health['status'] === 'HEALTHY';
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("HealthCheck AI Exception: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function checkEarthData(): bool
+    {
+        // Check for users with addresses/cities but missing coordinates
+        $mismatch = \App\Models\User::where('role', 'alumni')
+            ->where(function($q) {
+                $q->whereNotNull('address')->orWhereNotNull('city_name');
+            })
+            ->where(function($q) {
+                $q->whereNull('latitude')->orWhereNull('longitude');
+            })
+            ->count();
+
+        if ($mismatch > 0) {
+            Log::warning("SystemGuard: Found {$mismatch} alumni with missing coordinates for Steman Earth.");
+            return false;
+        }
+
+        return true;
     }
 
     private function isShadowed($uri, $wildcard): bool

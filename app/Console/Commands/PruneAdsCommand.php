@@ -37,9 +37,9 @@ class PruneAdsCommand extends Command
 
         // CRITICAL: Use raw DB query to get stored paths WITHOUT triggering
         // Eloquent accessors which would transform paths into full URLs.
-        $rows = DB::table('ads')->select(['image', 'mobile_image'])->get();
+        $rows = DB::table('ads')->select(['image_desktop', 'image_mobile'])->get();
 
-        $dbImages = $rows->flatMap(fn($row) => [$row->image, $row->mobile_image])
+        $dbImages = $rows->flatMap(fn($row) => [$row->image_desktop, $row->image_mobile])
             ->filter()
             ->map(function ($path) {
                 // Normalize: strip any leading slash or 'storage/' prefix

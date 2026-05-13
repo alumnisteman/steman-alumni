@@ -182,13 +182,13 @@
                     <div class="col-6 col-md-3">
                         <a href="{{ route('alumni.network') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
                             <i class="bi bi-globe-americas fs-2 text-info mb-2 d-block"></i>
-                            <h6 class="fw-bold mb-0 small">Mesh Map</h6>
+                            <h6 class="fw-bold mb-0 small">Steman Earth</h6>
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a href="{{ route('nostalgia.index') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
-                            <i class="bi bi-camera-reels fs-2 text-danger mb-2 d-block"></i>
-                            <h6 class="fw-bold mb-0 small">Nostalgia</h6>
+                        <a href="{{ route('alumni.yearbook') }}" class="d-block p-3 rounded-4 bg-black bg-opacity-25 border border-white border-opacity-10 text-white text-decoration-none transition-all hover-translate-y h-100 text-center">
+                            <i class="bi bi-book-half fs-2 text-purple mb-2 d-block" style="color:#7c3aed;"></i>
+                            <h6 class="fw-bold mb-0 small">Buku Kenangan</h6>
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
@@ -236,29 +236,8 @@
                 </div>
             </div>
 
-            <!-- 5. Alumni Radar (Span 4) -->
-            <div class="bento-card span-4 position-relative overflow-hidden">
-                <h6 class="fw-bold text-white mb-3"><i class="bi bi-radar text-success me-2"></i> ALUMNI RADAR</h6>
-                
-                <div id="radar-initial" class="text-center py-4 h-100 d-flex flex-column justify-content-center align-items-center">
-                    <i class="bi bi-geo-alt fs-1 text-white-50 mb-2"></i>
-                    <p class="small text-white-50 mb-4">Temukan rekan di sekitar Anda.</p>
-                    <button onclick="activateRadar()" class="btn btn-outline-success rounded-pill px-4 fw-bold w-100">Aktifkan Radar</button>
-                </div>
-                
-                <div id="radar-scanning" class="text-center py-4 d-none h-100 d-flex flex-column justify-content-center align-items-center">
-                    <div class="radar-sonar-active mx-auto mb-3"></div>
-                    <p class="small fw-bold text-info mb-0 animate-pulse tracking-widest">SCANNING...</p>
-                </div>
-                
-                <div id="radar-results" class="d-none h-100 d-flex flex-column">
-                    <div id="radar-list" class="flex-grow-1 overflow-auto pe-2" style="max-height: 200px;"></div>
-                    <button onclick="resetRadar()" class="btn btn-link text-white-50 p-0 small text-decoration-none w-100 mt-2"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
-                </div>
-            </div>
-
-            <!-- 6. AI Networking Matches (Span 8) -->
-            <div class="bento-card span-8">
+            <!-- 6. AI Networking Matches (Span 12) -->
+            <div class="bento-card span-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold text-white mb-0"><i class="bi bi-people-fill text-primary me-2"></i> AI NETWORKING MATCHES</h6>
                     <a href="/alumni" class="text-info small fw-bold text-decoration-none">Lihat Semua <i class="bi bi-chevron-right"></i></a>
@@ -329,20 +308,6 @@
                 </div>
             </div>
 
-            <!-- 9. Map Wrapper (Span 12) -->
-            <div class="bento-card span-12 p-0 overflow-hidden" style="min-height: 350px;">
-                <div class="position-absolute top-0 start-0 p-3 z-1">
-                    <h6 class="fw-bold text-white shadow-sm px-3 py-2 rounded-pill bg-black bg-opacity-50 backdrop-blur"><i class="bi bi-globe-americas text-info me-2"></i> GLOBAL DISTRIBUTION</h6>
-                </div>
-                <x-alumni-map 
-                    id="user-dashboard-map" 
-                    :locations="$alumniLocations" 
-                    :nationalCount="$nationalCount" 
-                    :internationalCount="$internationalCount" 
-                    height="100%"
-                />
-            </div>
-
         </div>
     </div>
 </div>
@@ -409,67 +374,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('ai-recommendations-skeleton').classList.add('d-none');
         });
 });
-
-function activateRadar() {
-    const initial = document.getElementById('radar-initial');
-    const scanning = document.getElementById('radar-scanning');
-    const results = document.getElementById('radar-results');
-    const list = document.getElementById('radar-list');
-
-    initial.classList.add('d-none');
-    scanning.classList.remove('d-none');
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            fetch(`{{ route('alumni.networking.nearby') }}?lat=${lat}&lng=${lng}`)
-                .then(response => response.json())
-                .then(data => {
-                    scanning.classList.add('d-none');
-                    results.classList.remove('d-none');
-
-                    if (data.success && data.recommendations.length > 0) {
-                        let html = '';
-                        data.recommendations.forEach(rec => {
-                            html += `
-                            <div class="d-flex align-items-center mb-2 p-2 bg-white bg-opacity-10 rounded-3 transition-all">
-                                <img src="${rec.profile_picture}" class="rounded-circle me-2 border border-info" width="30" height="30" style="object-fit: cover;">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h6 class="fw-bold mb-0 text-white text-truncate" style="font-size: 0.75rem;">${rec.name}</h6>
-                                    <p class="mb-0 text-info text-truncate" style="font-size: 0.6rem;">
-                                        <i class="bi bi-geo-alt-fill me-1"></i>${rec.distance} km
-                                    </p>
-                                </div>
-                                <a href="/alumni/${rec.id}" class="btn btn-sm btn-info rounded-pill px-2 py-0 fw-bold text-dark" style="font-size: 0.6rem;">LIHAT</a>
-                            </div>`;
-                        });
-                        list.innerHTML = html;
-                    } else {
-                        list.innerHTML = '<p class="small text-white-50 text-center py-2">Tidak ada alumni ditemukan di sekitar.</p>';
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Gagal mengambil data radar.");
-                    resetRadar();
-                });
-        }, error => {
-            alert("Izin lokasi diperlukan untuk menggunakan Radar.");
-            resetRadar();
-        });
-    } else {
-        alert("Browser Anda tidak mendukung Geolocation.");
-        resetRadar();
-    }
-}
-
-function resetRadar() {
-    document.getElementById('radar-initial').classList.remove('d-none');
-    document.getElementById('radar-scanning').classList.add('d-none');
-    document.getElementById('radar-results').classList.add('d-none');
-}
 </script>
 @endpush
 @endsection

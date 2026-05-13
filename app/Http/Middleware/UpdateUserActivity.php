@@ -25,7 +25,7 @@ class UpdateUserActivity
             }
 
             // 2. Update last_active_at (Throttled to every 5 minutes to avoid DB overhead)
-            if (!$user->last_active_at || $user->last_active_at->diffInMinutes(now()) >= 5) {
+            if (!$user->last_active_at || \Carbon\Carbon::parse($user->last_active_at)->diffInMinutes(now()) >= 5) {
                 $user->update(['last_active_at' => now()]);
             }
         }

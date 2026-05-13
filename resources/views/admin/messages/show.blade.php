@@ -16,10 +16,10 @@
                     Diterima: {{ $message->created_at->format('d M Y, H:i') }} &mdash; {{ $message->created_at->diffForHumans() }}
                 </p>
             </div>
-            <form method="POST" action="{{ route('admin.messages.destroy', $message->id) }}" onsubmit="return confirm('Hapus pesan ini?')">
+            <form id="delete-message-{{ $message->id }}" method="POST" action="{{ route('admin.messages.destroy', $message->id) }}">
                 @csrf @method('DELETE')
-                <button class="btn btn-outline-danger rounded-pill px-4">
-                    <i class="bi bi-trash me-2"></i>Hapus
+                <button type="button" class="btn btn-outline-danger rounded-pill px-4" onclick="window.Guardian.confirmDelete('delete-message-{{ $message->id }}')">
+                    <i class="bi bi-trash me-2" style="pointer-events: none;"></i>Hapus
                 </button>
             </form>
         </div>

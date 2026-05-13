@@ -41,6 +41,10 @@
         <a href="{{ route('admin.programs.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.programs.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-mortarboard me-3 text-warning"></i> Program Alumni
         </a>
+        <a href="{{ route('admin.podcasts.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.podcasts.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
+            <i class="bi bi-mic me-3 text-danger"></i> Alumni Podcast
+            <span class="badge bg-danger rounded-pill ms-auto" style="font-size:0.6rem">HOT</span>
+        </a>
         <a href="{{ route('admin.registrations.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.registrations.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }} d-flex justify-content-between align-items-center">
             <span><i class="bi bi-clipboard-check me-3 text-primary"></i> Registrasi Masuk</span>
             @php $pendingRegCount = \App\Models\ProgramRegistration::where('status', 'pending')->count(); @endphp
@@ -59,12 +63,12 @@
         <div class="px-3 mt-4 mb-2">
             <small class="text-uppercase fw-bold text-muted opacity-50" style="font-size: 0.65rem; letter-spacing: 1px;">SYSTEM MANAGEMENT</small>
         </div>
-        <a href="https://portainer.alumni-steman.my.id" target="_blank" class="nav-link py-3 px-4 d-flex align-items-center text-dark border-start border-4 border-transparent hover-bg-light transition-all">
+        <a href="https://alumni-steman.my.id:9443" target="_blank" class="nav-link py-3 px-4 d-flex align-items-center text-dark border-start border-4 border-transparent hover-bg-light transition-all">
             <i class="bi bi-box-seam fs-5 me-3 text-primary"></i>
             <span class="fw-semibold">Portainer (Docker)</span>
             <i class="bi bi-box-arrow-up-right ms-auto small opacity-50"></i>
         </a>
-        <a href="https://meili.alumni-steman.my.id" target="_blank" class="nav-link py-3 px-4 d-flex align-items-center text-dark border-start border-4 border-transparent hover-bg-light transition-all">
+        <a href="http://alumni-steman.my.id:7700" target="_blank" class="nav-link py-3 px-4 d-flex align-items-center text-dark border-start border-4 border-transparent hover-bg-light transition-all">
             <i class="bi bi-search fs-5 me-3 text-warning"></i>
             <span class="fw-semibold">Meilisearch</span>
             <i class="bi bi-box-arrow-up-right ms-auto small opacity-50"></i>
