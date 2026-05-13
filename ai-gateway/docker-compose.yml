@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  ai-gateway:
+    build: ./app
+    container_name: ai-gateway
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3001:3000" # Using 3001 to avoid potential conflicts
+    depends_on:
+      - redis
+    networks:
+      - steman_network
+
+  redis-ai:
+    image: redis:7-alpine
+    container_name: redis-ai
+    restart: always
+    networks:
+      - steman_network
+
+  nginx-ai:
+    image: nginx:stable-alpine
+    container_name: nginx-ai
+    restart: always
+    ports:
+      - "8081:80" # Using 8081 for the gateway
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - ai-gateway
+    networks:
+      - steman_network
+
+networks:
+  steman_network:
+    external: true # Join the existing steman network

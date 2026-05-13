@@ -338,6 +338,39 @@ services:
         max-size: 5m
         max-file: 2
 
+  ai-gateway:
+    build:
+      context: ./ai-gateway/app
+    container_name: steman_ai_gateway
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - PORT=3000
+      - REDIS_HOST=steman_redis
+      - REDIS_PORT=6379
+    deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 256M
+    networks:
+      - steman-network
+    depends_on:
+      - redis
+
+  nginx-ai:
+    image: nginx:stable-alpine
+    container_name: steman_nginx_ai
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./ai-gateway/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - steman-network
+    depends_on:
+      - ai-gateway
+
 networks:
   steman-network:
     driver: bridge

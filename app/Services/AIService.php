@@ -25,6 +25,7 @@ class AIService
         $this->openRouterModel = \config('services.openrouter.model', 'google/gemini-2.0-flash-exp:free'); 
         $this->openRouterApiBase = \config('services.openrouter.api_base', 'https://openrouter.ai/api/v1');
         $this->deepSeekKey = \config('services.deepseek.api_key') ?: \env('DEEPSEEK_API_KEY');
+        $this->gatewayUrl = \env('AI_GATEWAY_URL', 'http://ai-gateway:3000');
     }
 
     private function tryDeepSeek(string $prompt, float $temperature): ?string
@@ -58,10 +59,8 @@ class AIService
         $this->activeProvider = null;
         $primary = \env('AI_PRIMARY_PROVIDER', 'gemini');
 
-        // Define provider execution order based on primary choice
-        $providers = $primary === 'openrouter' 
-            ? ['openrouter', 'gemini', 'deepseek'] 
-            : ($primary === 'deepseek' ? ['deepseek', 'gemini', 'openrouter'] : ['gemini', 'deepseek', 'openrouter']);
+        // Define provider execution order: Gateway First (Resilience)
+        $providers = ['gateway', 'gemini', 'deepseek', 'openrouter'];
 
         foreach ($providers as $provider) {
             // Skip provider if it failed recently (cooldown)
@@ -70,7 +69,15 @@ class AIService
                 continue;
             }
 
-            if ($provider === 'gemini') {
+            if ($provider === 'gateway') {
+                Log::info('AIService: Attempting AI Gateway...');
+                $result = $this->tryGateway($prompt);
+                if ($result) {
+                    $this->activeProvider = 'AI Gateway (Redundant)';
+                    return $result;
+                }
+                $this->markProviderFailed('gateway');
+            } elseif ($provider === 'gemini') {
                 $models = $model ? [$model] : ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro', 'gemini-2.0-flash-exp'];
                 foreach ($models as $currentModel) {
                     for ($attempt = 1; $attempt <= 2; $attempt++) {
@@ -492,5 +499,21 @@ class AIService
                    Return ONLY the bio text.";
 
         return $this->ask($prompt);
+    }
+
+    private function tryGateway(string $prompt): ?string
+    {
+        try {
+            $response = Http::timeout(30)->post("{$this->gatewayUrl}/chat", [
+                'prompt' => $prompt
+            ]);
+
+            if ($response->successful()) {
+                return $response->json('response');
+            }
+        } catch (\Exception $e) {
+            Log::error('AIService: Gateway Error: ' . $e->getMessage());
+        }
+        return null;
     }
 }
