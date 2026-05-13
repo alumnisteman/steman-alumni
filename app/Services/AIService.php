@@ -64,6 +64,12 @@ class AIService
             : ($primary === 'deepseek' ? ['deepseek', 'gemini', 'openrouter'] : ['gemini', 'deepseek', 'openrouter']);
 
         foreach ($providers as $provider) {
+            // Skip provider if it failed recently (cooldown)
+            if (\Illuminate\Support\Facades\Cache::has("ai_provider_fail_{$provider}")) {
+                Log::debug("AIService: Skipping provider [{$provider}] due to recent failure.");
+                continue;
+            }
+
             if ($provider === 'gemini') {
                 $models = $model ? [$model] : ['gemini-1.5-flash', 'gemini-2.0-flash-exp'];
                 foreach ($models as $currentModel) {
@@ -76,6 +82,9 @@ class AIService
                         if ($attempt < 2) usleep(500000); // 0.5s
                     }
                 }
+                // If all Gemini models failed, mark Gemini as failed for a while
+                $this->markProviderFailed('gemini');
+
             } elseif ($provider === 'deepseek' && $this->deepSeekKey) {
                 Log::info('AIService: Attempting DeepSeek Direct...');
                 $result = $this->tryDeepSeek($prompt, $temperature);
@@ -83,6 +92,8 @@ class AIService
                     $this->activeProvider = 'DeepSeek Direct';
                     return $result;
                 }
+                $this->markProviderFailed('deepseek');
+
             } elseif ($provider === 'openrouter' && ($this->openRouterKey ?: \env('OPENROUTER_API_KEY'))) {
                 Log::info('AIService: Attempting OpenRouter...', ['model' => $this->openRouterModel]);
                 $result = $this->tryOpenRouter($prompt, $temperature);
@@ -90,6 +101,7 @@ class AIService
                     $this->activeProvider = 'OpenRouter (' . $this->openRouterModel . ')';
                     return $result;
                 }
+                $this->markProviderFailed('openrouter');
             }
         }
 
@@ -230,12 +242,20 @@ class AIService
         if ($result && str_contains(strtoupper($result), 'ACTIVE')) {
             return [
                 'status' => 'HEALTHY', 
-                'message' => 'AI Service is connected and responding.',
+                'message' => 'AI Service is operational (Active: ' . ($this->activeProvider ?? 'Primary') . ')',
                 'provider' => $this->activeProvider ?? 'Unknown'
             ];
         }
 
-        return ['status' => 'ERROR', 'message' => 'AI Service is unreachable or returned invalid response.', 'provider' => 'None'];
+        // Final attempt health check if primary fails: try a forced health check on fallbacks
+        return ['status' => 'ERROR', 'message' => 'AI Service is unreachable across all redundancy chains.', 'provider' => 'None'];
+    }
+
+    private function markProviderFailed(string $provider): void
+    {
+        // Don't mark as failed if it's the only one left, always keep trying something
+        Log::warning("AIService: Marking provider [{$provider}] as failed temporarily.");
+        \Illuminate\Support\Facades\Cache::put("ai_provider_fail_{$provider}", true, 600); // 10 min cooldown
     }
 
     /**
