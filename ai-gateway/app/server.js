@@ -7,6 +7,8 @@ const openai = require('./providers/openai');
 const gemini = require('./providers/gemini');
 const claude = require('./providers/claude');
 const ollama = require('./providers/ollama');
+const deepseek = require('./providers/deepseek');
+const openrouter = require('./providers/openrouter');
 
 const cache = require('./utils/cache');
 
@@ -18,6 +20,8 @@ const providers = [
   openai,
   gemini,
   claude,
+  deepseek,
+  openrouter,
   ollama
 ];
 
