@@ -28,10 +28,10 @@ class SystemHealthCheck extends Command
         });
 
         // 3. AI Service Check
-        $this->check("AI Service (Gemini API)", function() {
+        $this->check("AI Resilience Engine", function() {
             $ai = new \App\Services\AIService();
-            $response = $ai->ask("ping", 0.1);
-            return !empty($response);
+            $health = $ai->checkHealth();
+            return $health['status'] === 'HEALTHY';
         });
 
         // 4. Critical Views Check
