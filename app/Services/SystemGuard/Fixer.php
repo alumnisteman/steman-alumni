@@ -103,6 +103,20 @@ class Fixer
                     $fixed = false;
                     break;
 
+                case 'route_mismatch':
+                    Artisan::call('optimize:clear');
+                    Notifier::send("⚠️ *Route Mismatch detected*\nSistem mendeteksi inkonsistensi route (Route not defined). Cache telah dibersihkan otomatis.", 'warning');
+                    Log::warning('SystemGuard: Route mismatch fixed via optimize:clear');
+                    $fixed = true;
+                    break;
+
+                case 'route_shadowing':
+                    // Cannot fix reordering automatically safely, but alert the dev
+                    Notifier::send("⚠️ *Route Shadowing detected*\nBeberapa route mungkin tidak bisa diakses karena tertutup wildcard. Periksa `web.php`.", 'warning');
+                    Log::warning('SystemGuard: Route shadowing detected in web.php');
+                    $fixed = false; 
+                    break;
+
                 default:
                     Log::warning("SystemGuard Fixer: Unknown issue [{$issue}]");
                     break;

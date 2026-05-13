@@ -186,6 +186,16 @@ services:
       MARIADB_USER: ${DB_USERNAME}
       MARIADB_PASSWORD: ${DB_PASSWORD}
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+    command: [
+      "mysqld",
+      "--innodb-buffer-pool-size=256M",
+      "--innodb-log-file-size=64M",
+      "--query-cache-size=32M",
+      "--query-cache-type=1",
+      "--max-connections=150",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci"
+    ]
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=$${MARIADB_ROOT_PASSWORD} || exit 1"]
       interval: 30s
