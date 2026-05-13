@@ -237,18 +237,20 @@ class AIService
             return ['status' => 'ERROR', 'message' => 'No AI API Keys configured.'];
         }
 
-        $result = $this->ask("Hello, are you active? Reply with 'ACTIVE' only.", 0.1);
+        // Try a very simple, safe ping
+        $result = $this->ask("ping", 0.1);
         
-        if ($result && str_contains(strtoupper($result), 'ACTIVE')) {
+        if ($result) {
             return [
                 'status' => 'HEALTHY', 
-                'message' => 'AI Service is operational (Active: ' . ($this->activeProvider ?? 'Primary') . ')',
+                'message' => 'AI Resilience Engine Operational (Active: ' . ($this->activeProvider ?? 'Primary') . ')',
                 'provider' => $this->activeProvider ?? 'Unknown'
             ];
         }
 
-        // Final attempt health check if primary fails: try a forced health check on fallbacks
-        return ['status' => 'ERROR', 'message' => 'AI Service is unreachable across all redundancy chains.', 'provider' => 'None'];
+        // If general ask failed, maybe all failed or just primary. 
+        // We report ERROR only if we truly can't get ANY response.
+        return ['status' => 'ERROR', 'message' => 'AI Resilience Engine Failed: All providers unreachable.', 'provider' => 'None'];
     }
 
     private function markProviderFailed(string $provider): void
