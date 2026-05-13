@@ -61,7 +61,7 @@ return [
     'openrouter' => [
         'api_key' => env('OPENROUTER_API_KEY'),
         'api_base' => env('OPENAI_API_BASE', 'https://openrouter.ai/api/v1'),
-        'model' => env('OPENAI_MODEL', 'openrouter/free'),
+        'model' => env('OPENAI_MODEL', 'google/gemini-2.0-flash-exp:free'),
     ],
 
     'newsapi' => [

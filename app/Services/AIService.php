@@ -71,7 +71,7 @@ class AIService
             }
 
             if ($provider === 'gemini') {
-                $models = $model ? [$model] : ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
+                $models = $model ? [$model] : ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro', 'gemini-2.0-flash-exp'];
                 foreach ($models as $currentModel) {
                     for ($attempt = 1; $attempt <= 2; $attempt++) {
                         $result = $this->tryRequest($prompt, $temperature, $currentModel);
