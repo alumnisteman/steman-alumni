@@ -19,10 +19,10 @@
                 <div class="bento-card p-4">
                     <h6 class="text-white fw-bold mb-4 small tracking-widest text-uppercase">Categories</h6>
                     <div class="d-flex flex-column gap-2">
-                        <a href="{{ route('podcasts.index') }}" class="btn {{ !request('category') ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">ALL TRANSMISSIONS</a>
-                        <a href="{{ route('podcasts.index', ['category' => 'career']) }}" class="btn {{ request('category') == 'career' ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">CAREER PROTOCOL</a>
-                        <a href="{{ route('podcasts.index', ['category' => 'overseas']) }}" class="btn {{ request('category') == 'overseas' ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">GLOBAL UPLINK</a>
-                        <a href="{{ route('podcasts.index', ['category' => 'startup']) }}" class="btn {{ request('category') == 'startup' ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">STARTUP MATRIX</a>
+                        <a href="{{ \Illuminate\Support\Facades\URL::route('podcasts.index') }}" class="btn {{ !request('category') ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">ALL TRANSMISSIONS</a>
+                        <a href="{{ \Illuminate\Support\Facades\URL::route('podcasts.index', ['category' => 'career']) }}" class="btn {{ request('category') == 'career' ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">CAREER PROTOCOL</a>
+                        <a href="{{ \Illuminate\Support\Facades\URL::route('podcasts.index', ['category' => 'overseas']) }}" class="btn {{ request('category') == 'overseas' ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">GLOBAL UPLINK</a>
+                        <a href="{{ \Illuminate\Support\Facades\URL::route('podcasts.index', ['category' => 'startup']) }}" class="btn {{ request('category') == 'startup' ? 'btn-neon-violet' : 'btn-outline-light' }} btn-sm text-start">STARTUP MATRIX</a>
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@
                                     
                                     <div class="d-flex justify-content-between align-items-center pt-3 border-top border-white border-opacity-10">
                                         <span class="text-neon-cyan fw-bold extra-small"><i class="bi bi-clock me-1"></i>{{ $podcast->duration }}</span>
-                                        <a href="{{ route('podcasts.show', $podcast->slug) }}" class="text-white-50 text-decoration-none extra-small hover-cyan transition-all">DETAILS <i class="bi bi-arrow-right ms-1"></i></a>
+                                        <a href="{{ \Illuminate\Support\Facades\URL::route('podcasts.show', $podcast->slug) }}" class="text-white-50 text-decoration-none extra-small hover-cyan transition-all">DETAILS <i class="bi bi-arrow-right ms-1"></i></a>
                                     </div>
                                 </div>
                             </div>

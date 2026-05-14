@@ -24,7 +24,7 @@
 <div class="container">
     <div class="header">
         <h1>📬 PESAN KONTAK BARU</h1>
-        <p>Alumni SMKN 2 Ternate</p>
+        <p>Forum Silaturahmi Alumni Steman Ternate</p>
         <span class="badge">PESAN MASUK</span>
     </div>
     <div class="body">

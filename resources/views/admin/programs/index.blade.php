@@ -7,14 +7,14 @@
             <h2 class="fw-bold mb-0">Manajemen Program</h2>
             <p class="text-muted">Kelola program beasiswa, mentoring, dan aksi sosial.</p>
         </div>
-        <a href="{{ route('admin.programs.create') }}" class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm">
+        <a href="{{ \Illuminate\Support\Facades\URL::route('admin.programs.create') }}" class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm">
             <i class="bi bi-plus-lg me-2"></i>TAMBAH PROGRAM
         </a>
     </div>
 
-    @if(session('success'))
+    @if(\Illuminate\Support\Facades\Session::has('success'))
         <div class="alert alert-success border-0 shadow-sm mb-4">
-            {{ session('success') }}
+            {{ \Illuminate\Support\Facades\Session::get('success') }}
         </div>
     @endif
 
@@ -47,10 +47,10 @@
                             </span>
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm btn-light rounded-pill px-3 me-2">
+                            <a href="{{ \Illuminate\Support\Facades\URL::route('admin.programs.edit', $program) }}" class="btn btn-sm btn-light rounded-pill px-3 me-2">
                                 <i class="bi bi-pencil-square me-1"></i> Edit
                             </a>
-                             <form id="delete-program-{{ $program->id }}" action="{{ route('admin.programs.destroy', $program) }}" method="POST" class="d-inline">
+                             <form id="delete-program-{{ $program->id }}" action="{{ \Illuminate\Support\Facades\URL::route('admin.programs.destroy', $program) }}" method="POST" class="d-inline">
                                  @csrf
                                  @method('DELETE')
                                  <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-program-{{ $program->id }}')">

@@ -12,7 +12,7 @@ class SettingSeeder extends Seeder
             // General
             [
                 'key' => 'site_name',
-                'value' => 'IKATAN ALUMNI SMKN 2',
+                'value' => 'Forum Silaturahmi Alumni Steman Ternate',
                 'label' => 'Nama Situs',
                 'group' => 'general'
             ],
@@ -24,7 +24,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'running_text',
-                'value' => 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate - Jalin Silaturahmi, Bangun Kontribusi!',
+                'value' => 'Selamat Datang di Portal Resmi Forum Silaturahmi Alumni Steman Ternate - Jalin Silaturahmi, Bangun Kontribusi!',
                 'label' => 'Teks Berjalan (Running Text)',
                 'group' => 'general'
             ],
@@ -84,7 +84,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'chairman_message',
-                'value' => 'Selamat datang di portal resmi Ikatan Alumni SMKN 2 Ternate. Mari kita jalin silaturahmi.',
+                'value' => 'Selamat datang di portal resmi Forum Silaturahmi Alumni Steman Ternate. Mari kita jalin silaturahmi.',
                 'label' => 'Sambutan Singkat Ketua Umum',
                 'group' => 'chairman'
             ],

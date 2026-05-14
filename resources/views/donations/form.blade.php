@@ -36,7 +36,7 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="small text-muted">Atas Nama:</span>
-                                <span class="fw-bold text-uppercase">Ikatan Alumni Steman</span>
+                                <span class="fw-bold text-uppercase">Forum Silaturahmi Alumni Steman Ternate</span>
                             </div>
                         @endif
                     </div>

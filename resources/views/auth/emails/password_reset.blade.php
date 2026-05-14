@@ -30,7 +30,7 @@
             <p style="margin-top: 30px; font-size: 14px; color: #64748b;">Jika Anda tidak merasa melakukan permintaan ini, abaikan saja email ini. Keamanan akun Anda tetap terjaga.</p>
         </div>
         <div class="footer">
-            &copy; 2026 Ikatan Alumni SMKN 2 Ternate. Seluruh hak cipta dilindungi.<br>
+            &copy; 2026 Forum Silaturahmi Alumni Steman Ternate. Seluruh hak cipta dilindungi.<br>
             Jangan membalas email otomatis ini.
         </div>
     </div>

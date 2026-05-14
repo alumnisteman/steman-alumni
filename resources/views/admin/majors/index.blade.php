@@ -12,9 +12,9 @@
         </button>
     </div>
 
-    @if(session('success'))
+    @if(\Illuminate\Support\Facades\Session::get('success'))
         <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
-            {{ session('success') }}
+            {{ \Illuminate\Support\Facades\Session::get('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
@@ -52,7 +52,7 @@
                                         data-bs-toggle="modal" data-bs-target="#editMajorModal{{ $major->id }}">
                                     <i class="bi bi-pencil me-1"></i> Edit
                                 </button>
-                                <form id="delete-major-{{ $major->id }}" action="{{ route('admin.majors.destroy', $major) }}" method="POST" class="d-inline">
+                                <form id="delete-major-{{ $major->id }}" action="{{ \Illuminate\Support\Facades\URL::route('admin.majors.destroy', $major) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="window.Guardian.confirmDelete('delete-major-{{ $major->id }}')">
@@ -77,7 +77,7 @@
 <!-- Edit Modal -->
 <div class="modal fade" id="editMajorModal{{ $major->id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('admin.majors.update', $major) }}" method="POST" class="modal-content border-0 shadow rounded-4">
+        <form action="{{ \Illuminate\Support\Facades\URL::route('admin.majors.update', $major) }}" method="POST" class="modal-content border-0 shadow rounded-4">
             @csrf
             @method('PUT')
             <div class="modal-header border-0 pb-0">
@@ -116,7 +116,7 @@
 <!-- Add Modal -->
 <div class="modal fade" id="addMajorModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('admin.majors.store') }}" method="POST" class="modal-content border-0 shadow rounded-4">
+        <form action="{{ \Illuminate\Support\Facades\URL::route('admin.majors.store') }}" method="POST" class="modal-content border-0 shadow rounded-4">
             @csrf
             <div class="modal-header border-0 pb-0">
                 <h5 class="fw-bold">Tambah major Baru</h5>

@@ -4,7 +4,7 @@
 <div class="container py-5">
     <div class="row mb-5">
         <div class="col-lg-7">
-            <h1 class="fw-black text-uppercase tracking-wider mb-2">💰 IKATAN ALUMNI FUND</h1>
+            <h1 class="fw-black text-uppercase tracking-wider mb-2">💰 STEMAN ALUMNI FUND</h1>
             <p class="text-muted lead">Sistem penggalangan dana abadi yang transparan untuk beasiswa, bantuan sosial, dan pengembangan almamater.</p>
             <div class="mt-3">
                 <a href="{{ route('donations.audit') }}" class="btn btn-outline-dark rounded-pill px-4 btn-sm fw-bold">

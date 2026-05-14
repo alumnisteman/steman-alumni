@@ -82,7 +82,7 @@
             STEMAN <span class="text-blue-500">Global Network</span>
         </h1>
         <p class="text-gray-400 max-w-2xl mx-auto">
-            Menghubungkan masa lalu, membangun masa depan. Visualisasi jaringan alumni SMKN 2 Ternate di seluruh belahan dunia.
+            Menghubungkan masa lalu, membangun masa depan. Visualisasi jaringan Forum Silaturahmi Alumni Steman Ternate di seluruh belahan dunia.
         </p>
     </div>
 

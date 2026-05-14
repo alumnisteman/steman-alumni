@@ -22,7 +22,7 @@ RUN composer dump-autoload --optimize --no-dev && ls -la /app/vendor/autoload.ph
 
 # --- Stage 3: Runner Stage (Final Image) ---
 FROM php:8.4-fpm-alpine
-LABEL maintainer="Ikatan Alumni STEMAN"
+LABEL maintainer="Forum Silaturahmi Alumni Steman Ternate"
 
 # Install runtime system dependencies
 RUN apk add --no-cache \

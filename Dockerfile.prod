@@ -4,7 +4,7 @@
 # It assumes 'vendor' and 'public/build' are pre-built locally.
 
 FROM php:8.4-fpm-alpine
-LABEL maintainer="Ikatan Alumni STEMAN"
+LABEL maintainer="Forum Silaturahmi Alumni Steman Ternate"
 
 # Install runtime system dependencies
 RUN apk add --no-cache \

@@ -73,7 +73,7 @@
     </div>
     <div class="footer">
         Email ini dikirim secara otomatis oleh Sistem Portal Alumni STEMAN.<br>
-        &copy; {{ date('Y') }} Ikatan Alumni STEMAN. All rights reserved.
+        &copy; {{ date('Y') }} Forum Silaturahmi Alumni Steman Ternate. All rights reserved.
     </div>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <div class="container py-5">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-primary">Dampak & Statistik Alumni</h1>
-        <p class="lead text-muted">Melihat kekuatan jaringan alumni SMKN 2 Ternate dalam angka.</p>
+        <p class="lead text-muted">Melihat kekuatan jaringan Forum Silaturahmi Alumni Steman Ternate dalam angka.</p>
     </div>
 
     <div class="row g-4 mb-5">

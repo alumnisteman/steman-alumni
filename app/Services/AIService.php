@@ -345,11 +345,11 @@ class AIService
     {
         $schoolName = setting('school_name', 'SMKN 2 Ternate');
         $chairmanName = setting('chairman_name', 'Nama Ketua Umum');
-        $siteName = setting('site_name', 'IKATAN ALUMNI SMKN 2');
+        $siteName = setting('site_name', 'Forum Silaturahmi Alumni Steman Ternate');
 
         $systemPrompt = "You are 'Steman-AI', the official assistant for the $siteName portal. 
         Context:
-        - Organization: Ikatan Alumni $schoolName.
+        - Organization: Forum Silaturahmi Alumni Steman Ternate ($schoolName).
         - Chairman: $chairmanName.
         - Purpose: Connecting alumni, sharing jobs, and nostalgia.
         - Features: 3D Network Map, Jobs Portal, Mentoring, and Digital Cards.

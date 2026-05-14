@@ -8,7 +8,7 @@
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden shadow-sm shadow-hover">
                     <div class="card-header bg-dark text-white p-5 text-center border-0" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
                         <div class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-bold">PROFIL ORGANISASI</div>
-                        <h1 class="fw-black mb-2 text-white">{{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }}</h1>
+                        <h1 class="fw-black mb-2 text-white">{{ setting('site_name', 'Forum Silaturahmi Alumni Steman Ternate') }}</h1>
                         <p class="lead opacity-75 mb-0">{{ setting('site_tagline', 'Wadah Jaringan Terkuat Alumni STEMAN') }}</p>
                     </div>
                     <div class="card-body p-4 p-md-5">
@@ -43,7 +43,7 @@
                                     @endauth
                                 </div>
                                 <div class="lead text-muted lh-lg" style="font-size: 1.1rem; font-style: italic;">
-                                    "{!! nl2br(e(setting('alumni_message', 'Selamat datang di portal resmi Ikatan Alumni SMKN 2 Ternate. Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan untuk almamater dan bangsa.'))) !!}"
+                                    "{!! nl2br(e(setting('alumni_message', 'Selamat datang di portal resmi Forum Silaturahmi Alumni Steman Ternate. Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan untuk almamater dan bangsa.'))) !!}"
                                 </div>
                             </div>
                         </div>

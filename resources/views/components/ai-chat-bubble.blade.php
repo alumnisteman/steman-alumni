@@ -28,7 +28,7 @@
         <div id="ai-chat-body" class="p-3" style="height: 350px; overflow-y: auto; background: rgba(255,255,255,0.5);">
             <div class="ai-msg mb-4">
                 <div class="p-2 px-3 rounded-4 bg-light small shadow-sm d-inline-block" style="max-width: 85%;">
-                    Halo Kak! Saya Steman AI. Ada yang bisa saya bantu seputar portal atau jaringan alumni SMKN 2? 👋
+                    Halo Kak! Saya Steman AI. Ada yang bisa saya bantu seputar portal atau jaringan Forum Silaturahmi Alumni Steman Ternate? 👋
                 </div>
                 <div class="text-muted mt-1" style="font-size: 0.6rem;">Just now</div>
             </div>

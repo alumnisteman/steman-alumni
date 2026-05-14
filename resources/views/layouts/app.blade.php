@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }} - {{ setting('school_name', 'SMKN 2 TERNATE') }}</title>
+    <title>{{ setting('site_name', 'Forum Silaturahmi Alumni Steman Ternate') }} - {{ setting('school_name', 'SMKN 2 TERNATE') }}</title>
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,7 +93,7 @@
 </head>
 <body>
 @php
-    $runningText = setting('running_text', 'Selamat Datang di Portal Resmi IKATAN ALUMNI SMKN 2 Ternate - Jalin Silaturahmi, Bangun Kontribusi!');
+    $runningText = setting('running_text', 'Selamat Datang di Portal Resmi Forum Silaturahmi Alumni Steman Ternate - Jalin Silaturahmi, Bangun Kontribusi!');
 @endphp
     <div class="header-ad-wrapper shadow-sm" id="main-header-ad">
         <button class="ad-close-btn" onclick="document.getElementById('main-header-ad').remove()" title="Tutup Iklan">
@@ -149,7 +149,7 @@
         <div class="container">
             <a class="navbar-brand fw-bold text-uppercase fs-6 fs-md-4 d-flex align-items-center" href="/">
                 <img src="{{ asset('images/logo.jpg') }}" height="35" class="me-2" alt="Logo">
-                {{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }}
+                Forum Silaturahmi Alumni Steman Ternate
             </a>
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="bi bi-list fs-1 text-dark"></i>
@@ -262,7 +262,7 @@
                     <i class="bi bi-graph-up fs-5 text-danger"></i> STATISTIK
                 </a>
                 <a href="{{ route('donations.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
-                    <i class="bi bi-heart-fill fs-5 text-danger"></i> IKATAN ALUMNI FUND
+                    <i class="bi bi-heart-fill fs-5 text-danger"></i> STEMAN ALUMNI FUND
                 </a>
                 <a href="{{ route('forums.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
                     <i class="bi bi-chat-square-dots fs-5 text-primary"></i> FORUM DISKUSI
@@ -329,7 +329,7 @@
         <div class="container">
             <div class="row g-4 mb-5">
                 <div class="col-lg-4 mb-4 mb-lg-0">
-                    <h5 class="fw-bold mb-4">{{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }}</h5>
+                    <h5 class="fw-bold mb-4">Forum Silaturahmi Alumni Steman Ternate</h5>
                     <p class="small opacity-75">{{ setting('site_description', 'Wadah silaturahmi, kolaborasi, dan kontribusi nyata lulusan ' . setting('school_name', 'SMKN 2 Ternate') . ' untuk almamater dan bangsa.') }}</p>
                 </div>
                 <div class="col-lg-2 mb-4 mb-lg-0">
@@ -355,7 +355,7 @@
                 </div>
             </div>
             <hr class="opacity-25 bg-white">
-            <p class="text-center small opacity-50 mb-0">&copy; 2026 Ikatan Alumni {{ setting('school_name', 'SMKN 2 Ternate') }}. All rights reserved.</p>
+            <p class="text-center small opacity-50 mb-0">&copy; 2026 Forum Silaturahmi Alumni Steman Ternate. All rights reserved.</p>
         </div>
     </footer>
     <script>

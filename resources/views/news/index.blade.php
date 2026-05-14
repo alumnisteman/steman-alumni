@@ -15,7 +15,7 @@
 
     <div class="text-center mb-5">
         <h2 class="section-heading d-inline-block">NEWS & UPDATES</h2>
-        <p class="text-muted mt-2">Kumpulan berita, pengumuman, dan cerita inspiratif dari {{ setting('site_name', 'IKATAN ALUMNI SMKN 2') }}.</p>
+        <p class="text-muted mt-2">Kumpulan berita, pengumuman, dan cerita inspiratif dari {{ setting('site_name', 'Forum Silaturahmi Alumni Steman Ternate') }}.</p>
     </div>
 
     <!-- 🔥 TRENDING NOW SECTION -->

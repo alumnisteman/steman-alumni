@@ -20,7 +20,7 @@
             <div class="p-4 rounded-4 border-0 shadow-sm glass-card overflow-hidden position-relative" style="background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white;">
                 <div class="position-relative z-1">
                     <h5 class="fw-bold mb-2">Mengapa Berbelanja di Sini?</h5>
-                    <p class="opacity-75 mb-0 small" style="max-width: 600px;">Setiap transaksi yang Anda lakukan membantu memperkuat ekonomi keluarga besar alumni SMKN 2 Tetap. Mari kita saling dukung dan maju bersama!</p>
+                    <p class="opacity-75 mb-0 small" style="max-width: 600px;">Setiap transaksi yang Anda lakukan membantu memperkuat ekonomi keluarga besar Forum Silaturahmi Alumni Steman Ternate. Mari kita saling dukung dan maju bersama!</p>
                 </div>
                 <i class="bi bi-shop position-absolute end-0 top-50 translate-middle-y opacity-10" style="font-size: 15rem; margin-right: -2rem;"></i>
             </div>

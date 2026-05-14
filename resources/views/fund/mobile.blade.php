@@ -221,7 +221,7 @@
                 </div>
                 <div>
                     <h4 id="storyUserName" class="text-sm font-black text-white mb-0 shadow-sm"></h4>
-                    <span class="text-[10px] text-white/60 font-bold">IKATAN ALUMNI</span>
+                    <span class="text-[10px] text-white/60 font-bold">ALUMNI STEMAN TERNATE</span>
                 </div>
             </div>
             <button onclick="closeStory()" class="text-white bg-black/20 backdrop-blur-md rounded-full w-8 h-8 flex items-center justify-center">

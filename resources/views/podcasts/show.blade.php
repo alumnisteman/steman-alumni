@@ -4,7 +4,7 @@
 <div class="landing-bento min-vh-100 py-5">
     <div class="container py-5">
         <div class="mt-4 gsap-fade-up mb-4">
-            <a href="{{ route('podcasts.index') }}" class="text-neon-cyan text-decoration-none small fw-bold tracking-widest"><i class="bi bi-arrow-left me-1"></i> BACK TO TERMINAL</a>
+            <a href="{{ \Illuminate\Support\Facades\URL::route('podcasts.index') }}" class="text-neon-cyan text-decoration-none small fw-bold tracking-widest"><i class="bi bi-arrow-left me-1"></i> BACK TO TERMINAL</a>
         </div>
 
         <div class="row g-4">
@@ -29,7 +29,7 @@
 
                         <h4 class="text-white fw-bold mb-3 tracking-tight">Transmission Overview</h4>
                         <div class="text-white-50 lh-lg">
-                            {!! nl2br(e($podcast->description)) !!}
+                            {!! nl2br(\htmlspecialchars($podcast->description)) !!}
                         </div>
 
                         <div class="mt-5 p-4 border border-neon-cyan border-opacity-20" style="background: rgba(0, 255, 255, 0.02);">

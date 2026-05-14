@@ -8,7 +8,7 @@
 
     <div class="card border-0 shadow-sm" style="border-radius: 15px;">
         <div class="card-body p-4">
-            <form action="{{ route('admin.podcasts.update', $podcast->id) }}" method="POST">
+            <form action="{{ \Illuminate\Support\Facades\URL::route('admin.podcasts.update', $podcast->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="row g-3">
@@ -61,7 +61,7 @@
                                 <label class="form-check-label small fw-bold" for="is_published">TERBITKAN</label>
                             </div>
                             <div class="d-flex gap-2">
-                                <a href="{{ route('admin.podcasts.index') }}" class="btn btn-light border rounded-0 px-4">BATAL</a>
+                                <a href="{{ \Illuminate\Support\Facades\URL::route('admin.podcasts.index') }}" class="btn btn-light border rounded-0 px-4">BATAL</a>
                                 <button type="submit" class="btn btn-primary rounded-0 px-5 shadow-sm">SIMPAN PERUBAHAN</button>
                             </div>
                         </div>

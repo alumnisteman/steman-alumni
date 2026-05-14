@@ -42,7 +42,7 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold">Info Rekening Tujuan</label>
-                        <textarea name="bank_info" class="form-control bg-light border-0 rounded-3 py-3" rows="3" placeholder="Contoh:&#10;Bank: BRI&#10;No. Rek: 0123-456-789&#10;Atas Nama: Ikatan Alumni STEMAN">{{ old('bank_info') }}</textarea>
+                        <textarea name="bank_info" class="form-control bg-light border-0 rounded-3 py-3" rows="3" placeholder="Contoh:&#10;Bank: BRI&#10;No. Rek: 0123-456-789&#10;Atas Nama: Forum Silaturahmi Alumni Steman Ternate">{{ old('bank_info') }}</textarea>
                         <small class="text-muted">Info ini akan ditampilkan di halaman form donasi alumni.</small>
                     </div>
                     <div class="col-md-6">
