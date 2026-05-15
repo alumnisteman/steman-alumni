@@ -46,24 +46,42 @@ class AdController extends Controller
             'image_desktop'  => 'required|image|mimes:jpeg,png,jpg|max:5120',
             'image_mobile'   => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'link'           => 'nullable|url',
-            'position'       => 'required|string|in:header,sidebar,footer,content',
+            'position'       => 'required|string|in:header,sidebar,footer,content,popup',
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'is_active'      => 'nullable',
+            'desktop_offset_x' => 'nullable|integer',
+            'desktop_offset_y' => 'nullable|integer',
+            'desktop_zoom'     => 'nullable|numeric',
+            'mobile_offset_x'  => 'nullable|integer',
+            'mobile_offset_y'  => 'nullable|integer',
+            'mobile_zoom'      => 'nullable|numeric',
         ]);
 
         try {
             // Process Desktop Image
             if ($request->hasFile('image_desktop')) {
-                $data['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $data['position'], false);
+                $data['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $data['position'], false, [
+                    'offset_x' => $request->desktop_offset_x,
+                    'offset_y' => $request->desktop_offset_y,
+                    'zoom'     => $request->desktop_zoom
+                ]);
             }
 
             // Process Mobile Image (or auto-generate if missing)
             if ($request->hasFile('image_mobile')) {
-                $data['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $data['position'], true);
+                $data['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $data['position'], true, [
+                    'offset_x' => $request->mobile_offset_x,
+                    'offset_y' => $request->mobile_offset_y,
+                    'zoom'     => $request->mobile_zoom
+                ]);
             } else {
                 // Auto-generate mobile version from desktop
-                $data['image_mobile'] = $this->imageService->autoGenerateMobile($data['image_desktop'], $data['position']);
+                $data['image_mobile'] = $this->imageService->autoGenerateMobile($data['image_desktop'], $data['position'], [
+                    'offset_x' => $request->mobile_offset_x ?? 50,
+                    'offset_y' => $request->mobile_offset_y ?? 50,
+                    'zoom'     => $request->mobile_zoom ?? 1.0
+                ]);
             }
 
             $data['is_active'] = $request->boolean('is_active', true);
@@ -116,10 +134,16 @@ class AdController extends Controller
             'image_desktop'  => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'image_mobile'   => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'link'           => 'nullable|url',
-            'position'       => 'required|string|in:header,sidebar,footer,content',
+            'position'       => 'required|string|in:header,sidebar,footer,content,popup',
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'is_active'      => 'nullable',
+            'desktop_offset_x' => 'nullable|integer',
+            'desktop_offset_y' => 'nullable|integer',
+            'desktop_zoom'     => 'nullable|numeric',
+            'mobile_offset_x'  => 'nullable|integer',
+            'mobile_offset_y'  => 'nullable|integer',
+            'mobile_zoom'      => 'nullable|numeric',
         ]);
 
         try {
@@ -128,14 +152,22 @@ class AdController extends Controller
                 if ($ad->getRawOriginal('image_desktop')) {
                     Storage::disk('public')->delete($ad->getRawOriginal('image_desktop'));
                 }
-                $data['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $data['position'], false);
+                $data['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $data['position'], false, [
+                    'offset_x' => $request->desktop_offset_x,
+                    'offset_y' => $request->desktop_offset_y,
+                    'zoom'     => $request->desktop_zoom
+                ]);
                 
                 // If no new mobile image provided, auto-regenerate it from the new desktop image
                 if (!$request->hasFile('image_mobile')) {
                     if ($ad->getRawOriginal('image_mobile')) {
                         Storage::disk('public')->delete($ad->getRawOriginal('image_mobile'));
                     }
-                    $data['image_mobile'] = $this->imageService->autoGenerateMobile($data['image_desktop'], $data['position']);
+                    $data['image_mobile'] = $this->imageService->autoGenerateMobile($data['image_desktop'], $data['position'], [
+                        'offset_x' => $request->mobile_offset_x ?? 50,
+                        'offset_y' => $request->mobile_offset_y ?? 50,
+                        'zoom'     => $request->mobile_zoom ?? 1.0
+                    ]);
                 }
             }
 
@@ -144,7 +176,11 @@ class AdController extends Controller
                 if ($ad->getRawOriginal('image_mobile')) {
                     Storage::disk('public')->delete($ad->getRawOriginal('image_mobile'));
                 }
-                $data['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $data['position'], true);
+                $data['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $data['position'], true, [
+                    'offset_x' => $request->mobile_offset_x,
+                    'offset_y' => $request->mobile_offset_y,
+                    'zoom'     => $request->mobile_zoom
+                ]);
             }
 
             $data['is_active'] = $request->boolean('is_active', false);
