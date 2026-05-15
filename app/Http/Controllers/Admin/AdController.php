@@ -41,7 +41,7 @@ class AdController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'title'          => 'required|string|max:255',
             'image_desktop'  => 'required|image|mimes:jpeg,png,jpg|max:5120',
             'image_mobile'   => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
@@ -50,43 +50,25 @@ class AdController extends Controller
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'is_active'      => 'nullable',
-            'desktop_offset_x' => 'nullable|integer',
-            'desktop_offset_y' => 'nullable|integer',
-            'desktop_zoom'     => 'nullable|numeric',
-            'mobile_offset_x'  => 'nullable|integer',
-            'mobile_offset_y'  => 'nullable|integer',
-            'mobile_zoom'      => 'nullable|numeric',
         ]);
 
         try {
             // Process Desktop Image
             if ($request->hasFile('image_desktop')) {
-                $data['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $data['position'], false, [
-                    'offset_x' => $request->desktop_offset_x,
-                    'offset_y' => $request->desktop_offset_y,
-                    'zoom'     => $request->desktop_zoom
-                ]);
+                $validated['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $validated['position'], false, []);
             }
 
             // Process Mobile Image (or auto-generate if missing)
             if ($request->hasFile('image_mobile')) {
-                $data['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $data['position'], true, [
-                    'offset_x' => $request->mobile_offset_x,
-                    'offset_y' => $request->mobile_offset_y,
-                    'zoom'     => $request->mobile_zoom
-                ]);
+                $validated['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $validated['position'], true, []);
             } else {
                 // Auto-generate mobile version from desktop
-                $data['image_mobile'] = $this->imageService->autoGenerateMobile($data['image_desktop'], $data['position'], [
-                    'offset_x' => $request->mobile_offset_x ?? 50,
-                    'offset_y' => $request->mobile_offset_y ?? 50,
-                    'zoom'     => $request->mobile_zoom ?? 1.0
-                ]);
+                $validated['image_mobile'] = $this->imageService->autoGenerateMobile($validated['image_desktop'], $validated['position'], []);
             }
 
-            $data['is_active'] = $request->boolean('is_active', true);
+            $validated['is_active'] = $request->boolean('is_active', true);
 
-            $ad = Ad::create($data);
+            $ad = Ad::create($validated);
 
             LogActivity::dispatch(
                 Auth::id(),
@@ -129,7 +111,7 @@ class AdController extends Controller
      */
     public function update(Request $request, Ad $ad)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'title'          => 'required|string|max:255',
             'image_desktop'  => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'image_mobile'   => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
@@ -138,12 +120,6 @@ class AdController extends Controller
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'is_active'      => 'nullable',
-            'desktop_offset_x' => 'nullable|integer',
-            'desktop_offset_y' => 'nullable|integer',
-            'desktop_zoom'     => 'nullable|numeric',
-            'mobile_offset_x'  => 'nullable|integer',
-            'mobile_offset_y'  => 'nullable|integer',
-            'mobile_zoom'      => 'nullable|numeric',
         ]);
 
         try {
@@ -152,22 +128,14 @@ class AdController extends Controller
                 if ($ad->getRawOriginal('image_desktop')) {
                     Storage::disk('public')->delete($ad->getRawOriginal('image_desktop'));
                 }
-                $data['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $data['position'], false, [
-                    'offset_x' => $request->desktop_offset_x,
-                    'offset_y' => $request->desktop_offset_y,
-                    'zoom'     => $request->desktop_zoom
-                ]);
+                $validated['image_desktop'] = $this->imageService->process($request->file('image_desktop'), $validated['position'], false, []);
                 
                 // If no new mobile image provided, auto-regenerate it from the new desktop image
                 if (!$request->hasFile('image_mobile')) {
                     if ($ad->getRawOriginal('image_mobile')) {
                         Storage::disk('public')->delete($ad->getRawOriginal('image_mobile'));
                     }
-                    $data['image_mobile'] = $this->imageService->autoGenerateMobile($data['image_desktop'], $data['position'], [
-                        'offset_x' => $request->mobile_offset_x ?? 50,
-                        'offset_y' => $request->mobile_offset_y ?? 50,
-                        'zoom'     => $request->mobile_zoom ?? 1.0
-                    ]);
+                    $validated['image_mobile'] = $this->imageService->autoGenerateMobile($validated['image_desktop'], $validated['position'], []);
                 }
             }
 
@@ -176,16 +144,12 @@ class AdController extends Controller
                 if ($ad->getRawOriginal('image_mobile')) {
                     Storage::disk('public')->delete($ad->getRawOriginal('image_mobile'));
                 }
-                $data['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $data['position'], true, [
-                    'offset_x' => $request->mobile_offset_x,
-                    'offset_y' => $request->mobile_offset_y,
-                    'zoom'     => $request->mobile_zoom
-                ]);
+                $validated['image_mobile'] = $this->imageService->process($request->file('image_mobile'), $validated['position'], true, []);
             }
 
-            $data['is_active'] = $request->boolean('is_active', false);
+            $validated['is_active'] = $request->boolean('is_active', false);
 
-            $ad->update($data);
+            $ad->update($validated);
 
             LogActivity::dispatch(
                 Auth::id(),

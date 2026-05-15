@@ -49,38 +49,13 @@ class AdsImageService
             $w = $dims['width'];
             $h = $dims['height'];
 
-            $offsetX = $params['offset_x'] ?? 50;
-            $offsetY = $params['offset_y'] ?? 50;
-            $zoom = $params['zoom'] ?? 1.0;
-
             $filename = 'ads/' . Str::random(40) . ($isMobile ? '_mobile' : '_desktop') . '.jpg';
 
             $img = $this->manager->read($file->getRealPath());
             
-            if ($zoom > 1.0) {
-                // Calculate scale factor to cover the container
-                $scale_w = $w / $img->width();
-                $scale_h = $h / $img->height();
-                $base_scale = max($scale_w, $scale_h);
-                
-                // Apply user zoom
-                $final_scale = $base_scale * $zoom;
-                
-                // Resize image to new zoomed dimensions
-                $new_w = (int) round($img->width() * $final_scale);
-                $new_h = (int) round($img->height() * $final_scale);
-                $img->resize($new_w, $new_h);
-                
-                // Calculate crop offsets based on percentages
-                $pivot_x = (int) round(($new_w - $w) * ($offsetX / 100));
-                $pivot_y = (int) round(($new_h - $h) * ($offsetY / 100));
-                
-                // Crop to target size
-                $img->crop($w, $h, $pivot_x, $pivot_y);
-            } else {
-                // Apply manual positioning if provided without zoom
-                $img->cover($w, $h, $offsetX . '% ' . $offsetY . '%');
-            }
+            // The frontend Cropper.js already crops the image to the exact aspect ratio.
+            // We just need to resize it to the exact target dimensions to ensure consistency.
+            $img->resize($w, $h);
 
             // Encode to JPEG
             $encoded = $img->toJpeg(85);
@@ -122,30 +97,9 @@ class AdsImageService
             
             $img = $this->manager->read($fullPath);
 
-            if ($zoom > 1.0) {
-                // Calculate scale factor to cover the container
-                $scale_w = $w / $img->width();
-                $scale_h = $h / $img->height();
-                $base_scale = max($scale_w, $scale_h);
-                
-                // Apply user zoom
-                $final_scale = $base_scale * $zoom;
-                
-                // Resize image to new zoomed dimensions
-                $new_w = (int) round($img->width() * $final_scale);
-                $new_h = (int) round($img->height() * $final_scale);
-                $img->resize($new_w, $new_h);
-                
-                // Calculate crop offsets based on percentages
-                $pivot_x = (int) round(($new_w - $w) * ($offsetX / 100));
-                $pivot_y = (int) round(($new_h - $h) * ($offsetY / 100));
-                
-                // Crop to target size
-                $img->crop($w, $h, $pivot_x, $pivot_y);
-            } else {
-                // Apply manual positioning if provided without zoom
-                $img->cover($w, $h, $offsetX . '% ' . $offsetY . '%');
-            }
+            // For mobile generation from a cropped desktop image, we use cover() 
+            // to ensure it fills the mobile dimensions without distorting the aspect ratio.
+            $img->cover($w, $h);
             
             $encoded = $img->toJpeg(85);
             Storage::disk('public')->put($filename, (string) $encoded);
