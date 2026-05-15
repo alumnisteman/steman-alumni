@@ -57,15 +57,17 @@
             <div class="banner-preview-wrapper mb-3 position-relative overflow-hidden rounded-3 shadow-sm bg-secondary bg-opacity-10" 
                  id="preview-desktop-container"
                  style="aspect-ratio: 300/250; width: 100%; max-width: 400px; margin: auto;">
-                <div id="preview-desktop-img" class="w-100 h-100" 
-                     style="background-image: url('{{ $ad->image_desktop ?? '' }}'); background-size: cover; background-position: {{ $ad->desktop_offset_x ?? 50 }}% {{ $ad->desktop_offset_y ?? 50 }}%; background-repeat: no-repeat; transform: scale({{ $ad->desktop_zoom ?? 1.0 }});">
-                </div>
-                @if(!isset($ad) || !$ad->image_desktop)
-                    <div class="position-absolute top-50 start-50 translate-middle text-muted opacity-50 text-center">
-                        <i class="bi bi-image fs-1 d-block mb-2"></i>
-                        <span class="small">Belum ada gambar</span>
-                    </div>
+                @if(isset($ad) && $ad->image_desktop)
+                    <img id="preview-desktop-img" src="{{ $ad->image_desktop }}" class="w-100 h-100 preview-img" 
+                         style="object-fit: cover; object-position: {{ $ad->desktop_offset_x ?? 50 }}% {{ $ad->desktop_offset_y ?? 50 }}%; transform: scale({{ $ad->desktop_zoom ?? 1.0 }}); transform-origin: {{ $ad->desktop_offset_x ?? 50 }}% {{ $ad->desktop_offset_y ?? 50 }}%;">
+                @else
+                    <img id="preview-desktop-img" src="" class="w-100 h-100 preview-img" style="display: none; object-fit: cover; object-position: 50% 50%; transform: scale(1.0); transform-origin: 50% 50%;">
                 @endif
+                
+                <div id="desktop-placeholder" class="position-absolute top-50 start-50 translate-middle text-muted opacity-50 text-center" style="{{ isset($ad) && $ad->image_desktop ? 'display:none;' : '' }}">
+                    <i class="bi bi-image fs-1 d-block mb-2"></i>
+                    <span class="small">Belum ada gambar</span>
+                </div>
             </div>
 
             <!-- Controls -->
@@ -115,15 +117,17 @@
             <div class="banner-preview-wrapper mb-3 position-relative overflow-hidden rounded-3 shadow-sm bg-secondary bg-opacity-10" 
                  id="preview-mobile-container"
                  style="aspect-ratio: 300/300; width: 100%; max-width: 300px; margin: auto;">
-                <div id="preview-mobile-img" class="w-100 h-100" 
-                     style="background-image: url('{{ $ad->image_mobile ?? '' }}'); background-size: cover; background-position: {{ $ad->mobile_offset_x ?? 50 }}% {{ $ad->mobile_offset_y ?? 50 }}%; background-repeat: no-repeat; transform: scale({{ $ad->mobile_zoom ?? 1.0 }});">
-                </div>
-                @if(!isset($ad) || !$ad->image_mobile)
-                    <div class="position-absolute top-50 start-50 translate-middle text-muted opacity-50 text-center" id="mobile-placeholder">
-                        <i class="bi bi-phone fs-1 d-block mb-2"></i>
-                        <span class="small">Kosongkan untuk auto-generate</span>
-                    </div>
+                @if(isset($ad) && $ad->image_mobile)
+                    <img id="preview-mobile-img" src="{{ $ad->image_mobile }}" class="w-100 h-100 preview-img" 
+                         style="object-fit: cover; object-position: {{ $ad->mobile_offset_x ?? 50 }}% {{ $ad->mobile_offset_y ?? 50 }}%; transform: scale({{ $ad->mobile_zoom ?? 1.0 }}); transform-origin: {{ $ad->mobile_offset_x ?? 50 }}% {{ $ad->mobile_offset_y ?? 50 }}%;">
+                @else
+                    <img id="preview-mobile-img" src="" class="w-100 h-100 preview-img" style="display: none; object-fit: cover; object-position: 50% 50%; transform: scale(1.0); transform-origin: 50% 50%;">
                 @endif
+                
+                <div id="mobile-placeholder" class="position-absolute top-50 start-50 translate-middle text-muted opacity-50 text-center" style="{{ isset($ad) && $ad->image_mobile ? 'display:none;' : '' }}">
+                    <i class="bi bi-phone fs-1 d-block mb-2"></i>
+                    <span class="small">Kosongkan untuk auto-generate</span>
+                </div>
             </div>
 
             <!-- Controls -->
@@ -165,6 +169,11 @@
         border: 2px dashed #dee2e6;
         transition: all 0.3s ease;
     }
+    .preview-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
     .form-range::-webkit-slider-thumb { background: #ffcc00; }
     .form-range::-moz-range-thumb { background: #ffcc00; }
     .form-range::-ms-thumb { background: #ffcc00; }
@@ -188,11 +197,11 @@
             else if(val === 'footer') { dw = 1200; dh = 150; mw = 600; mh = 150; }
             else if(val === 'popup') { dw = 600; dh = 800; mw = 350; mh = 500; }
 
-            descDesktop.innerText = `${dw} x ${dh}`;
-            descMobile.innerText = `${mw} x ${mh}`;
+            if(descDesktop) descDesktop.innerText = `${dw} x ${dh}`;
+            if(descMobile) descMobile.innerText = `${mw} x ${mh}`;
             
-            previewDesktopContainer.style.aspectRatio = `${dw}/${dh}`;
-            previewMobileContainer.style.aspectRatio = `${mw}/${mh}`;
+            if(previewDesktopContainer) previewDesktopContainer.style.aspectRatio = `${dw}/${dh}`;
+            if(previewMobileContainer) previewMobileContainer.style.aspectRatio = `${mw}/${mh}`;
         }
 
         // Live Image Preview when selecting file
@@ -201,19 +210,24 @@
             const img = document.getElementById(imgId);
             const placeholder = document.getElementById(placeholderId);
 
-            input.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        img.style.backgroundImage = `url('${e.target.result}')`;
-                        if (placeholder) placeholder.style.display = 'none';
+            if(input) {
+                input.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            if(img) {
+                                img.src = e.target.result;
+                                img.style.display = 'block';
+                            }
+                            if(placeholder) placeholder.style.display = 'none';
+                        }
+                        reader.readAsDataURL(this.files[0]);
                     }
-                    reader.readAsDataURL(this.files[0]);
-                }
-            });
+                });
+            }
         };
 
-        setupFilePreview('input-desktop', 'preview-desktop-img', null);
+        setupFilePreview('input-desktop', 'preview-desktop-img', 'desktop-placeholder');
         setupFilePreview('input-mobile', 'preview-mobile-img', 'mobile-placeholder');
 
         // Sliders Logic
@@ -222,30 +236,39 @@
             slider.addEventListener('input', function() {
                 const targetId = this.dataset.target;
                 const targetImg = document.getElementById(targetId);
+                if(!targetImg) return;
+                
                 const isZoom = this.classList.contains('slider-zoom');
+                const targetPrefix = targetId.split('-')[1]; // desktop or mobile
                 
                 if (isZoom) {
                     const zoomVal = this.value;
                     targetImg.style.transform = `scale(${zoomVal})`;
-                    document.getElementById(`val-${targetId.split('-')[1]}-zoom`).innerText = `${zoomVal}x`;
+                    const zoomText = document.getElementById(`val-${targetPrefix}-zoom`);
+                    if(zoomText) zoomText.innerText = `${zoomVal}x`;
                 } else {
                     const axis = this.dataset.axis;
                     const val = this.value;
                     const otherAxis = axis === 'x' ? 'y' : 'x';
-                    const otherVal = document.querySelector(`input[name="${targetId.split('-')[1]}_offset_${otherAxis}"]`).value;
                     
-                    if (axis === 'x') {
-                        targetImg.style.backgroundPosition = `${val}% ${otherVal}%`;
-                    } else {
-                        targetImg.style.backgroundPosition = `${otherVal}% ${val}%`;
-                    }
+                    const otherInput = document.querySelector(`input[name="${targetPrefix}_offset_${otherAxis}"]`);
+                    const otherVal = otherInput ? otherInput.value : 50;
                     
-                    document.getElementById(`val-${targetId.split('-')[1]}-${axis}`).innerText = `${val}%`;
+                    const xVal = axis === 'x' ? val : otherVal;
+                    const yVal = axis === 'y' ? val : otherVal;
+                    
+                    targetImg.style.objectPosition = `${xVal}% ${yVal}%`;
+                    targetImg.style.transformOrigin = `${xVal}% ${yVal}%`;
+                    
+                    const axisText = document.getElementById(`val-${targetPrefix}-${axis}`);
+                    if(axisText) axisText.innerText = `${val}%`;
                 }
             });
         });
 
-        posSelect.addEventListener('change', updateDims);
-        updateDims();
+        if(posSelect) {
+            posSelect.addEventListener('change', updateDims);
+            updateDims();
+        }
     });
 </script>
