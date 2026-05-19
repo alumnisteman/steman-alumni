@@ -45,8 +45,6 @@ class FeedService
         }
 
         return $post;
-
-        return $post;
     }
 
     /**

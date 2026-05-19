@@ -29,8 +29,8 @@ class NotifyMaintenance extends Command
         $status = $this->argument('status');
         $customMessage = $this->argument('message');
         
-        $token = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
+        $token = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
 
         if (!$token || !$chatId) {
             $this->error('Telegram configuration missing in .env');

@@ -16,7 +16,7 @@ class TrendingService
             $newsResponse = Http::get('https://newsapi.org/v2/top-headlines', [
                 'country' => 'id',
                 'pageSize' => 20,
-                'apiKey' => env('NEWS_API_KEY')
+                'apiKey' => config('services.newsapi.key')
             ]);
 
             if (!$newsResponse->successful()) {

@@ -36,8 +36,8 @@ Route::domain('api.alumni-steman.my.id')->group(function () {
         if ($report) {
             \Illuminate\Support\Facades\Log::warning('CSP Violation:', $report);
             if (config('app.env') === 'production') {
-                $telegramToken = env('TELEGRAM_BOT_TOKEN');
-                $telegramChatId = env('TELEGRAM_CHAT_ID');
+                $telegramToken = config('services.telegram.bot_token');
+                $telegramChatId = config('services.telegram.chat_id');
                 if ($telegramToken && $telegramChatId) {
                     $blockedUri = $report['csp-report']['blocked-uri'] ?? 'Unknown';
                     $violatedDirective = $report['csp-report']['violated-directive'] ?? 'Unknown';

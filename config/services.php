@@ -64,8 +64,22 @@ return [
         'model' => env('OPENAI_MODEL', 'google/gemini-2.0-flash-exp:free'),
     ],
 
+    'deepseek' => [
+        'api_key' => env('DEEPSEEK_API_KEY'),
+    ],
+
+    'ai_gateway' => [
+        'url' => env('AI_GATEWAY_URL', 'http://ai-gateway:3000'),
+        'primary_provider' => env('AI_PRIMARY_PROVIDER', 'gemini'),
+    ],
+
     'newsapi' => [
         'key' => env('NEWS_API_KEY'),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
     ],
 
 ];

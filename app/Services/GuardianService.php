@@ -157,33 +157,36 @@ class GuardianService
     private function readLastLines(string $filename, int $lines): string
     {
         if (!is_file($filename)) return "";
-        
+
         $handle = fopen($filename, "rb");
         if (!$handle) return "";
 
         $linecount = 0;
-        $pos = -2; // Skip potential trailing newline
-        $text = [];
+        $pos = -2;
 
-        // Seek from end
-        fseek($handle, $pos, SEEK_END);
-        
+        // Seek backwards from end, counting newlines
         while ($linecount < $lines) {
+            if (fseek($handle, $pos, SEEK_END) === -1) {
+                // Reached beginning of file
+                rewind($handle);
+                break;
+            }
+
             $char = fgetc($handle);
-            if ($char === false) break; // Start of file
+            if ($char === false) break;
 
             if ($char === "\n") {
                 $linecount++;
+                if ($linecount >= $lines) break;
             }
-            
+
             $pos--;
-            if (fseek($handle, $pos, SEEK_END) === -1) break;
         }
 
-        // Read from found position to end
-        $content = fread($handle, abs($pos));
+        // Read from current position to end of file
+        $content = stream_get_contents($handle);
         fclose($handle);
-        
+
         return $content ?: "";
     }
 }

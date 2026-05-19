@@ -84,8 +84,8 @@ class User extends Authenticatable
                     $user->followers()->detach();
                     $user->following()->detach();
                     \Illuminate\Support\Facades\DB::table('activity_logs')->where('user_id', $user->id)->delete();
-                    \Illuminate\Support\Facades\DB::table('post_comments')->where('user_id', $user->id)->delete();
-                    \Illuminate\Support\Facades\DB::table('post_likes')->where('user_id', $user->id)->delete();
+                    \Illuminate\Support\Facades\DB::table('comments')->where('user_id', $user->id)->delete();
+                    \Illuminate\Support\Facades\DB::table('likes')->where('user_id', $user->id)->delete();
                     \Illuminate\Support\Facades\DB::table('program_registrations')->where('user_id', $user->id)->delete();
                 }
             } catch (\Exception $e) {
@@ -135,7 +135,7 @@ class User extends Authenticatable
 
     public function badges()
     {
-        return $this->belongsToMany(Badge::class);
+        return $this->belongsToMany(Badge::class, 'user_badges')->withTimestamps();
     }
 
     /**

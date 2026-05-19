@@ -16,7 +16,8 @@ class Story extends Model
         'spotify_url',
         'image_url',
         'caption',
-        'expires_at'
+        'expires_at',
+        'views_count',
     ];
 
     protected $casts = [

@@ -15,17 +15,18 @@ class AIService
     protected ?string $deepSeekKey;
     protected string $baseUrl = 'https://generativelanguage.googleapis.com';
     protected string $deepSeekUrl = 'https://api.deepseek.com';
+    protected string $gatewayUrl = 'http://ai-gateway:3000';
     public ?string $activeProvider = null;
 
     public function __construct(?string $apiKey = null)
     {
-        // Prioritize: Passed key > .env config > Setting from Database
+        // Prioritize: Passed key > config/.env > Setting from Database
         $this->apiKey = $apiKey ?: (\config('services.gemini.api_key') ?: \setting('gemini_api_key'));
-        $this->openRouterKey = \config('services.openrouter.api_key') ?: \env('OPENROUTER_API_KEY');
-        $this->openRouterModel = \config('services.openrouter.model', 'google/gemini-2.0-flash-exp:free'); 
+        $this->openRouterKey = \config('services.openrouter.api_key');
+        $this->openRouterModel = \config('services.openrouter.model', 'google/gemini-2.0-flash-exp:free');
         $this->openRouterApiBase = \config('services.openrouter.api_base', 'https://openrouter.ai/api/v1');
-        $this->deepSeekKey = \config('services.deepseek.api_key') ?: \env('DEEPSEEK_API_KEY');
-        $this->gatewayUrl = \env('AI_GATEWAY_URL', 'http://ai-gateway:3000');
+        $this->deepSeekKey = \config('services.deepseek.api_key');
+        $this->gatewayUrl = \config('services.ai_gateway.url', 'http://ai-gateway:3000');
     }
 
     private function tryDeepSeek(string $prompt, float $temperature): ?string
@@ -57,7 +58,7 @@ class AIService
     public function ask(string $prompt, float $temperature = 0.7, ?string $model = null): ?string
     {
         $this->activeProvider = null;
-        $primary = \env('AI_PRIMARY_PROVIDER', 'gemini');
+        $primary = config('services.ai_gateway.primary_provider', 'gemini');
 
         // Define provider execution order: Gateway First (Resilience)
         $providers = ['gateway', 'gemini', 'deepseek', 'openrouter'];
@@ -92,7 +93,7 @@ class AIService
                 // If all Gemini models failed, mark Gemini as failed for a while
                 $this->markProviderFailed('gemini');
 
-            } elseif ($provider === 'deepseek' && $this->deepSeekKey) {
+            } elseif ($provider === 'deepseek' && !empty($this->deepSeekKey)) {
                 Log::info('AIService: Attempting DeepSeek Direct...');
                 $result = $this->tryDeepSeek($prompt, $temperature);
                 if ($result) {
@@ -101,7 +102,7 @@ class AIService
                 }
                 $this->markProviderFailed('deepseek');
 
-            } elseif ($provider === 'openrouter' && ($this->openRouterKey ?: \env('OPENROUTER_API_KEY'))) {
+            } elseif ($provider === 'openrouter' && !empty($this->openRouterKey)) {
                 Log::info('AIService: Attempting OpenRouter...', ['model' => $this->openRouterModel]);
                 $result = $this->tryOpenRouter($prompt, $temperature);
                 if ($result) {

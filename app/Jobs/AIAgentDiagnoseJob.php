@@ -56,8 +56,8 @@ class AIAgentDiagnoseJob implements ShouldQueue
     private function notifyTelegram($message)
     {
         if (config('app.env') === 'production') {
-            $telegramToken = env('TELEGRAM_BOT_TOKEN');
-            $telegramChatId = env('TELEGRAM_CHAT_ID');
+            $telegramToken = config('services.telegram.bot_token');
+            $telegramChatId = config('services.telegram.chat_id');
             
             if ($telegramToken && $telegramChatId) {
                 $ctx = stream_context_create(['http' => ['timeout' => 5]]);

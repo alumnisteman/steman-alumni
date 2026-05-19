@@ -40,12 +40,15 @@ class GenerateFeedJob implements ShouldQueue
         
         // Candidates from following (last 7 days to keep it fresh)
         $followingPosts = Post::whereIn('user_id', $followingIds)
-            ->where('visibility', '!=', 'private') // assuming there's visibility constraint
+            ->where('visibility', '!=', 'private')
             ->where('created_at', '>=', now()->subDays(7))
             ->get();
 
+        // Exclude self + following from trending/explore pools
+        $excludeIds = $followingIds->merge([$user->id])->unique()->values();
+
         // Trending posts (last 3 days, high engagement)
-        $trendingPosts = Post::whereNotIn('user_id', clone $followingIds->push($user->id))
+        $trendingPosts = Post::whereNotIn('user_id', $excludeIds)
             ->where('visibility', 'public')
             ->where('created_at', '>=', now()->subDays(3))
             ->orderByRaw('(likes_count * 2) + (comments_count * 3) DESC')
@@ -53,7 +56,7 @@ class GenerateFeedJob implements ShouldQueue
             ->get();
 
         // Explore (recent public posts from same major/city)
-        $explorePosts = Post::whereNotIn('user_id', clone $followingIds->push($user->id))
+        $explorePosts = Post::whereNotIn('user_id', $excludeIds)
             ->where('visibility', 'public')
             ->whereHas('user', function($q) use ($user) {
                 $q->where('major', $user->major)

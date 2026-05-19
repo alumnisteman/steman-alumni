@@ -218,8 +218,8 @@ class SystemAutoFix extends Command
 
     private function notify($message)
     {
-        $token = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
+        $token = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
         if (!$token || !$chatId) return;
 
         try {

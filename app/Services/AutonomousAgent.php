@@ -19,7 +19,7 @@ class AutonomousAgent
     {
         $this->aiService = $aiService;
         // Consistent with AIService: check .env first, then database setting
-        $this->geminiKey = \env('GEMINI_API_KEY');
+        $this->geminiKey = \config('services.gemini.api_key');
         if (empty($this->geminiKey)) {
             try {
                 $this->geminiKey = \App\Models\Setting::where('key', 'gemini_api_key')->value('value');

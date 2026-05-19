@@ -14,7 +14,7 @@ class NewsApiService
             'q' => $q,
             'language' => 'id',
             'pageSize' => 10,
-            'apiKey' => env('NEWS_API_KEY')
+            'apiKey' => config('services.newsapi.key')
         ]);
 
         if (!$res->successful()) {

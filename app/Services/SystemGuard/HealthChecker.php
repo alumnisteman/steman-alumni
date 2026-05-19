@@ -86,8 +86,8 @@ class HealthChecker
 
     private function checkMeilisearch(): bool
     {
-        $host = config('scout.meilisearch.host', env('MEILISEARCH_HOST', 'http://steman_meilisearch:7700'));
-        $key  = config('scout.meilisearch.key', env('MEILISEARCH_KEY', ''));
+        $host = config('scout.meilisearch.host', 'http://steman_meilisearch:7700');
+        $key  = config('scout.meilisearch.key', '');
         $response = Http::withHeaders(['Authorization' => 'Bearer ' . $key])->timeout(3)->get($host . '/health');
         return $response->successful();
     }
