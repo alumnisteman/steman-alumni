@@ -18,7 +18,7 @@ COPY composer*.json ./
 RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev && ls -la /app/vendor/autoload.php
+RUN composer dump-autoload --optimize --no-dev --no-scripts && ls -la /app/vendor/autoload.php
 
 # --- Stage 3: Runner Stage (Final Image) ---
 FROM php:8.4-fpm-alpine

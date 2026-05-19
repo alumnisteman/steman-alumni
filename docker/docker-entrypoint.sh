@@ -13,6 +13,10 @@ if ! grep -q "^APP_KEY=base64:" .env; then
     php artisan key:generate --force
 fi
 
+# --- 2b. Package Discovery (skipped during build, run here with .env available) ---
+echo "Running package discovery..."
+php artisan package:discover --ansi || true
+
 # --- 3. Database: Migration ---
 MAX_TRIES=30
 TRIES=0
