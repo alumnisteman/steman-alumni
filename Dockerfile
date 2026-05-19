@@ -41,7 +41,10 @@ RUN apk add --no-cache \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
     pdo_mysql \
     mbstring \
@@ -53,8 +56,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     intl \
     sockets \
     opcache \
-    && pecl install redis \
-    && docker-php-ext-enable redis
+    && apk del .build-deps
 
 # Setting up application directory
 WORKDIR /var/www
