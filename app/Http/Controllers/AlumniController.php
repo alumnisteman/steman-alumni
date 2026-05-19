@@ -268,61 +268,69 @@ class AlumniController extends Controller
     {
         $mapAnalytics = $this->alumniService->getCachedMapAnalytics();
         
-        // 1. Data untuk Leaderboard Wilayah (Top Regions)
-        $topRegions = User::where('role', 'alumni')
-            ->whereNotNull('city_name')
-            ->select('city_name', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
-            ->groupBy('city_name')
-            ->orderByDesc('total')
-            ->take(5)
-            ->get();
+        // Combine all heavy map data into a single 5-minute cache to massively improve load times
+        $cachedMapData = \Illuminate\Support\Facades\Cache::remember('network_map_data_v2', 300, function () {
+            // 1. Data untuk Leaderboard Wilayah (Top Regions)
+            $topRegions = User::where('role', 'alumni')
+                ->whereNotNull('city_name')
+                ->select('city_name', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+                ->groupBy('city_name')
+                ->orderByDesc('total')
+                ->take(5)
+                ->get();
 
-        // 2. Data untuk Live Activity (Active in last 15 mins)
+            // 3. Data untuk Heatmap (Aggregated by city/coords)
+            $heatmapData = User::where('role', 'alumni')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->select('latitude', 'longitude', \Illuminate\Support\Facades\DB::raw('count(*) as weight'))
+                ->groupBy('latitude', 'longitude')
+                ->get();
+
+            // 4. Data untuk Job Satellites (Active Vacancies)
+            $jobVacancies = \App\Models\JobVacancy::with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude')])
+                ->where('status', 'active')
+                ->latest()
+                ->take(10)
+                ->get()
+                ->filter(fn($job) => $job->user && $job->user->latitude);
+
+            // 5. Data untuk Major Constellations (Lines within same major)
+            $majorConstellations = User::where('role', 'alumni')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->get(['id', 'name', 'major', 'latitude', 'longitude'])
+                ->groupBy('major')
+                ->filter(fn($group) => $group->count() > 1);
+
+            // 6. Data untuk Time Capsules (Memory Posts)
+            $timeCapsules = \App\Models\Post::with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude')])
+                ->where('type', 'memory')
+                ->latest()
+                ->take(15)
+                ->get()
+                ->filter(fn($post) => $post->user && $post->user->latitude);
+
+            // 7. Live Feed for Pulse Chat (Latest Public Posts)
+            $liveFeed = \App\Models\Post::with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude', 'profile_picture', 'city_name')])
+                ->where('visibility', 'public')
+                ->latest()
+                ->take(10)
+                ->get()
+                ->filter(fn($post) => $post->user && $post->user->latitude);
+
+            return compact('topRegions', 'heatmapData', 'jobVacancies', 'majorConstellations', 'timeCapsules', 'liveFeed');
+        });
+
+        // 2. Data untuk Live Activity (Active in last 15 mins) - Not cached because it's real-time
         $liveActivities = User::where('role', 'alumni')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->where('last_active_at', '>=', now()->subMinutes(15))
             ->get(['id', 'name', 'latitude', 'longitude', 'profile_picture']);
 
-        // 3. Data untuk Heatmap (Aggregated by city/coords)
-        $heatmapData = User::where('role', 'alumni')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->select('latitude', 'longitude', \Illuminate\Support\Facades\DB::raw('count(*) as weight'))
-            ->groupBy('latitude', 'longitude')
-            ->get();
-
-        // 4. Data untuk Job Satellites (Active Vacancies)
-        $jobVacancies = \App\Models\JobVacancy::where('status', 'active')
-            ->with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude')])
-            ->latest()
-            ->take(10)
-            ->get()
-            ->filter(fn($job) => $job->user && $job->user->latitude);
-
-        // 5. Data untuk Major Constellations (Lines within same major)
-        $majorConstellations = User::where('role', 'alumni')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get(['id', 'name', 'major', 'latitude', 'longitude'])
-            ->groupBy('major')
-            ->filter(fn($group) => $group->count() > 1);
-
-        // 6. Data untuk Time Capsules (Memory Posts)
-        $timeCapsules = \App\Models\Post::where('type', 'memory')
-            ->with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude')])
-            ->latest()
-            ->take(15)
-            ->get()
-            ->filter(fn($post) => $post->user && $post->user->latitude);
-
-        // 7. Live Feed for Pulse Chat (Latest Public Posts)
-        $liveFeed = \App\Models\Post::where('visibility', 'public')
-            ->with(['user' => fn($q) => $q->select('id', 'name', 'latitude', 'longitude', 'profile_picture', 'city_name')])
-            ->latest()
-            ->take(10)
-            ->get()
-            ->filter(fn($post) => $post->user && $post->user->latitude);
+        // Extract cached variables
+        extract($cachedMapData);
 
         return view('network.index', [
             'locations' => $mapAnalytics['alumniLocations'],

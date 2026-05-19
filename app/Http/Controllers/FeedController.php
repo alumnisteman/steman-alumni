@@ -32,8 +32,11 @@ class FeedController extends Controller
             $onlineCount = $this->alumniService->getOnlineAlumniCount();
 
             if (!$user) {
-                // Handle Guest View
-                $posts = \App\Models\Post::where('visibility', 'public')->latest()->paginate($perPage);
+                // Handle Guest View (Optimized with Eager Loading)
+                $posts = \App\Models\Post::with(['user', 'likes', 'comments'])
+                    ->where('visibility', 'public')
+                    ->latest()
+                    ->paginate($perPage);
             } else {
                 $posts = $this->feedService->getFeed($user, $page, $perPage);
             }
@@ -50,7 +53,11 @@ class FeedController extends Controller
             \Illuminate\Support\Facades\Log::error('Feed Index Error: ' . $e->getMessage());
             
             try {
-                $posts = \App\Models\Post::where('visibility', 'public')->latest()->paginate(20);
+                // Fallback View (Optimized with Eager Loading)
+                $posts = \App\Models\Post::with(['user', 'likes', 'comments'])
+                    ->where('visibility', 'public')
+                    ->latest()
+                    ->paginate(20);
                 $view = view('alumni.feed.index', compact('posts'))->render();
                 return response($view);
             } catch (\Throwable $e2) {

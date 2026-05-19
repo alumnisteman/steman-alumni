@@ -538,7 +538,7 @@
             @endforelse
             
             @auth
-                @if(auth()->user()->graduation_year == $activeYear && in_array(auth()->user()->status, ['active', 'approved']))
+                @if(auth()->check() && auth()->user()->graduation_year == $activeYear && in_array(auth()->user()->status, ['active', 'approved']))
                     <button class="year-btn" style="background: linear-gradient(135deg, #10b981, #3b82f6); color:white; border:none; margin-left: 1rem;" data-bs-toggle="modal" data-bs-target="#writeYearbookModal">
                         <i class="bi bi-pencil-square me-1"></i> Tulis Kenangan
                     </button>
