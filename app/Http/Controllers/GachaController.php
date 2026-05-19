@@ -23,7 +23,9 @@ class GachaController extends Controller
             ];
         });
 
-        return view('alumni.gacha.index', compact('stats'));
+        $majors = \App\Models\Major::orderBy('name')->get();
+
+        return view('alumni.gacha.index', compact('stats', 'majors'));
     }
 
     /**
