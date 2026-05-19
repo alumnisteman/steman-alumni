@@ -160,8 +160,8 @@
                                 {{ $alumni->major ?? 'Alumni Steman' }}
                                 @if ($alumni->graduation_year)• {{ $alumni->graduation_year }}@endif
                             </div>
-                            @if ($alumni->city)
-                            <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ $alumni->city }}</div>
+                            @if ($alumni->city_name)
+                            <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ $alumni->city_name }}</div>
                             @endif
                             <div class="text-danger fw-bold small mt-1">🎂 {{ $alumni->age }} tahun hari ini!</div>
                         </div>

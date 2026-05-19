@@ -25,7 +25,7 @@ class BirthdayController extends Controller
             ->whereNotNull('birthday')
             ->whereMonth('birthday', $month)
             ->whereDay('birthday', $day)
-            ->select('id', 'name', 'profile_picture', 'major', 'graduation_year', 'birthday', 'city')
+            ->select('id', 'name', 'profile_picture', 'major', 'graduation_year', 'birthday', 'city_name')
             ->get()
             ->map(function ($u) {
                 $u->age = Carbon::parse($u->birthday)->age;
@@ -40,7 +40,7 @@ class BirthdayController extends Controller
             ->whereMonth('birthday', $month)
             ->whereDay('birthday', '!=', $day)
             ->orderByRaw('DAY(birthday) ASC')
-            ->select('id', 'name', 'profile_picture', 'major', 'graduation_year', 'birthday', 'city')
+            ->select('id', 'name', 'profile_picture', 'major', 'graduation_year', 'birthday', 'city_name')
             ->get()
             ->map(function ($u) use ($day) {
                 $u->days_until = Carbon::parse($u->birthday)->setYear(now()->year)->dayOfYear - now()->dayOfYear;
