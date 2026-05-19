@@ -75,6 +75,21 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tanggal Lahir</label>
+                        <input type="date" name="birthday" class="form-control" value="{{ $user->birthday ? \Carbon\Carbon::parse($user->birthday)->format('Y-m-d') : '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-center">
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" name="birthday_public" id="birthdayPublicSwitch" {{ $user->birthday_public ? 'checked' : '' }} value="1">
+                            <label class="form-check-label fw-bold" for="birthdayPublicSwitch">
+                                Publikasikan Ulang Tahun Saya 🎂
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Pekerjaan Sekarang</label>
                     <input type="text" name="current_job" class="form-control" value="{{ $user->current_job }}">

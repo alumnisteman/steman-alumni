@@ -70,6 +70,8 @@ class ProfileController extends Controller
         $user->current_job = $data['current_job'] ?? $user->current_job;
         $user->address = $data['address'] ?? $user->address;
         $user->bio = $data['bio'] ?? $user->bio;
+        $user->birthday = $data['birthday'] ?? $user->birthday;
+        $user->birthday_public = $request->has('birthday_public');
         
         // Security: Only allow becoming a mentor if they already have sufficient points or status
         // For now, we allow the toggle but log it for admin review or add a point hurdle

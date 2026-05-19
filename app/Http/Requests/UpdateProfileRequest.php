@@ -31,6 +31,8 @@ class UpdateProfileRequest extends FormRequest
             'bio' => 'nullable|string',
             'mentor_bio' => 'nullable|string',
             'mentor_expertise' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date|before:today',
+            'birthday_public' => 'nullable|boolean',
             'show_social' => 'nullable|boolean',
             'socials' => 'nullable|array',
             'socials.*' => 'nullable|string|max:255',
