@@ -149,6 +149,12 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
             // Podcast Management
             Route::resource('/podcasts', \App\Http\Controllers\Admin\PodcastController::class)->except(['show'])->names('admin.podcasts');
 
+            // Digital Museum Moderation
+            Route::get('/museum', [\App\Http\Controllers\MuseumController::class, 'adminIndex'])->name('admin.museum.index');
+            Route::post('/museum/{museumItem}/approve', [\App\Http\Controllers\MuseumController::class, 'approve'])->name('admin.museum.approve');
+            Route::post('/museum/{museumItem}/reject', [\App\Http\Controllers\MuseumController::class, 'reject'])->name('admin.museum.reject');
+            Route::delete('/museum/{museumItem}', [\App\Http\Controllers\MuseumController::class, 'destroy'])->name('admin.museum.destroy');
+
             Route::get('/system/logs', [\App\Http\Controllers\Admin\SystemController::class, 'logs'])->name('admin.system.logs');
             Route::post('/system/logs/clear', [\App\Http\Controllers\Admin\SystemController::class, 'clearLogs'])->name('admin.system.logs.clear');
             Route::get('/system/pulse', [\App\Http\Controllers\Admin\SystemController::class, 'pulse'])->name('admin.system.pulse');
