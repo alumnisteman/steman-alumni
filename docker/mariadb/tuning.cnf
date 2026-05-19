@@ -1,0 +1,29 @@
+[mariadb]
+# --- Performance Tuning for Steman Alumni ---
+# Based on 8GB Server RAM (5.2GB Available)
+
+# InnoDB Buffers (Crucial for speed)
+# Increased from 256MB to 2GB (About 40% of available RAM)
+innodb_buffer_pool_size = 2G
+innodb_buffer_pool_instances = 2
+innodb_log_file_size = 512M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+
+# Connection Handling
+max_connections = 250
+thread_cache_size = 32
+
+# Query Cache (Useful for read-heavy apps)
+query_cache_type = 1
+query_cache_size = 128M
+query_cache_limit = 2M
+
+# Temporary Tables
+tmp_table_size = 64M
+max_heap_table_size = 64M
+
+# Slow Query Log (For debugging future bottlenecks)
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2

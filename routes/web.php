@@ -30,6 +30,10 @@ use App\Http\Controllers\ProgramRegistrationController;
 use App\Http\Controllers\Admin\AdController;
 use App\Http\Controllers\PublicVerificationController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\MuseumController;
+use App\Http\Controllers\PollController;
+use App\Http\Controllers\BirthdayController;
+use App\Http\Controllers\GachaController;
 use App\Services\AIPredictionService;
 
 // --- 1. Global Public Routes (Rate Limited via bootstrap/app.php) ---
@@ -421,6 +425,38 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     Route::post('/forums', [\App\Http\Controllers\ForumController::class, 'store'])->name('forums.store');
     Route::get('/forums/{forum}', [\App\Http\Controllers\ForumController::class, 'show'])->name('forums.show');
     Route::post('/forums/{forum}/comments', [\App\Http\Controllers\ForumController::class, 'storeComment'])->name('forums.comments.store');
+
+    // =====================================================
+    // DIGITAL MUSEUM — Arsip Sejarah STEMAN
+    // =====================================================
+    Route::get('/museum', [\App\Http\Controllers\MuseumController::class, 'index'])->name('museum.index');
+    Route::get('/museum/{museumItem}', [\App\Http\Controllers\MuseumController::class, 'show'])->name('museum.show');
+    Route::post('/museum', [\App\Http\Controllers\MuseumController::class, 'store'])->name('museum.store');
+    Route::post('/museum/{museumItem}/like', [\App\Http\Controllers\MuseumController::class, 'toggleLike'])->name('museum.like');
+
+    // =====================================================
+    // VOTING & POLLING
+    // =====================================================
+    Route::get('/polls', [\App\Http\Controllers\PollController::class, 'index'])->name('polls.index');
+    Route::post('/polls', [\App\Http\Controllers\PollController::class, 'store'])->name('polls.store');
+    Route::post('/polls/{poll}/vote', [\App\Http\Controllers\PollController::class, 'vote'])->name('polls.vote');
+    Route::delete('/polls/{poll}', [\App\Http\Controllers\PollController::class, 'destroy'])->name('polls.destroy');
+
+    // =====================================================
+    // ALUMNI BIRTHDAY
+    // =====================================================
+    Route::get('/birthday', [\App\Http\Controllers\BirthdayController::class, 'index'])->name('birthday.index');
+    Route::post('/birthday/greet/{user}', [\App\Http\Controllers\BirthdayController::class, 'greet'])->name('birthday.greet');
+    Route::get('/birthday/my-greetings', [\App\Http\Controllers\BirthdayController::class, 'myGreetings'])->name('birthday.my-greetings');
+    Route::get('/api/birthday/countdown', [\App\Http\Controllers\BirthdayController::class, 'countdown'])->name('birthday.countdown');
+
+    // =====================================================
+    // ALUMNI GACHA — Random Connect
+    // =====================================================
+    Route::get('/gacha', [\App\Http\Controllers\GachaController::class, 'index'])->name('gacha.index');
+    Route::post('/gacha/spin', [\App\Http\Controllers\GachaController::class, 'spin'])->name('gacha.spin');
+    Route::post('/gacha/connect', [\App\Http\Controllers\GachaController::class, 'connect'])->name('gacha.connect');
+    Route::get('/gacha/my-connections', [\App\Http\Controllers\GachaController::class, 'myConnections'])->name('gacha.connections');
 
     // --- Legacy / Compatibility: Redirect old admin paths to subdomain ---
     Route::get('/admin/{any?}', function($any = null) {

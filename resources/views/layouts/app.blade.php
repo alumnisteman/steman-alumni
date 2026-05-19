@@ -171,6 +171,11 @@
                             <li><a class="dropdown-item py-2" href="{{ route('leaderboard') }}"><i class="bi bi-trophy me-2 text-warning"></i> Peringkat</a></li>
                             <li><a class="dropdown-item py-2" href="{{ route('forums.index') }}"><i class="bi bi-chat-square-dots me-2 text-info"></i> Forum</a></li>
                             <li><a class="dropdown-item py-2" href="{{ route('mentors.index') }}"><i class="bi bi-person-workspace me-2 text-danger"></i> Mentor</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item py-2 fw-bold" href="{{ route('museum.index') }}"><i class="bi bi-bank me-2" style="color:#8b7355"></i> Museum Digital</a></li>
+                            <li><a class="dropdown-item py-2 fw-bold" href="{{ route('polls.index') }}"><i class="bi bi-bar-chart-fill me-2" style="color:#7c3aed"></i> Voting & Polling</a></li>
+                            <li><a class="dropdown-item py-2 fw-bold" href="{{ route('birthday.index') }}"><i class="bi bi-gift-fill me-2 text-danger"></i> Ulang Tahun 🎂</a></li>
+                            <li><a class="dropdown-item py-2 fw-bold" href="{{ route('gacha.index') }}"><i class="bi bi-dice-5-fill me-2 text-warning"></i> Alumni Gacha 🎰</a></li>
                             @auth
                             <li><hr class="dropdown-divider my-1"></li>
                             <li><a class="dropdown-item py-2 fw-bold" href="{{ route('alumni.yearbook') }}"><i class="bi bi-book-half me-2 text-purple" style="color:#7c3aed"></i> Buku Kenangan</a></li>
@@ -275,6 +280,18 @@
                     <i class="bi bi-book-half fs-5" style="color:#7c3aed"></i> BUKU KENANGAN
                 </a>
                 @endauth
+                <a href="{{ route('museum.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-bank fs-5" style="color:#8b7355"></i> MUSEUM DIGITAL
+                </a>
+                <a href="{{ route('polls.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-bar-chart-fill fs-5" style="color:#7c3aed"></i> VOTING & POLLING
+                </a>
+                <a href="{{ route('birthday.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3 text-danger fw-bold">
+                    <i class="bi bi-gift-fill fs-5 text-danger"></i> ULANG TAHUN 🎂
+                </a>
+                <a href="{{ route('gacha.index') }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
+                    <i class="bi bi-dice-5-fill fs-5 text-warning"></i> ALUMNI GACHA 🎰
+                </a>
                 <hr class="my-2 opacity-10">
                 @auth
                     <a href="{{ auth()->user()->dashboardUrl() }}" class="list-group-item list-group-item-action py-3 border-0 d-flex align-items-center gap-3">
