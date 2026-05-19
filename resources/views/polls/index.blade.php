@@ -138,6 +138,21 @@
 </section>
 
 <div class="container py-5">
+    @if ($errors->any())
+    <div class="alert alert-danger rounded-4 mb-4">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+    @if (session('success'))
+    <div class="alert alert-success rounded-4 mb-4">
+        {{ session('success') }}
+    </div>
+    @endif
+
     <div class="row g-4">
 
         {{-- Active Polls --}}

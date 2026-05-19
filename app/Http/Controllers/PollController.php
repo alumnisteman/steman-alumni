@@ -36,6 +36,26 @@ class PollController extends Controller
 
     public function store(Request $request)
     {
+        // Filter out empty options and emojis
+        if ($request->has('options')) {
+            $rawOptions = $request->input('options', []);
+            $rawEmojis = $request->input('option_emojis', []);
+            $filteredOptions = [];
+            $filteredEmojis = [];
+
+            foreach ($rawOptions as $i => $optionText) {
+                if (!is_null($optionText) && trim($optionText) !== '') {
+                    $filteredOptions[] = trim($optionText);
+                    $filteredEmojis[] = !empty($rawEmojis[$i]) ? trim($rawEmojis[$i]) : null;
+                }
+            }
+
+            $request->merge([
+                'options' => $filteredOptions,
+                'option_emojis' => $filteredEmojis,
+            ]);
+        }
+
         $request->validate([
             'question'   => 'required|string|max:300',
             'description'=> 'nullable|string|max:500',
