@@ -8,9 +8,12 @@
 /* ===== YEARBOOK PAGE CORE ===== */
 .yearbook-page {
     min-height: 100vh;
-    background: radial-gradient(ellipse at 20% 10%, #1a0533 0%, #0d1117 50%, #001a0d 100%);
-    padding: 2rem 0 6rem;
+    background: radial-gradient(circle at 50% 10%, rgba(255, 159, 28, 0.08) 0%, rgba(0, 180, 216, 0.05) 40%, #080b11 100%);
+    background-color: #080b11;
+    padding: 2.5rem 0 6rem;
     overflow-x: hidden;
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
 }
 
 /* ===== HERO HEADER ===== */
@@ -22,25 +25,30 @@
 }
 .yb-hero .badge-pill {
     display: inline-block;
-    background: linear-gradient(135deg, #a855f7, #6366f1);
-    color: #fff;
+    background: #ff9f1c;
+    color: #000;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
     font-size: 0.72rem;
     letter-spacing: 3px;
     text-transform: uppercase;
     padding: 6px 18px;
-    border-radius: 50px;
+    border-radius: 4px;
     margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(255, 159, 28, 0.3);
 }
 .yb-hero h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Inter', sans-serif;
     font-size: clamp(2.2rem, 6vw, 4rem);
-    font-weight: 700;
+    font-weight: 900;
     color: #fff;
     line-height: 1.15;
     margin-bottom: 0.5rem;
+    letter-spacing: -1px;
+    text-transform: uppercase;
 }
 .yb-hero h1 span {
-    background: linear-gradient(135deg, #a855f7, #38bdf8);
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -63,22 +71,23 @@
 }
 .year-btn {
     padding: 8px 20px;
-    border-radius: 50px;
-    border: 1.5px solid rgba(168,85,247,0.35);
-    background: rgba(168,85,247,0.08);
-    color: #c4b5fd;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
     font-size: 0.85rem;
     font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
     cursor: pointer;
     transition: all 0.25s ease;
     text-decoration: none;
 }
 .year-btn:hover, .year-btn.active {
-    background: linear-gradient(135deg, #a855f7, #6366f1);
+    background: #ff9f1c;
     border-color: transparent;
-    color: #fff;
+    color: #000;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(168,85,247,0.35);
+    box-shadow: 0 8px 24px rgba(255, 159, 28, 0.25);
 }
 
 /* ===== BOOK WRAPPER ===== */
@@ -96,9 +105,9 @@
     cursor: pointer;
 }
 
-/* Cover styling */
+/* Cinematic Cover styling */
 .page-cover {
-    background: linear-gradient(160deg, #1e1b4b 0%, #312e81 40%, #1a0533 100%) !important;
+    background: #11141c !important;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -108,145 +117,211 @@
     position: relative;
     overflow: hidden;
     border-radius: 4px;
+    box-sizing: border-box;
+    height: 100%;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8) !important;
 }
-.page-cover::before {
-    content: '';
+
+/* Film Strip Edges on Cover */
+.cover-film-edge {
     position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px 0;
+    border-right: 1px solid #222;
 }
+.cover-film-edge.right {
+    left: auto;
+    right: 0;
+    border-right: none;
+    border-left: 1px solid #222;
+}
+.sprocket {
+    width: 10px;
+    height: 14px;
+    background: #2a2e38;
+    border-radius: 2px;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.8);
+}
+
+.cover-content {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 .page-cover-emblem {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #a855f7, #38bdf8);
+    background: #000;
+    border: 2px solid #ff9f1c;
+    box-shadow: 0 0 25px rgba(255, 159, 28, 0.4), inset 0 0 10px rgba(255, 159, 28, 0.4);
+    color: #ff9f1c;
+    font-size: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 1.5rem;
-    font-size: 2.2rem;
-    box-shadow: 0 0 40px rgba(168,85,247,0.5);
-    position: relative;
-    z-index: 1;
 }
 .page-cover-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 900;
     color: #fff;
+    letter-spacing: 4px;
     line-height: 1.2;
-    position: relative;
-    z-index: 1;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    text-transform: uppercase;
+}
+.page-cover-school {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: #00b4d8;
+    font-size: 1.1rem;
+    margin: 0.5rem 0 1.2rem 0;
+    background: rgba(0, 180, 216, 0.1);
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+.page-cover-divider {
+    width: 60px;
+    height: 3px;
+    background: #334155;
+    margin: 1rem auto;
 }
 .page-cover-subtitle {
-    color: #c4b5fd;
-    font-size: 0.9rem;
-    margin-top: 0.75rem;
-    letter-spacing: 2px;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 3px;
     text-transform: uppercase;
-    position: relative;
-    z-index: 1;
 }
 .page-cover-year {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     font-size: 3.5rem;
     font-weight: 900;
-    font-family: 'Playfair Display', serif;
-    color: rgba(255,255,255,0.12);
+    font-family: 'Inter', sans-serif;
+    color: #fff;
     line-height: 1;
-    position: relative;
-    z-index: 1;
+    text-shadow: 0 0 20px rgba(255,255,255,0.2);
 }
 
-/* Inner pages */
+/* Inner pages - Film Negative/Darkroom feel */
 .page-inner {
-    background: #faf8f5;
-    padding: 24px 20px;
+    background: #181b22;
+    padding: 24px;
     height: 100%;
     overflow: hidden;
-}
-.page-inner.dark-page {
-    background: #1e1b4b;
-}
-.dark .page-inner {
-    background: #0f172a;
+    box-sizing: border-box;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+    border-left: 1px solid #2a2e38;
+    border-right: 1px solid #2a2e38;
 }
 .page-header {
-    border-bottom: 2px solid #e8e0f0;
-    padding-bottom: 10px;
-    margin-bottom: 16px;
+    border-bottom: 1px dashed #334155;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.dark .page-header {
-    border-color: #334155;
-}
 .page-header-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem;
-    color: #7c3aed;
-    font-style: italic;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    color: #ff9f1c;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 .page-number {
-    font-size: 0.72rem;
-    color: #94a3b8;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    color: #64748b;
 }
 
-/* Alumni Card on page */
+/* Cinematic Film Strip Frame for Alumni */
 .alumni-card-yb {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 10px 6px;
-    border-radius: 12px;
-    transition: background 0.2s;
+    padding: 0;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
 }
 .alumni-card-yb:hover {
-    background: rgba(168,85,247,0.06);
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(255, 159, 28, 0.3);
+    border-color: #ff9f1c;
+    z-index: 5;
+}
+.film-sprocket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: #000;
+}
+.film-sprocket-row .sprocket-mini {
+    width: 6px;
+    height: 8px;
+    background: #2a2e38;
+    border-radius: 1px;
 }
 .alumni-avatar-yb {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
-    border: 3px solid #e9d5ff;
-    margin-bottom: 8px;
-    flex-shrink: 0;
+    filter: grayscale(20%) sepia(30%) contrast(1.2);
+    border-top: 2px solid #000;
+    border-bottom: 2px solid #000;
 }
-.dark .alumni-avatar-yb { border-color: #4c1d95; }
+.alumni-card-yb:hover .alumni-avatar-yb {
+    filter: grayscale(0%) sepia(0%) contrast(1.1);
+}
+.alumni-info-box {
+    padding: 8px;
+    background: #000;
+}
 .alumni-name-yb {
+    font-family: 'Courier New', Courier, monospace;
     font-weight: 700;
-    font-size: 0.78rem;
-    color: #1e293b;
+    font-size: 0.75rem;
+    color: #fff;
     line-height: 1.2;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
     word-break: break-word;
+    text-transform: uppercase;
 }
-.dark .alumni-name-yb { color: #e2e8f0; }
 .alumni-major-yb {
-    font-size: 0.68rem;
-    color: #7c3aed;
-    font-weight: 500;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.65rem;
+    color: #00b4d8;
+    font-weight: 600;
 }
 .alumni-job-yb {
+    font-family: 'Inter', sans-serif;
     font-size: 0.65rem;
-    color: #64748b;
-    margin-top: 2px;
-}
-.dark .alumni-job-yb { color: #94a3b8; }
-.alumni-quote-yb {
-    font-size: 0.63rem;
     color: #94a3b8;
-    font-style: italic;
     margin-top: 4px;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+}
+.frame-number {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.6rem;
+    color: #ff9f1c;
+    font-weight: bold;
 }
 
 /* ===== BOOK CONTROLS ===== */
@@ -260,19 +335,19 @@
 }
 .book-nav-btn {
     width: 48px; height: 48px;
-    border-radius: 50%;
-    border: none;
-    background: linear-gradient(135deg, #a855f7, #6366f1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     color: #fff;
     font-size: 1.1rem;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.25s;
-    box-shadow: 0 4px 20px rgba(168,85,247,0.4);
 }
-.book-nav-btn:hover { transform: scale(1.1); box-shadow: 0 8px 30px rgba(168,85,247,0.55); }
-.book-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+.book-nav-btn:hover { background: #ff9f1c; color: #000; border-color: transparent; box-shadow: 0 0 15px rgba(255, 159, 28, 0.4); }
+.book-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .page-info-text {
+    font-family: 'Courier New', Courier, monospace;
     font-size: 0.85rem;
     color: #94a3b8;
     min-width: 120px;
@@ -285,8 +360,9 @@
     flex-direction: column;
     padding: 24px;
     height: 100%;
-    background: #fff;
+    background: #11141c !important;
     position: relative;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
 }
 .story-author {
     display: flex;
@@ -294,30 +370,34 @@
     gap: 12px;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px dashed #e2e8f0;
+    border-bottom: 1px dashed #334155;
 }
 .story-author-img {
     width: 40px; height: 40px;
-    border-radius: 50%;
+    border-radius: 4px;
     object-fit: cover;
+    border: 1px solid #475569;
 }
 .story-author-info {
     display: flex;
     flex-direction: column;
 }
 .story-author-name {
+    font-family: 'Courier New', Courier, monospace;
     font-size: 0.85rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #e2e8f0;
 }
 .story-date {
+    font-family: 'Courier New', Courier, monospace;
     font-size: 0.65rem;
-    color: #94a3b8;
+    color: #ff9f1c;
 }
 .story-content {
-    font-size: 0.82rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
     line-height: 1.6;
-    color: #334155;
+    color: #cbd5e1;
     flex-grow: 1;
     overflow-y: auto;
 }
@@ -325,16 +405,17 @@
     width: 100%;
     max-height: 180px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 4px;
     margin-bottom: 12px;
-    border: 1px solid #e2e8f0;
+    border: 2px solid #334155;
+    filter: grayscale(10%) contrast(1.1);
 }
 .story-quote-mark {
-    font-family: 'Playfair Display', serif;
-    font-size: 3rem;
-    color: rgba(124,58,237,0.1);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 4rem;
+    color: rgba(255, 159, 28, 0.1);
     position: absolute;
-    top: 70px;
+    top: 60px;
     right: 20px;
     line-height: 1;
     z-index: 0;
@@ -342,7 +423,7 @@
 
 /* ===== DIVIDER PAGE ===== */
 .divider-page {
-    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+    background: #000 !important;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -350,66 +431,68 @@
     text-align: center;
     padding: 40px;
     height: 100%;
-    color: white;
+    color: #fff;
+    position: relative;
+    border-left: 2px dashed #333;
+    border-right: 2px dashed #333;
 }
 .divider-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 900;
+    color: #fff;
     margin-bottom: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 .divider-subtitle {
+    font-family: 'Courier New', Courier, monospace;
     font-size: 0.85rem;
-    color: #ddd6fe;
-    font-style: italic;
+    color: #00b4d8;
+    background: rgba(0, 180, 216, 0.1);
+    padding: 4px 12px;
+    border-radius: 4px;
 }
 
 /* ===== MODALS (GLASSMORPHISM) ===== */
 .glass-modal {
-    background: rgba(15, 23, 42, 0.7);
+    background: rgba(8, 11, 17, 0.8);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .glass-modal .modal-content {
-    background: rgba(30, 41, 59, 0.85);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    color: #f8fafc;
-    border-radius: 16px;
+    background: #11141c;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    color: #e2e8f0;
+    border-radius: 8px;
+    border: 1px solid #334155;
 }
 .glass-modal .modal-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px dashed #334155;
 }
 .glass-modal .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px dashed #334155;
 }
 .glass-modal .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 .modal-avatar-lg {
     width: 120px; height: 120px;
-    border-radius: 50%;
+    border-radius: 4px;
     object-fit: cover;
-    border: 4px solid #a855f7;
-    box-shadow: 0 0 20px rgba(168,85,247,0.4);
+    border: 4px solid #000;
+    box-shadow: 0 0 0 2px #ff9f1c;
     margin-top: -60px;
-    background: #1e293b;
+    background: #000;
 }
 
 /* ===== EMPTY STATE ===== */
 .empty-yearbook {
     text-align: center;
     padding: 5rem 2rem;
-    color: #64748b;
+    color: #475569;
 }
-.empty-yearbook i { font-size: 4rem; opacity: 0.3; }
-
-/* ===== DARK MODE ===== */
-.dark .page-inner { background: #0f172a; }
-.dark .page-header { border-color: #1e293b; }
-.dark .alumni-name-yb { color: #f1f5f9; }
+.empty-yearbook i { font-size: 4rem; opacity: 0.5; }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
@@ -641,48 +724,93 @@ function escapeHtml(str) {
 
 // ===== BUILD PAGES =====
 // 6 alumni per page grid (2 cols x 3 rows)
-const PER_PAGE = 6;
-
-function buildCoverPage(type) {
+const PER_PAGE = 6function buildCoverPage(type) {
     const div = document.createElement('div');
     div.className = 'page-cover';
+    
+    // Film strip edge left
+    const edgeLeft = document.createElement('div');
+    edgeLeft.className = 'cover-film-edge';
+    for(let i=0; i<15; i++) {
+        const sprocket = document.createElement('div');
+        sprocket.className = 'sprocket';
+        edgeLeft.appendChild(sprocket);
+    }
+    
+    // Film strip edge right
+    const edgeRight = document.createElement('div');
+    edgeRight.className = 'cover-film-edge right';
+    for(let i=0; i<15; i++) {
+        const sprocket = document.createElement('div');
+        sprocket.className = 'sprocket';
+        edgeRight.appendChild(sprocket);
+    }
+
+    div.appendChild(edgeLeft);
+    div.appendChild(edgeRight);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'cover-content';
+
     if (type === 'front') {
-        div.innerHTML = `
-            <div class="page-cover-emblem">📚</div>
-            <div class="page-cover-title">Buku Kenangan<br>${escapeHtml(schoolName)}</div>
-            <div class="page-cover-subtitle">Angkatan ${escapeHtml(activeYear)}</div>
+        contentDiv.innerHTML = `
+            <div class="page-cover-subtitle" style="margin-bottom:2rem; color:#ff9f1c;">[ SAFETY FILM ]</div>
+            <div class="page-cover-emblem"><i class="bi bi-camera-reels-fill"></i></div>
+            <div class="page-cover-title">BUKU<br>KENANGAN</div>
+            <div class="page-cover-school">${escapeHtml(schoolName)}</div>
+            <div class="page-cover-divider"></div>
+            <div class="page-cover-subtitle">ROLL ANGKATAN</div>
             <div class="page-cover-year">${escapeHtml(activeYear)}</div>
         `;
     } else {
-        div.innerHTML = `
-            <div class="page-cover-emblem" style="background: linear-gradient(135deg,#10b981,#3b82f6);">🎓</div>
-            <div class="page-cover-title" style="font-size:1.3rem;">Semoga Sukses Selalu</div>
-            <div class="page-cover-subtitle" style="margin-top:1rem;">STEMAN Alumni &bull; ${escapeHtml(activeYear)}</div>
-            <div style="color:rgba(255,255,255,0.3); font-size:0.75rem; margin-top:3rem; position:relative;z-index:1;">alumni-steman.my.id</div>
+        contentDiv.innerHTML = `
+            <div class="page-cover-subtitle" style="margin-bottom:2rem; color:#00b4d8;">[ END OF ROLL ]</div>
+            <div class="page-cover-emblem" style="border-color:#00b4d8; color:#00b4d8;"><i class="bi bi-film"></i></div>
+            <div class="page-cover-title" style="font-size:1.4rem;">THE END</div>
+            <div class="page-cover-school" style="font-size: 0.9rem; background:transparent;">SMK Negeri 2 Ternate</div>
+            <div class="page-cover-divider"></div>
+            <div class="page-cover-subtitle" style="font-size: 0.72rem;">STEMAN ALUMNI PORTAL</div>
+            <div style="color:#334155; font-size:0.75rem; margin-top:2.5rem; font-family:'Courier New', monospace;">alumni-steman.my.id</div>
         `;
     }
+    
+    div.appendChild(contentDiv);
     return div;
 }
 
 function buildAlumniPage(chunk, pageNum, totalPages) {
     const div = document.createElement('div');
     div.className = 'page-inner';
+    
     div.innerHTML = `
         <div class="page-header">
-            <span class="page-header-title">Angkatan ${escapeHtml(activeYear)}</span>
-            <span class="page-number">hal. ${pageNum} / ${totalPages}</span>
+            <span class="page-header-title">ROLL ${escapeHtml(activeYear)}</span>
+            <span class="page-number">FR. ${pageNum} / ${totalPages}</span>
         </div>
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-            ${chunk.map(a => `
-            <div class="alumni-card-yb" onclick="openAlumniModal(${a.id})" style="cursor:pointer;" title="Klik untuk lihat profil">
-                <img src="${escapeHtml(avatarUrl(a))}" alt="${escapeHtml(a.name)}"
-                     class="alumni-avatar-yb"
-                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=7c3aed&color=fff&size=200&bold=true'">
-                <div class="alumni-name-yb">${escapeHtml(a.name)}</div>
-                <div class="alumni-major-yb">${escapeHtml(a.major || '-')}</div>
-                ${a.current_job ? `<div class="alumni-job-yb">${escapeHtml(a.current_job)}${a.company_university ? ' @ '+escapeHtml(a.company_university) : ''}</div>` : ''}
-                ${a.bio ? `<div class="alumni-quote-yb">"${escapeHtml(a.bio)}"</div>` : ''}
-            </div>`).join('')}
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px 8px;">
+            ${chunk.map((a, idx) => {
+                const globalIndex = ((pageNum - 1) * PER_PAGE) + idx + 1;
+                const frameStr = globalIndex.toString().padStart(2, '0');
+                
+                return `
+                <div class="alumni-card-yb" onclick="openAlumniModal(${a.id})" style="cursor:pointer;" title="Klik untuk lihat profil">
+                    <div class="film-sprocket-row">
+                        <div class="sprocket-mini"></div><div class="sprocket-mini"></div><div class="sprocket-mini"></div><div class="sprocket-mini"></div><div class="sprocket-mini"></div>
+                    </div>
+                    <img src="${escapeHtml(avatarUrl(a))}" alt="${escapeHtml(a.name)}"
+                         class="alumni-avatar-yb"
+                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=000&color=fff&size=200&bold=true'">
+                    <div class="film-sprocket-row" style="padding-bottom:2px;">
+                        <div class="sprocket-mini"></div><div class="sprocket-mini"></div><div class="sprocket-mini"></div><div class="sprocket-mini"></div><div class="sprocket-mini"></div>
+                    </div>
+                    <div class="alumni-info-box">
+                        <div class="alumni-name-yb">${escapeHtml(a.name)}</div>
+                        <div class="alumni-major-yb">${escapeHtml(a.major || '-')}</div>
+                        ${a.current_job ? `<div class="alumni-job-yb">${escapeHtml(a.current_job)}</div>` : ''}
+                    </div>
+                    <div class="frame-number">▶ ${frameStr}A</div>
+                </div>`;
+            }).join('')}
         </div>
     `;
     return div;
@@ -693,8 +821,8 @@ function buildDividerPage(title, subtitle) {
     div.className = 'divider-page';
     div.innerHTML = `
         <div class="divider-title">${escapeHtml(title)}</div>
-        <div class="divider-subtitle">"${escapeHtml(subtitle)}"</div>
-        <div style="font-size:2rem; margin-top:20px; opacity:0.5;">✨</div>
+        <div class="divider-subtitle">[ ${escapeHtml(subtitle)} ]</div>
+        <div style="font-size:2rem; margin-top:20px; color:#ff9f1c;"><i class="bi bi-camera-video-fill"></i></div>
     `;
     return div;
 }
@@ -703,9 +831,8 @@ function buildStoryPage(post, pageNum, totalPages) {
     const div = document.createElement('div');
     div.className = 'story-page';
     
-    // Format date roughly
     const dateObj = new Date(post.created_at);
-    const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' }).toUpperCase();
     
     let imgHtml = '';
     if (post.image_url) {
@@ -714,21 +841,21 @@ function buildStoryPage(post, pageNum, totalPages) {
 
     div.innerHTML = `
         <div class="page-header" style="border-bottom:none; margin-bottom:0;">
-            <span class="page-header-title">Cerita Kenangan</span>
-            <span class="page-number">hal. ${pageNum} / ${totalPages}</span>
+            <span class="page-header-title">ARCHIVE LOG</span>
+            <span class="page-number">FR. ${pageNum} / ${totalPages}</span>
         </div>
-        <div class="story-quote-mark">"</div>
+        <div class="story-quote-mark"><i class="bi bi-quote"></i></div>
         <div class="story-author">
             <img src="${escapeHtml(avatarUrl(post.user))}" alt="${escapeHtml(post.user.name)}" class="story-author-img">
             <div class="story-author-info">
                 <span class="story-author-name">${escapeHtml(post.user.name)}</span>
-                <span class="story-date">${escapeHtml(dateStr)}</span>
+                <span class="story-date">EXPOSED: ${escapeHtml(dateStr)}</span>
             </div>
         </div>
         <div class="story-content" style="position:relative; z-index:1; cursor:pointer;" onclick="openStoryModal(${post.id})" title="Klik untuk membaca selengkapnya">
             ${imgHtml}
-            <div style="white-space: pre-wrap; display:-webkit-box; -webkit-line-clamp:8; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(post.content)}</div>
-            <div class="text-primary mt-2 small fw-bold">Baca selengkapnya &rarr;</div>
+            <div style="white-space: pre-wrap; display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(post.content)}</div>
+            <div class="mt-2 small fw-bold" style="color: #00b4d8;">[ READ LOG ] &rarr;</div>
         </div>
     `;
     return div;
@@ -865,19 +992,21 @@ if (alumniData.length > 0 || postsData.length > 0) {
 
     // Left page display
     const leftEl = document.createElement('div');
-    leftEl.style.cssText = `width:50%;height:100%;overflow:hidden;border-right:3px solid rgba(124,58,237,0.4);`;
+    leftEl.style.cssText = `width:50%;height:100%;overflow:hidden;border-right:1px solid #334155;`;
 
     // Right page display
     const rightEl = document.createElement('div');
-    rightEl.style.cssText = `width:50%;height:100%;overflow:hidden;`;
+    rightEl.style.cssText = `width:50%;height:100%;overflow:hidden;border-left:1px solid #000;`;
 
-    // Spine glow
+    // Spine glow (Cinematic Reel)
     const spineEl = document.createElement('div');
     spineEl.style.cssText = `
         position:absolute;left:50%;top:0;bottom:0;
-        width:6px;transform:translateX(-50%);
-        background:linear-gradient(180deg,#a855f7,#6366f1,#a855f7);
-        box-shadow:0 0 20px rgba(168,85,247,0.8);
+        width:14px;transform:translateX(-50%);
+        background:repeating-linear-gradient(180deg, #111, #111 8px, #000 8px, #000 16px);
+        box-shadow:inset 0 0 10px rgba(0,0,0,0.9), 0 0 15px rgba(255, 159, 28, 0.15);
+        border-left:1px dashed #334155;
+        border-right:1px dashed #334155;
         z-index:10;
     `;
 
