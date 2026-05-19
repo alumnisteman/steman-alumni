@@ -5,10 +5,10 @@
     :root {
         --card-width: 450px;
         --card-height: 280px;
-        --glass-bg: rgba(255, 255, 255, 0.08);
-        --glass-border: rgba(255, 255, 255, 0.2);
-        --primary-glow: #3f37c9;
-        --secondary-glow: #480ca8;
+        --glass-bg: rgba(15, 23, 42, 0.35);
+        --glass-border: rgba(255, 255, 255, 0.22);
+        --primary-glow: #00f0ff;
+        --secondary-glow: #ff007f;
     }
 
     /* Outer wrapper: only for background + blobs — MUST NOT have perspective here */
@@ -94,25 +94,37 @@
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
         border-radius: 20px;
-        border: 1px solid var(--glass-border);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1.5px solid var(--glass-border);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
         overflow: hidden;
     }
 
-        background: var(--card-bg, rgba(15, 23, 42, 0.6));
-        backdrop-filter: blur(15px);
+    .card-front {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         padding: 35px; /* Web-friendly safe area */
         color: white;
         box-sizing: border-box;
+        box-shadow: 
+            0 0 30px rgba(0, 240, 255, 0.25), 
+            0 0 60px rgba(255, 0, 127, 0.15),
+            inset 0 0 20px rgba(255, 255, 255, 0.12);
     }
 
-    /* Admin Theme: Onyx Black & Gold */
+    /* Admin Theme: Onyx Black & Gold Glass */
     .role-admin .card-front {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
-        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+        border: 1.5px solid rgba(212, 175, 55, 0.4) !important;
+        box-shadow: 
+            0 0 35px rgba(212, 175, 55, 0.35), 
+            inset 0 0 20px rgba(212, 175, 55, 0.15),
+            0 15px 35px rgba(0, 0, 0, 0.6) !important;
     }
     .role-admin .logo-text {
         background: linear-gradient(to right, #d4af37, #f9e29c) !important;
@@ -199,8 +211,8 @@
         height: 85px;
         border-radius: 50%;
         padding: 4px;
-        background: linear-gradient(45deg, #3f37c9, #4cc9f0);
-        box-shadow: 0 0 20px rgba(63, 55, 201, 0.4);
+        background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
 
     .profile-img {
@@ -217,6 +229,7 @@
         font-weight: 800;
         margin-bottom: 2px;
         letter-spacing: 1px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
     .info-content p {
@@ -247,18 +260,31 @@
     }
 
     .status-badge {
-        background: rgba(34, 197, 94, 0.2);
-        color: #4ade80;
+        background: rgba(0, 240, 255, 0.15) !important;
+        color: #00f0ff !important;
         padding: 4px 12px;
         border-radius: 100px;
         font-size: 0.65rem;
         font-weight: 800;
-        border: 1px solid rgba(74, 222, 128, 0.3);
+        border: 1.5px solid rgba(0, 240, 255, 0.4) !important;
+        text-shadow: 0 0 5px rgba(0, 240, 255, 0.3);
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    /* VIP Verified and Admin overrides */
+    .status-badge.vip-badge {
+        background: rgba(250, 204, 21, 0.15) !important;
+        color: #facc15 !important;
+        border: 1.5px solid rgba(250, 204, 21, 0.4) !important;
+        text-shadow: 0 0 5px rgba(250, 204, 21, 0.3);
+        box-shadow: 0 0 10px rgba(250, 204, 21, 0.2);
     }
 
     /* BACK SIDE */
     .card-back {
-        background: white;
+        background: rgba(15, 23, 42, 0.45) !important;
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
         transform: rotateY(180deg);
         -webkit-transform: rotateY(180deg);
         display: flex;
@@ -266,33 +292,41 @@
         align-items: center;
         justify-content: flex-start; /* Naikkan elemen ke atas */
         padding: 40px 35px 25px 35px; /* Safe area dan dorongan dari atas */
-        color: #1e293b;
+        color: white !important;
         box-sizing: border-box;
+        box-shadow: 
+            0 0 30px rgba(0, 240, 255, 0.25), 
+            0 0 60px rgba(255, 0, 127, 0.15),
+            inset 0 0 20px rgba(255, 255, 255, 0.12);
+        border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
     }
 
     .qr-container {
-        padding: 8px;
-        background: #f8fafc;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 15px;
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
         margin-bottom: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .scanning-text {
         font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 3px;
-        color: #64748b;
+        color: #00f0ff !important;
+        text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
         margin-bottom: 5px;
     }
 
     .terms-text {
         font-size: 0.55rem;
-        opacity: 0.7;
+        opacity: 0.75;
         line-height: 1.5;
         max-width: 85%;
         text-align: center;
         margin-top: 5px;
+        color: #cbd5e1 !important;
     }
 
     /* Holographic Glare Overlay */
@@ -322,20 +356,24 @@
         opacity: 1;
     }
 
-    /* Subtle Border Glow on Hover */
+    /* Permanent border glow */
     .card-3d::before {
         content: '';
         position: absolute;
-        inset: -2px;
-        border-radius: 22px;
-        background: linear-gradient(45deg, #06b6d4, #8b5cf6, #ec4899, #06b6d4);
+        inset: -2.5px;
+        border-radius: 22.5px;
+        background: linear-gradient(90deg, #00f0ff, #ff007f, #8b5cf6, #00f0ff);
+        background-size: 300% 300%;
         z-index: -1;
-        opacity: 0;
-        filter: blur(10px);
-        transition: opacity 0.3s;
+        opacity: 0.85;
+        filter: blur(12px);
+        animation: neonPulse 6s ease infinite;
     }
-    .card-3d:hover::before {
-        opacity: 0.7;
+    
+    @keyframes neonPulse {
+        0% { background-position: 0% 50%; filter: blur(12px); }
+        50% { background-position: 100% 50%; filter: blur(16px); }
+        100% { background-position: 0% 50%; filter: blur(12px); }
     }
 
     /* Gamification Badges */
@@ -537,8 +575,8 @@
                     <span>Registration ID</span>
                     <b>#{{ str_pad($user->id, 6, '0', STR_PAD_LEFT) }}</b>
                 </div>
-                <div class="status-badge {{ $user->is_verified ? 'bg-warning bg-opacity-20 text-warning border-warning' : '' }}">
-                    <i class="bi bi-{{ $user->is_verified ? 'gem' : 'patch-check-fill' }} me-1"></i> 
+                <div class="status-badge {{ ($user->is_verified || auth()->user()?->role === 'admin') ? 'vip-badge' : '' }}">
+                    <i class="bi bi-{{ ($user->is_verified || auth()->user()?->role === 'admin') ? 'gem' : 'patch-check-fill' }} me-1"></i> 
                     {{ (auth()->user()?->role === 'admin') ? 'SYSTEM AUTHORITY' : ($user->is_verified ? 'VIP VERIFIED MEMBER' : 'ALUMNI MEMBER') }}
                 </div>
             </div>

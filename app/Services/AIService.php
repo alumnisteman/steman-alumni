@@ -79,7 +79,7 @@ class AIService
                 }
                 $this->markProviderFailed('gateway');
             } elseif ($provider === 'gemini') {
-                $models = $model ? [$model] : ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro', 'gemini-2.0-flash-exp'];
+                $models = $model ? [$model] : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash-lite'];
                 foreach ($models as $currentModel) {
                     for ($attempt = 1; $attempt <= 2; $attempt++) {
                         $result = $this->tryRequest($prompt, $temperature, $currentModel);
@@ -501,6 +501,106 @@ class AIService
 
         return $this->ask($prompt);
     }
+
+    /**
+     * AI Gacha Matchmaker: Calculate compatibility score and comments
+     */
+    public function getCompatibilityScore(array $me, array $target): ?array
+    {
+        $prompt = "You are a friendly, witty, and optimistic AI Matchmaker for an alumni portal.
+        Analyze these two alumni profiles and calculate their compatibility for networking/friendship:
+        
+        Profile 1 (Me):
+        - Name: {$me['name']}
+        - Major: {$me['major']}
+        - Graduation Year: {$me['graduation_year']}
+        - City: {$me['city']}
+        - Interests: {$me['interests']}
+        - Bio: {$me['bio']}
+        
+        Profile 2 (Target):
+        - Name: {$target['name']}
+        - Major: {$target['major']}
+        - Graduation Year: {$target['graduation_year']}
+        - City: {$target['city']}
+        - Interests: {$target['interests']}
+        - Bio: {$target['bio']}
+        
+        Return ONLY valid JSON format:
+        {
+            \"score\": integer (between 50 and 99),
+            \"comment\": \"string (1-2 encouraging sentences in Indonesian explaining their compatibility, highlighting shared fields, majors, city, or interests)\"
+        }
+        Do not output any markdown code fences or conversational text.";
+
+        $result = $this->ask($prompt, 0.6);
+        if (!$result) return ['score' => 75, 'comment' => 'Kalian berdua alumni SMKN 2 Ternate, pasti punya banyak kesamaan untuk dibicarakan!'];
+
+        $json = preg_replace('/^```json\s*|\s*```$/i', '', trim($result));
+        $data = json_decode($json, true);
+        return is_array($data) ? $data : ['score' => 75, 'comment' => 'Kalian berdua alumni SMKN 2 Ternate, pasti punya banyak kesamaan untuk dibicarakan!'];
+    }
+
+    /**
+     * AI Gacha Icebreakers: Generate 3 interesting chat starters
+     */
+    public function generateIcebreakers(array $me, array $target): ?array
+    {
+        $prompt = "You are a social icebreaker expert. Create 3 distinct conversation starter options (in Indonesian) that User 1 (Me) can send to User 2 (Target).
+        Make the options vary: Option 1 should be professional/networking, Option 2 friendly/nostalgic (mentioning SMKN 2 Ternate), Option 3 funny/creative.
+        
+        User 1 (Me):
+        - Name: {$me['name']}
+        - Major: {$me['major']}
+        - Graduation Year: {$me['graduation_year']}
+        - Interests: {$me['interests']}
+        
+        User 2 (Target):
+        - Name: {$target['name']}
+        - Major: {$target['major']}
+        - Graduation Year: {$target['graduation_year']}
+        - Interests: {$target['interests']}
+        
+        Return ONLY valid JSON format:
+        [
+            \"string option 1\",
+            \"string option 2\",
+            \"string option 3\"
+        ]
+        Do not output any markdown code fences or conversational text.";
+
+        $result = $this->ask($prompt, 0.7);
+        if (!$result) return [
+            "Halo {$target['name']}, senang bisa terhubung! Salam kenal ya.",
+            "Halo {$target['name']}, sesama alumni SMKN 2 Ternate nih. Apa kabar?",
+            "Halo kak {$target['name']}, salam hangat dari angkatan {$me['graduation_year']}!"
+        ];
+
+        $json = preg_replace('/^```json\s*|\s*```$/i', '', trim($result));
+        $data = json_decode($json, true);
+        return is_array($data) ? $data : [
+            "Halo {$target['name']}, senang bisa terhubung! Salam kenal ya.",
+            "Halo {$target['name']}, sesama alumni SMKN 2 Ternate nih. Apa kabar?",
+            "Halo kak {$target['name']}, salam hangat dari angkatan {$me['graduation_year']}!"
+        ];
+    }
+
+    /**
+     * AI Birthday Greeting: Generate a personalized birthday wish
+     */
+    public function generateBirthdayGreeting(array $target): ?string
+    {
+        $prompt = "Write a warm, creative, and personalized birthday wish (in Indonesian) for this alumni:
+        - Name: {$target['name']}
+        - Major: {$target['major']}
+        - Graduation Year: {$target['graduation_year']}
+        
+        Use a friendly, enthusiastic, and slightly nostalgic tone (referencing SMKN 2 Ternate/Steman).
+        Keep it concise (1-2 sentences). Return ONLY the greeting text, no comments or quotes.";
+
+        return $this->ask($prompt, 0.8);
+    }
+
 
     private function tryGateway(string $prompt): ?string
     {

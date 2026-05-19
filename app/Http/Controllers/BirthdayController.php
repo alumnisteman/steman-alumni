@@ -20,7 +20,7 @@ class BirthdayController extends Controller
 
         // Alumni yang ulang tahun HARI INI
         $todayBirthdays = User::where('role', 'alumni')
-            ->where('status', 'active')
+            ->whereIn('status', ['approved', 'active'])
             ->where('birthday_public', true)
             ->whereNotNull('birthday')
             ->whereMonth('birthday', $month)
@@ -34,7 +34,7 @@ class BirthdayController extends Controller
 
         // Alumni yang ulang tahun BULAN INI (selain hari ini)
         $monthBirthdays = User::where('role', 'alumni')
-            ->where('status', 'active')
+            ->whereIn('status', ['approved', 'active'])
             ->where('birthday_public', true)
             ->whereNotNull('birthday')
             ->whereMonth('birthday', $month)
@@ -140,6 +140,26 @@ class BirthdayController extends Controller
             'days_until'     => $daysUntil,
             'is_today'       => $daysUntil === 0,
             'birthday_date'  => $next->format('d M'),
+        ]);
+    }
+
+    /**
+     * Generate AI Birthday Wish for a user.
+     */
+    public function generateWish(User $user)
+    {
+        $targetProfile = [
+            'name' => $user->name,
+            'major' => $user->major ?? 'Alumni Steman',
+            'graduation_year' => $user->graduation_year ?? '-',
+        ];
+
+        $aiService = app(\App\Services\AIService::class);
+        $wish = $aiService->generateBirthdayGreeting($targetProfile);
+
+        return response()->json([
+            'success' => true,
+            'wish' => $wish ?? '🎉 Selamat Ulang Tahun! Semoga sukses selalu, alumni Steman!',
         ]);
     }
 }

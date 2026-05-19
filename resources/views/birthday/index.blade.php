@@ -170,7 +170,7 @@
                         @auth
                         <button class="greet-btn {{ $sentToday->contains($alumni->id) ? 'sent' : '' }}"
                                 data-id="{{ $alumni->id }}"
-                                onclick="sendGreeting({{ $alumni->id }}, this)"
+                                onclick="openGreetingModal({{ $alumni->id }}, this)"
                                 {{ $sentToday->contains($alumni->id) ? 'disabled' : '' }}>
                             {{ $sentToday->contains($alumni->id) ? '✅ Terkirim!' : '🎉 Ucapkan Selamat' }}
                         </button>
@@ -250,6 +250,39 @@
     </div>
 </div>
 
+{{-- Send Custom / AI Greeting Modal --}}
+<div class="modal fade" id="sendGreetingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg p-4 bg-white dark:bg-slate-900">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-gift-fill me-2"></i>Kirim Ucapan Ultah</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="mb-3 text-start">
+                <label class="form-label small text-muted">Tulis ucapan selamat ulang tahun:</label>
+                <textarea id="greetingMessage" class="form-control" rows="3" maxlength="300" placeholder="Ketik ucapan Anda disini..."></textarea>
+            </div>
+            
+            <div class="d-flex gap-2 justify-content-between align-items-center mb-4">
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 d-flex align-items-center gap-1.5" onclick="generateAIBirthdayWish()" id="btnAIGreet">
+                    <i class="bi bi-stars"></i> Tulis Otomatis dengan AI
+                </button>
+                <div id="aiGreetLoading" class="spinner-border spinner-border-sm text-danger d-none" role="status"></div>
+            </div>
+            
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-outline-secondary w-100 rounded-pill py-2 fw-bold" data-bs-dismiss="modal">Batal</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-danger w-100 rounded-pill py-2 fw-bold" id="btnSubmitGreeting" onclick="submitGreeting()">KIRIM 🎉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Greeting Modal --}}
 <div class="modal fade" id="greetModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -264,12 +297,68 @@
 
 @push('scripts')
 <script>
-function sendGreeting(userId, btn) {
+let currentGreetUserId = null;
+let currentGreetBtn = null;
+
+function openGreetingModal(userId, btn) {
+    currentGreetUserId = userId;
+    currentGreetBtn = btn;
+    
+    // Set a default random greeting first
+    document.getElementById('greetingMessage').value = getRandomGreeting();
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('sendGreetingModal'));
+    modal.show();
+}
+
+function generateAIBirthdayWish() {
+    if (!currentGreetUserId) return;
+    
+    const btn = document.getElementById('btnAIGreet');
+    const loader = document.getElementById('aiGreetLoading');
+    const textarea = document.getElementById('greetingMessage');
+    
+    btn.classList.add('d-none');
+    loader.classList.remove('d-none');
+    
+    fetch(`/birthday/generate-wish/${currentGreetUserId}`)
+    .then(r => r.json())
+    .then(data => {
+        btn.classList.remove('d-none');
+        loader.classList.add('d-none');
+        
+        if (data.success && data.wish) {
+            textarea.value = data.wish;
+        } else {
+            alert('Gagal menghasilkan ucapan AI. Coba gunakan template yang ada.');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        btn.classList.remove('d-none');
+        loader.classList.add('d-none');
+        alert('Terjadi kesalahan koneksi ke server AI.');
+    });
+}
+
+function submitGreeting() {
+    if (!currentGreetUserId || !currentGreetBtn) return;
+    
+    const message = document.getElementById('greetingMessage').value;
+    const btn = currentGreetBtn;
+    const userId = currentGreetUserId;
+    
+    // Close the input modal
+    const sendModalEl = document.getElementById('sendGreetingModal');
+    const sendModalInst = bootstrap.Modal.getInstance(sendModalEl);
+    if (sendModalInst) {
+        sendModalInst.hide();
+    }
+    
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
-
-    const message = getRandomGreeting();
-
+    
     fetch(`/birthday/greet/${userId}`, {
         method: 'POST',
         headers: {
@@ -293,6 +382,12 @@ function sendGreeting(userId, btn) {
             btn.innerHTML = '🎉 Ucapkan Selamat';
             alert(data.error);
         }
+    })
+    .catch(err => {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = '🎉 Ucapkan Selamat';
+        alert('Terjadi kesalahan saat mengirim ucapan.');
     });
 }
 

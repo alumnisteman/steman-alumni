@@ -18,7 +18,7 @@ class GachaController extends Controller
         $stats = Cache::remember('gacha_stats', 300, function () {
             return [
                 'total_connects' => UserMatch::where('status', 'matched')->count(),
-                'active_alumni'  => User::where('role', 'alumni')->where('status', 'active')->count(),
+                'active_alumni'  => User::where('role', 'alumni')->whereIn('status', ['approved', 'active'])->count(),
                 'today_spins'    => UserMatch::whereDate('created_at', today())->count(),
             ];
         });
@@ -47,7 +47,7 @@ class GachaController extends Controller
 
         $query = User::whereNotIn('id', $doneIds)
             ->where('role', 'alumni')
-            ->where('status', 'active');
+            ->whereIn('status', ['approved', 'active']);
 
         if ($major)    $query->where('major', $major);
         if ($city)     $query->where('city', 'like', "%{$city}%");
@@ -62,6 +62,28 @@ class GachaController extends Controller
             ]);
         }
 
+        // Call AIService for compatibility analysis
+        $meProfile = [
+            'name' => $me->name,
+            'major' => $me->major ?? 'Alumni Steman',
+            'graduation_year' => $me->graduation_year ?? '-',
+            'city' => $me->city ?? 'Indonesia',
+            'interests' => $me->interests ?? '',
+            'bio' => $me->bio ?? '',
+        ];
+
+        $targetProfile = [
+            'name' => $alumni->name,
+            'major' => $alumni->major ?? 'Alumni Steman',
+            'graduation_year' => $alumni->graduation_year ?? '-',
+            'city' => $alumni->city ?? 'Indonesia',
+            'interests' => $alumni->interests ?? '',
+            'bio' => $alumni->bio ?? '',
+        ];
+
+        $aiService = app(\App\Services\AIService::class);
+        $compatibility = $aiService->getCompatibilityScore($meProfile, $targetProfile);
+
         return response()->json([
             'empty'   => false,
             'alumni'  => [
@@ -75,6 +97,8 @@ class GachaController extends Controller
                 'interests'       => $alumni->interests ?? '',
                 'profile_url'     => route('alumni.show', $alumni),
                 'chat_url'        => route('alumni.chat'),
+                'compatibility_score' => $compatibility['score'] ?? 75,
+                'compatibility_comment' => $compatibility['comment'] ?? 'Sama-sama bangga jadi bagian alumni Steman!',
             ],
         ]);
     }
@@ -158,5 +182,35 @@ class GachaController extends Controller
             ->paginate(12);
 
         return response()->json($connections);
+    }
+
+    /**
+     * Generate AI Icebreakers for a target user.
+     */
+    public function generateIcebreakers(Request $request, User $user)
+    {
+        $me = auth()->user();
+        
+        $meProfile = [
+            'name' => $me->name,
+            'major' => $me->major ?? 'Alumni Steman',
+            'graduation_year' => $me->graduation_year ?? '-',
+            'interests' => $me->interests ?? '',
+        ];
+
+        $targetProfile = [
+            'name' => $user->name,
+            'major' => $user->major ?? 'Alumni Steman',
+            'graduation_year' => $user->graduation_year ?? '-',
+            'interests' => $user->interests ?? '',
+        ];
+
+        $aiService = app(\App\Services\AIService::class);
+        $icebreakers = $aiService->generateIcebreakers($meProfile, $targetProfile);
+
+        return response()->json([
+            'success' => true,
+            'icebreakers' => $icebreakers,
+        ]);
     }
 }

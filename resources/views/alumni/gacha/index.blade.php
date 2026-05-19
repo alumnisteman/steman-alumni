@@ -438,6 +438,13 @@
                 <!-- Avatar -->
                 <img src="" id="resAvatar" class="gacha-card-avatar" alt="Avatar">
                 
+                <!-- Compatibility Badge -->
+                <div class="d-flex justify-content-center align-items-center mb-3">
+                    <div class="px-3 py-1 rounded-pill fw-bold small text-white d-flex align-items-center gap-1 shadow-sm" id="resCompatibilityBadge" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 0.8rem;">
+                        <i class="bi bi-heart-fill text-warning"></i> <span id="resCompatibilityScore">--%</span> Cocok
+                    </div>
+                </div>
+
                 <!-- Name & Credentials -->
                 <h4 class="fw-black mb-1" id="resName">-</h4>
                 <div class="text-muted small mb-2 d-flex justify-content-center gap-2">
@@ -451,14 +458,44 @@
                     <i class="bi bi-geo-alt me-1"></i>-
                 </div>
 
+                <!-- AI Matchmaker Section -->
+                <div class="mb-3 px-3 py-2.5 rounded-4 text-start shadow-sm" style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25);">
+                    <div class="d-flex align-items-center gap-1.5 mb-1">
+                        <span class="small fw-bold text-purple-300 d-flex align-items-center gap-1.5" style="font-size: 0.75rem;">
+                            <span class="spinner-grow spinner-grow-sm text-purple-400" role="status" style="width: 8px; height: 8px;"></span>
+                            STEMAN AI MATCHMAKER
+                        </span>
+                    </div>
+                    <div class="small text-slate-200 italic" id="resCompatibilityComment" style="font-size: 0.8rem;">
+                        -
+                    </div>
+                </div>
+
                 <!-- Bio -->
                 <p class="small text-slate-300 opacity-80 px-2 py-3 bg-black bg-opacity-20 rounded-3 mb-3 text-start" id="resBio" style="min-height: 70px;">
                     -
                 </p>
 
                 <!-- Interests Tags -->
-                <div class="d-flex flex-wrap gap-2 justify-content-center mb-4" id="resInterests">
+                <div class="d-flex flex-wrap gap-2 justify-content-center mb-3" id="resInterests">
                     <!-- tags dynamically loaded -->
+                </div>
+
+                <!-- AI Icebreakers Section -->
+                <div class="mb-4 text-start">
+                    <button class="btn btn-sm btn-outline-light w-100 rounded-pill py-2 border-dashed d-flex align-items-center justify-content-center gap-2" id="btnGetIcebreaker" onclick="loadIcebreakers()" style="font-size: 0.8rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2);">
+                        <i class="bi bi-chat-quote"></i> 💡 Dapatkan Sapaan AI (Icebreakers)
+                    </button>
+                    <div id="icebreakerLoading" class="text-center py-2 d-none">
+                        <span class="spinner-border spinner-border-sm text-pink-500" role="status"></span>
+                        <span class="small text-muted ms-1" style="font-size: 0.8rem;">Merangkai kata-kata...</span>
+                    </div>
+                    <div id="icebreakerContainer" class="mt-2 d-none">
+                        <div class="small text-muted mb-2 fw-semibold" style="font-size: 0.75rem;">Pilih Sapaan Pembuka AI (klik untuk salin):</div>
+                        <div class="d-flex flex-column gap-2" id="icebreakerList">
+                            <!-- dynamically filled -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Choices Button Controls -->
@@ -570,6 +607,11 @@ function triggerSpin() {
     document.getElementById('resultModal').classList.remove('active');
     document.getElementById('matchOverlay').classList.remove('active');
 
+    // Reset Icebreaker UI
+    document.getElementById('icebreakerContainer').classList.add('d-none');
+    document.getElementById('icebreakerList').innerHTML = '';
+    document.getElementById('btnGetIcebreaker').classList.remove('d-none');
+
     const machine = document.getElementById('gachaMachine');
     const knob = document.getElementById('gachaKnob');
     const chute = document.getElementById('gachaChute');
@@ -630,6 +672,20 @@ function triggerSpin() {
             document.getElementById('resCity').innerHTML = `<i class="bi bi-geo-alt me-1"></i>${alumni.city}`;
             document.getElementById('resBio').textContent = alumni.bio;
             
+            // Set Compatibility UI
+            document.getElementById('resCompatibilityScore').textContent = (alumni.compatibility_score || 75) + '%';
+            document.getElementById('resCompatibilityComment').textContent = `"${alumni.compatibility_comment}"`;
+            
+            const badge = document.getElementById('resCompatibilityBadge');
+            const score = alumni.compatibility_score || 75;
+            if (score >= 85) {
+                badge.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            } else if (score >= 70) {
+                badge.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+            } else {
+                badge.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            }
+
             // Build tags
             const tagsWrap = document.getElementById('resInterests');
             tagsWrap.innerHTML = '';
@@ -715,6 +771,63 @@ function submitChoice(action) {
         }
     })
     .catch(err => console.error(err));
+}
+
+function loadIcebreakers() {
+    if (!currentAlumniId) return;
+    const btn = document.getElementById('btnGetIcebreaker');
+    const loader = document.getElementById('icebreakerLoading');
+    const container = document.getElementById('icebreakerContainer');
+    const list = document.getElementById('icebreakerList');
+
+    btn.classList.add('d-none');
+    loader.classList.remove('d-none');
+
+    fetch(`/gacha/icebreaker/${currentAlumniId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        loader.classList.add('d-none');
+        if (data.success && data.icebreakers) {
+            container.classList.remove('d-none');
+            list.innerHTML = '';
+            data.icebreakers.forEach(text => {
+                const item = document.createElement('div');
+                item.className = 'p-2 rounded-3 text-start small border';
+                item.style.background = 'rgba(255, 255, 255, 0.05)';
+                item.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                item.style.cursor = 'pointer';
+                item.style.transition = 'background 0.2s';
+                item.innerHTML = `<i class="bi bi-file-earmark-code text-pink-400 me-1.5"></i> ${text}`;
+                
+                // Hover effects
+                item.onmouseenter = () => item.style.background = 'rgba(255, 255, 255, 0.1)';
+                item.onmouseleave = () => item.style.background = 'rgba(255, 255, 255, 0.05)';
+                
+                // Copy to clipboard on click
+                item.onclick = () => {
+                    navigator.clipboard.writeText(text);
+                    alert('Sapaan berhasil disalin ke clipboard! Tempelkan nanti di Chat Box 💖');
+                };
+                list.appendChild(item);
+            });
+        } else {
+            btn.classList.remove('d-none');
+            alert('Gagal memuat sapaan AI. Silakan coba kembali.');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        loader.classList.add('d-none');
+        btn.classList.remove('d-none');
+        alert('Gagal terhubung dengan server AI.');
+    });
 }
 
 function closeMatch() {

@@ -455,6 +455,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     Route::post('/birthday/greet/{user}', [\App\Http\Controllers\BirthdayController::class, 'greet'])->name('birthday.greet');
     Route::get('/birthday/my-greetings', [\App\Http\Controllers\BirthdayController::class, 'myGreetings'])->name('birthday.my-greetings');
     Route::get('/api/birthday/countdown', [\App\Http\Controllers\BirthdayController::class, 'countdown'])->name('birthday.countdown');
+    Route::get('/birthday/generate-wish/{user}', [\App\Http\Controllers\BirthdayController::class, 'generateWish'])->name('birthday.generate-wish');
 
     // =====================================================
     // ALUMNI GACHA — Random Connect
@@ -463,6 +464,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     Route::post('/gacha/spin', [\App\Http\Controllers\GachaController::class, 'spin'])->name('gacha.spin');
     Route::post('/gacha/connect', [\App\Http\Controllers\GachaController::class, 'connect'])->name('gacha.connect');
     Route::get('/gacha/my-connections', [\App\Http\Controllers\GachaController::class, 'myConnections'])->name('gacha.connections');
+    Route::post('/gacha/icebreaker/{user}', [\App\Http\Controllers\GachaController::class, 'generateIcebreakers'])->name('gacha.icebreaker');
 
     // --- Legacy / Compatibility: Redirect old admin paths to subdomain ---
     Route::get('/admin/{any?}', function($any = null) {

@@ -724,7 +724,9 @@ function escapeHtml(str) {
 
 // ===== BUILD PAGES =====
 // 6 alumni per page grid (2 cols x 3 rows)
-const PER_PAGE = 6function buildCoverPage(type) {
+const PER_PAGE = 6;
+
+function buildCoverPage(type) {
     const div = document.createElement('div');
     div.className = 'page-cover';
     
