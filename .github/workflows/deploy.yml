@@ -19,8 +19,14 @@ jobs:
 
       - name: Deploy with Docker Compose (Rolling Update)
         run: |
-          # Use --wait to ensure the services with healthchecks are healthy before finishing
+          set -e
+          # Deploy with Docker Compose (Rolling Update)
           docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
+          DEPLOY_EXIT=$?
+          if [ $DEPLOY_EXIT -ne 0 ]; then
+            echo "ERROR: docker compose failed with exit code $DEPLOY_EXIT"
+            exit $DEPLOY_EXIT
+          fi
           
       - name: Final Health Check Verification
         run: |
@@ -42,6 +48,7 @@ jobs:
 
       - name: Production Initialization & Migrations (v4.1 Hardened)
         run: |
+          # Production Initialization & Migrations (v4.1 Hardened)
           docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
           
           # Full v4.1 Optimization Stack
@@ -52,7 +59,10 @@ jobs:
           docker compose -f docker-compose.prod.yml exec -T webserver sh -c 'rm -rf /tmp/nginx_cache/*'
           docker compose -f docker-compose.prod.yml restart webserver
           
-          # Final Permission Enforcement (v4.1.1 Production Hardened)
-          docker compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www
-          docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www
-          docker compose -f docker-compose.prod.yml exec -T app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+          # Final Permission Enforcement (v4.1.1 Production Hardened) - run only once
+          if [ ! -f /var/www/.permissions_set ]; then
+            docker compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www
+            docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www
+            docker compose -f docker-compose.prod.yml exec -T app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+            docker compose -f docker-compose.prod.yml exec -T app touch /var/www/.permissions_set
+          fi
