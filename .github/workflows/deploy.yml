@@ -35,7 +35,13 @@ jobs:
           sleep 5
           
           # Ping the /health endpoint through the webserver port (8000)
-          HEALTH_STATUS=$(curl --silent --fail http://localhost:8000/health)
+          # Use PowerShell Invoke-WebRequest for health check (works on Windows runners)
+          $httpCode = powershell -NoProfile -Command "try { (Invoke-WebRequest -Uri http://localhost:8000/health -UseBasicParsing -ErrorAction Stop).StatusCode } catch { 0 }"
+          if ($httpCode -ne 200) {
+            Write-Host "CRITICAL: Health Check Failed (HTTP $httpCode)"
+            exit 1
+          }
+          Write-Host "Deployment Success! Health endpoint returned HTTP $httpCode"
           
           if [ $? -eq 0 ]; then
                 echo "Deployment Success! JSON Status: $HEALTH_STATUS"
