@@ -1,4 +1,4 @@
-name: Steman Alumni CI/CD [v4.1 Hardened]
+name: Steman Alumni CI/CD [v4.2 Stable]
 
 on:
   push:
@@ -8,7 +8,7 @@ jobs:
   deploy:
     name: Deploy to Local Server
     runs-on: self-hosted
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,52 +20,31 @@ jobs:
       - name: Deploy with Docker Compose (Rolling Update)
         run: |
           set -e
-          # Deploy with Docker Compose (Rolling Update)
           docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
-          DEPLOY_EXIT=$?
-          if [ $DEPLOY_EXIT -ne 0 ]; then
-            echo "ERROR: docker compose failed with exit code $DEPLOY_EXIT"
-            exit $DEPLOY_EXIT
-          fi
-          
+
       - name: Final Health Check Verification
         run: |
-          echo "Starting Comprehensive Health Check..."
-          # Give a small buffer for Nginx proxy pass to stabilize
+          echo "Starting Health Check..."
           sleep 5
-          
-          # Ping the /health endpoint through the webserver port (8000)
-          # Use PowerShell Invoke-WebRequest for health check (works on Windows runners)
-          $httpCode = powershell -NoProfile -Command "try { (Invoke-WebRequest -Uri http://localhost:8000/health -UseBasicParsing -ErrorAction Stop).StatusCode } catch { 0 }"
-          if ($httpCode -ne 200) {
-            Write-Host "CRITICAL: Health Check Failed (HTTP $httpCode)"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
+          echo "Health endpoint returned HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "CRITICAL: Health Check Failed (HTTP $HTTP_CODE)"
             exit 1
-          }
-          Write-Host "Deployment Success! Health endpoint returned HTTP $httpCode"
-          
-          if [ $? -eq 0 ]; then
-                echo "Deployment Success! JSON Status: $HEALTH_STATUS"
-                docker image prune -f
-          else
-                echo "CRITICAL: Health Check Failed! Reverting or alerting team..."
-                # Since we use --wait, if it reaches here, something is fundamentally wrong with Nginx or the cluster
-                exit 1
           fi
+          echo "Deployment Success! Health endpoint OK."
+          docker image prune -f
 
-      - name: Production Initialization & Migrations (v4.1 Hardened)
+      - name: Production Initialization & Migrations (v4.2 Stable)
         run: |
-          # Production Initialization & Migrations (v4.1 Hardened)
           docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-          
-          # Full v4.1 Optimization Stack
+
           docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
           docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
-          
-          # Nginx Cache Purge (Fix for persistent cached views)
+
           docker compose -f docker-compose.prod.yml exec -T webserver sh -c 'rm -rf /tmp/nginx_cache/*'
           docker compose -f docker-compose.prod.yml restart webserver
-          
-          # Final Permission Enforcement (v4.1.1 Production Hardened) - run only once
+
           if [ ! -f /var/www/.permissions_set ]; then
             docker compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www
             docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www
