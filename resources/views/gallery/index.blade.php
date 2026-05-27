@@ -3,7 +3,7 @@
 <div class="container py-5">
     <div class="text-center mb-5">
         <h2 class="section-title d-inline-block">Galeri Alumni</h2>
-        <p class="text-muted mt-2">Kumpulan momen dan video kegiatan alumni {{ setting('school_name', 'SMKN 2 Ternate') }}.</p>
+        <p class="text-muted mt-2">Kumpulan momen dan video kegiatan alumni {{ config('app.name', 'SMKN 2 Ternate') }}.</p>
     </div>
 
     <!-- Tab Navigation -->

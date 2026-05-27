@@ -142,6 +142,7 @@
         font-weight: 900;
         background: linear-gradient(45deg, #f59e0b, #ef4444);
         -webkit-background-clip: text;
+    background-clip: text;
         -webkit-text-fill-color: transparent;
         animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -173,7 +174,7 @@
                     <h3 class="text-white fw-bold mb-1">{{ $user->name }}</h3>
                     <p class="text-blue-400 font-semibold mb-2"><i class="bi bi-briefcase-fill"></i> {{ $user->current_job ?? 'Alumni' }}</p>
                     <p class="text-gray-400 small mb-2"><i class="bi bi-geo-alt-fill"></i> {{ $user->city_name ?? 'Indonesia' }}</p>
-                    <p class="text-gray-300 small mb-0">{{ Str::limit($user->bio, 80) ?? 'Belum ada bio.' }}</p>
+                    <p class="text-gray-300 small mb-0">{{ \Illuminate\Support\Str::limit($user->bio, 80) ?? 'Belum ada bio.' }}</p>
                     
                     <div class="mt-3">
                         <span class="badge bg-secondary">{{ $user->major }}</span>
@@ -287,7 +288,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
                     target_id: targetId,
