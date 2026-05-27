@@ -445,6 +445,8 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // =====================================================
     Route::get('/polls', [\App\Http\Controllers\PollController::class, 'index'])->name('polls.index');
     Route::post('/polls', [\App\Http\Controllers\PollController::class, 'store'])->name('polls.store');
+    Route::get('/polls/{poll}/edit', [\App\Http\Controllers\PollController::class, 'edit'])->name('polls.edit');
+    Route::put('/polls/{poll}', [\App\Http\Controllers\PollController::class, 'update'])->name('polls.update');
     Route::post('/polls/{poll}/vote', [\App\Http\Controllers\PollController::class, 'vote'])->name('polls.vote');
     Route::delete('/polls/{poll}', [\App\Http\Controllers\PollController::class, 'destroy'])->name('polls.destroy');
 
