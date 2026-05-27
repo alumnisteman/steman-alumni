@@ -116,6 +116,44 @@
     border-radius: 20px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700;
 }
 
+/* Admin action buttons */
+.poll-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.btn-poll-edit {
+    background: #ede9fe;
+    color: #7c3aed;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn-poll-edit:hover { background: #7c3aed; color: #fff; }
+.btn-poll-delete {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn-poll-delete:hover { background: #dc2626; color: #fff; }
+
 /* Dark mode */
 .dark .poll-card { background: #1e293b; border-color: rgba(255,255,255,0.08); }
 .dark .poll-option-btn { background: #0f172a; border-color: rgba(255,255,255,0.1); color: #e2e8f0; }
@@ -129,11 +167,11 @@
         <div style="font-size: 4rem; margin-bottom: 0.5rem;">🗳️</div>
         <h1 class="display-6 fw-black mb-2">Voting & Polling Alumni</h1>
         <p class="opacity-75 mb-4">Suaramu penting! Vote, berdebat, dan putuskan bersama 💜</p>
-        @auth
+        @can('manage-polls')
         <button class="btn btn-light text-purple fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createPollModal" style="color: #7c3aed;">
             <i class="bi bi-plus-lg me-2"></i>Buat Polling Baru
         </button>
-        @endauth
+        @endcan
     </div>
 </section>
 
@@ -162,15 +200,15 @@
             @forelse ($activePolls as $poll)
             <div class="poll-card" id="poll-{{ $poll->id }}">
                 <div class="poll-header d-flex gap-3 align-items-start">
-                    <div class="poll-emoji">{{ $poll->emoji }}</div>
+                    <div class="poll-emoji">{{ $poll->emoji ?? '🗳️' }}</div>
                     <div class="flex-grow-1">
-                        <h6 class="fw-bold mb-1">{{ $poll->question }}</h6>
+                        <h6 class="fw-bold mb-1">{{ $poll->question ?? $poll->title }}</h6>
                         @if ($poll->description)
                         <p class="text-muted small mb-1">{{ $poll->description }}</p>
                         @endif
                         <div class="d-flex gap-3 text-muted" style="font-size: 0.75rem;">
                             <span><i class="bi bi-person me-1"></i>
-                                {{ $poll->is_anonymous ? 'Anonim' : $poll->creator->name }}
+                                {{ ($poll->is_anonymous ?? false) ? 'Anonim' : ($poll->creator?->name ?? 'Admin') }}
                             </span>
                             <span><i class="bi bi-bar-chart me-1"></i>{{ number_format($poll->total_votes) }} suara</span>
                             @if ($poll->ends_at)
@@ -178,7 +216,20 @@
                             @endif
                         </div>
                     </div>
-                    <span class="active-badge">● LIVE</span>
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <span class="active-badge">● LIVE</span>
+                        @can('manage-polls')
+                        <div class="poll-actions">
+                            <button class="btn-poll-edit"
+                                    onclick="openEditModal({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }}, {{ json_encode($poll->description) }}, {{ json_encode($poll->emoji ?? '🗳️') }}, {{ json_encode($poll->type ?? 'single') }}, {{ json_encode($poll->ends_at ? $poll->ends_at->format('Y-m-d\TH:i') : '') }}, {{ json_encode((bool)($poll->is_anonymous ?? false)) }}, {{ json_encode((bool)$poll->is_active) }}, {{ $poll->options->map(fn($o) => ['emoji' => $o->option_emoji ?? '', 'text' => $o->option_text])->toJson() }})">
+                                <i class="bi bi-pencil-fill"></i> Edit
+                            </button>
+                            <button class="btn-poll-delete" onclick="confirmDelete({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }})">
+                                <i class="bi bi-trash-fill"></i> Hapus
+                            </button>
+                        </div>
+                        @endcan
+                    </div>
                 </div>
                 <div class="poll-body">
                     @if ($poll->user_voted || !auth()->check())
@@ -201,10 +252,10 @@
                     <div class="text-muted small mt-2">{{ number_format($poll->total_votes) }} total suara</div>
                     @else
                     {{-- Voting View --}}
-                    <form class="poll-form" data-poll="{{ $poll->id }}" data-type="{{ $poll->type }}">
+                    <form class="poll-form" data-poll="{{ $poll->id }}" data-type="{{ $poll->type ?? 'single' }}">
                         @foreach ($poll->options as $opt)
                         <label class="poll-option-btn d-flex align-items-center gap-2" for="opt-{{ $opt->id }}">
-                            <input type="{{ $poll->type === 'multiple' ? 'checkbox' : 'radio' }}"
+                            <input type="{{ ($poll->type ?? 'single') === 'multiple' ? 'checkbox' : 'radio' }}"
                                    name="option_{{ $poll->id }}"
                                    id="opt-{{ $opt->id }}"
                                    value="{{ $opt->id }}"
@@ -218,7 +269,7 @@
                             <button type="submit" class="vote-btn">
                                 <i class="bi bi-send me-2"></i>Vote Sekarang
                             </button>
-                            @if ($poll->type === 'multiple')
+                            @if (($poll->type ?? 'single') === 'multiple')
                             <span class="text-muted small ms-3">Bisa pilih lebih dari satu</span>
                             @endif
                         </div>
@@ -230,11 +281,11 @@
             <div class="text-center py-5">
                 <div style="font-size: 3rem;">🗳️</div>
                 <h5 class="mt-3 text-muted">Belum ada polling aktif</h5>
-                @auth
+                @can('manage-polls')
                 <button class="btn btn-primary rounded-pill px-4 mt-2" data-bs-toggle="modal" data-bs-target="#createPollModal">
                     Buat polling pertama!
                 </button>
-                @endauth
+                @endcan
             </div>
             @endforelse
 
@@ -244,12 +295,25 @@
             @foreach ($closedPolls as $poll)
             <div class="poll-card opacity-75">
                 <div class="poll-header d-flex gap-3 align-items-start">
-                    <div style="font-size: 1.8rem;">{{ $poll->emoji }}</div>
+                    <div style="font-size: 1.8rem;">{{ $poll->emoji ?? '🗳️' }}</div>
                     <div class="flex-grow-1">
-                        <h6 class="fw-bold mb-1">{{ $poll->question }}</h6>
+                        <h6 class="fw-bold mb-1">{{ $poll->question ?? $poll->title }}</h6>
                         <span class="text-muted small">{{ number_format($poll->total_votes) }} suara</span>
                     </div>
-                    <span class="closed-badge">✕ SELESAI</span>
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <span class="closed-badge">✕ SELESAI</span>
+                        @can('manage-polls')
+                        <div class="poll-actions">
+                            <button class="btn-poll-edit"
+                                    onclick="openEditModal({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }}, {{ json_encode($poll->description) }}, {{ json_encode($poll->emoji ?? '🗳️') }}, {{ json_encode($poll->type ?? 'single') }}, {{ json_encode($poll->ends_at ? $poll->ends_at->format('Y-m-d\TH:i') : '') }}, {{ json_encode((bool)($poll->is_anonymous ?? false)) }}, {{ json_encode((bool)$poll->is_active) }}, {{ $poll->options->map(fn($o) => ['emoji' => $o->option_emoji ?? '', 'text' => $o->option_text])->toJson() }})">
+                                <i class="bi bi-pencil-fill"></i> Edit
+                            </button>
+                            <button class="btn-poll-delete" onclick="confirmDelete({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }})">
+                                <i class="bi bi-trash-fill"></i> Hapus
+                            </button>
+                        </div>
+                        @endcan
+                    </div>
                 </div>
                 <div class="poll-body">
                     @php $maxVotes = $poll->options->max('votes_count'); @endphp
@@ -271,7 +335,7 @@
 
         {{-- Sidebar --}}
         <div class="col-lg-4">
-            @auth
+            @can('manage-polls')
             <div class="create-poll-card mb-4">
                 <h6 class="fw-bold mb-2">💡 Ide polling seru?</h6>
                 <p class="small opacity-75 mb-3">Buat polling dan ajak seluruh alumni untuk vote!</p>
@@ -279,7 +343,7 @@
                     <i class="bi bi-plus-lg me-2"></i>Buat Polling
                 </button>
             </div>
-            @endauth
+            @endcan
 
             <div class="rounded-4 p-4 border">
                 <h6 class="fw-bold mb-3">💡 Contoh Ide Polling</h6>
@@ -296,7 +360,7 @@
 </div>
 
 {{-- Create Poll Modal --}}
-@auth
+@can('manage-polls')
 <div class="modal fade" id="createPollModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -371,7 +435,83 @@
         </div>
     </div>
 </div>
-@endauth
+
+{{-- Edit Poll Modal --}}
+<div class="modal fade" id="editPollModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">✏️ Edit Polling</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editPollForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">Emoji</label>
+                            <input type="text" name="emoji" id="editEmoji" class="form-control rounded-3 text-center fs-4" maxlength="2">
+                        </div>
+                        <div class="col-md-10">
+                            <label class="form-label fw-semibold">Pertanyaan <span class="text-danger">*</span></label>
+                            <input type="text" name="question" id="editQuestion" class="form-control rounded-3" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Deskripsi (opsional)</label>
+                            <input type="text" name="description" id="editDescription" class="form-control rounded-3" placeholder="Keterangan tambahan...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Tipe</label>
+                            <select name="type" id="editType" class="form-select rounded-3">
+                                <option value="single">Pilihan Tunggal</option>
+                                <option value="multiple">Pilihan Ganda</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Berakhir (opsional)</label>
+                            <input type="datetime-local" name="ends_at" id="editEndsAt" class="form-control rounded-3">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Status & Anonim</label>
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="editIsActive" value="1">
+                                <label class="form-check-label" for="editIsActive">Polling Aktif</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_anonymous" id="editIsAnonymous" value="1">
+                                <label class="form-check-label" for="editIsAnonymous">Anonim</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Pilihan Jawaban <span class="text-danger">*</span></label>
+                            <div id="editOptionsContainer"></div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill mt-1"
+                                    onclick="addEditOption()">
+                                <i class="bi bi-plus"></i> Tambah Opsi
+                            </button>
+                            <p class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i>Jumlah vote yang sudah masuk akan tetap tersimpan.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="vote-btn">
+                        <i class="bi bi-check-lg me-2"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Hidden Delete Form --}}
+<form id="deletePollForm" method="POST" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+@endcan
 
 @push('scripts')
 <script>
@@ -388,6 +528,81 @@ function addOption() {
     `);
 }
 
+let editOptCount = 0;
+function addEditOption(emoji = '', text = '') {
+    editOptCount++;
+    document.getElementById('editOptionsContainer').insertAdjacentHTML('beforeend', `
+        <div class="d-flex gap-2 mb-2 edit-option-row">
+            <input type="text" name="option_emojis[]" class="form-control rounded-3 text-center"
+                   style="width:60px;flex-shrink:0;" placeholder="✨" maxlength="2" value="${emoji}">
+            <input type="text" name="options[]" class="form-control rounded-3"
+                   placeholder="Opsi..." value="${text}" ${editOptCount <= 2 ? 'required' : ''}>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-3" style="flex-shrink:0;"
+                    onclick="this.closest('.edit-option-row').remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    `);
+}
+
+function openEditModal(id, question, description, emoji, type, endsAt, isAnonymous, isActive, options) {
+    const form = document.getElementById('editPollForm');
+    form.action = `/polls/${id}`;
+
+    document.getElementById('editEmoji').value = emoji || '🗳️';
+    document.getElementById('editQuestion').value = question || '';
+    document.getElementById('editDescription').value = description || '';
+    document.getElementById('editType').value = type || 'single';
+    document.getElementById('editEndsAt').value = endsAt || '';
+    document.getElementById('editIsActive').checked = isActive;
+    document.getElementById('editIsAnonymous').checked = isAnonymous;
+
+    const container = document.getElementById('editOptionsContainer');
+    container.innerHTML = '';
+    editOptCount = 0;
+
+    if (Array.isArray(options)) {
+        options.forEach(opt => {
+            addEditOption(opt.emoji || '', opt.text || '');
+        });
+    }
+    while (editOptCount < 2) {
+        addEditOption('', '');
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('editPollModal'));
+    modal.show();
+}
+
+function confirmDelete(id, question) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Hapus Polling?',
+            html: `Polling "<strong>${question}</strong>" akan dihapus permanen.`,
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="bi bi-trash-fill me-1"></i>Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then(result => {
+            if (result.isConfirmed) {
+                submitDelete(id);
+            }
+        });
+    } else {
+        if (confirm(`Hapus polling "${question}"?`)) {
+            submitDelete(id);
+        }
+    }
+}
+
+function submitDelete(id) {
+    const form = document.getElementById('deletePollForm');
+    form.action = `/polls/${id}`;
+    form.submit();
+}
+
 // Handle vote submission
 document.querySelectorAll('.poll-form').forEach(form => {
     form.addEventListener('submit', function(e) {
@@ -399,7 +614,11 @@ document.querySelectorAll('.poll-form').forEach(form => {
             : this.querySelectorAll('input[type=checkbox]:checked');
 
         if (!inputs.length) {
-            Swal.fire({ icon: 'warning', title: 'Pilih dulu!', text: 'Pilih minimal 1 jawaban.', confirmButtonColor: '#7c3aed' });
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'Pilih dulu!', text: 'Pilih minimal 1 jawaban.', confirmButtonColor: '#7c3aed' });
+            } else {
+                alert('Pilih minimal 1 jawaban!');
+            }
             return;
         }
 
@@ -420,7 +639,6 @@ document.querySelectorAll('.poll-form').forEach(form => {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                // Replace with results
                 const card = document.getElementById(`poll-${pollId}`);
                 const body = card.querySelector('.poll-body');
                 const maxVotes = Math.max(...data.results.map(r => r.votes));
@@ -436,16 +654,21 @@ document.querySelectorAll('.poll-form').forEach(form => {
                     </div>
                 `).join('') + `<div class="text-muted small mt-2">${data.total_votes.toLocaleString('id-ID')} total suara</div>`;
 
-                // Animate bars
                 setTimeout(() => {
                     body.querySelectorAll('.result-bar-fill').forEach(el => {
                         el.style.width = el.dataset.width;
                     });
                 }, 100);
 
-                Swal.fire({ icon: 'success', title: 'Vote tersimpan! 🎉', timer: 1500, showConfirmButton: false });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'success', title: 'Vote tersimpan! 🎉', timer: 1500, showConfirmButton: false });
+                }
             } else {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: data.error });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.error });
+                } else {
+                    alert(data.error);
+                }
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-send me-2"></i>Vote Sekarang';
             }
