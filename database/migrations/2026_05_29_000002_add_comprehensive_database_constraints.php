@@ -21,7 +21,7 @@ return new class extends Migration
             if (!Schema::hasIndex('feeds', 'idx_feeds_created_at')) {
                 $table->index('created_at', 'idx_feeds_created_at');
             }
-            if (!Schema::hasIndex('feeds', 'idx_feeds_is_active')) {
+            if (Schema::hasColumn('feeds', 'is_active') && !Schema::hasIndex('feeds', 'idx_feeds_is_active')) {
                 $table->index('is_active', 'idx_feeds_is_active');
             }
         });
@@ -65,7 +65,7 @@ return new class extends Migration
             if (!Schema::hasIndex('businesses', 'idx_businesses_user_id')) {
                 $table->index('user_id', 'idx_businesses_user_id');
             }
-            if (!Schema::hasIndex('businesses', 'idx_businesses_category')) {
+            if (Schema::hasColumn('businesses', 'category') && !Schema::hasIndex('businesses', 'idx_businesses_category')) {
                 $table->index('category', 'idx_businesses_category');
             }
         });
@@ -78,7 +78,7 @@ return new class extends Migration
             if (!Schema::hasIndex('job_vacancies', 'idx_jobs_created_at')) {
                 $table->index('created_at', 'idx_jobs_created_at');
             }
-            if (!Schema::hasIndex('job_vacancies', 'idx_jobs_status')) {
+            if (Schema::hasColumn('job_vacancies', 'status') && !Schema::hasIndex('job_vacancies', 'idx_jobs_status')) {
                 $table->index('status', 'idx_jobs_status');
             }
         });
@@ -155,7 +155,9 @@ return new class extends Migration
 
         Schema::table('businesses', function (Blueprint $table) {
             $table->dropIndex(['idx_businesses_user_id']);
-            $table->dropIndex(['idx_businesses_category']);
+            if (Schema::hasIndex('businesses', 'idx_businesses_category')) {
+                $table->dropIndex(['idx_businesses_category']);
+            }
         });
 
         Schema::table('job_vacancies', function (Blueprint $table) {
