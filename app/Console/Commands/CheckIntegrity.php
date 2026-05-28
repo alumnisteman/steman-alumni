@@ -130,7 +130,7 @@ class CheckIntegrity extends Command
             return false;
         } catch (Exception $e) {
             $this->warn("⚠ Public URL: Could not reach {$url} internally — " . $e->getMessage());
-            return null;
+            return false;
         }
     }
 
