@@ -13,14 +13,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install PHP Dependencies
-        run: |
-          docker run --rm -v "$(pwd):/app" composer:latest install --ignore-platform-reqs --no-dev --optimize-autoloader
-
-      - name: Build Frontend Assets
-        run: |
-          docker run --rm -v "$(pwd):/app" -w /app node:20-alpine sh -c "npm install && npm run build"
-
       - name: Deploy with Docker Compose (Rolling Update)
         run: |
           set -e
@@ -41,6 +33,14 @@ jobs:
 
       - name: Production Initialization & Migrations (v4.2 Stable)
         run: |
+          echo "Installing PHP Dependencies..."
+          docker compose -f docker-compose.prod.yml exec -T app wget https://getcomposer.org/installer -O composer-setup.php
+          docker compose -f docker-compose.prod.yml exec -T app php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+          docker compose -f docker-compose.prod.yml exec -T app composer install --no-dev --optimize-autoloader
+
+          echo "Building Frontend Assets..."
+          docker run --rm -v "$(pwd):/app" -w /app node:20-alpine sh -c "npm install && npm run build"
+
           docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
           docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
