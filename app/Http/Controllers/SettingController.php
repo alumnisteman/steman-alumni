@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use App\Jobs\LogActivity;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {

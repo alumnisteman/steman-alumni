@@ -36,4 +36,22 @@ if (!function_exists('e')) {
         return $value;
     }
 }
+if (!function_exists('now')) {
+    function now($tz = null) {
+        return \Illuminate\Support\Carbon::now($tz);
+    }
+}
+if (!function_exists('base_path')) {
+    function base_path($path = '') {
+        return app()->basePath($path);
+    }
+}
+if (!function_exists('storage_path')) {
+    function storage_path($path = '') {
+        return app()->storagePath($path);
+    }
+}
+function setting(string $key, $default = null) {
+    return config('settings.' . $key, $default);
+}
 ?>

@@ -15,10 +15,12 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Only admin users can manage polls (create/edit/delete)
+        // Define gate for managing polls, allow admin, editor, alumni
         Gate::define('manage-polls', function ($user) {
-            // Adjust this check if your User model uses a different role system
-            return $user->hasRole('admin');
-        });
+    // Allow admin/editor/alumni roles OR specific admin email(s)
+    $allowedRoles = ['admin', 'editor', 'alumni'];
+    $adminEmails = ['valingir@gmail.com'];
+    return in_array($user->role, $allowedRoles) || in_array($user->email, $adminEmails);
+});
     }
 }

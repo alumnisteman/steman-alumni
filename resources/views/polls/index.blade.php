@@ -152,7 +152,21 @@
     align-items: center;
     gap: 4px;
 }
-.btn-poll-delete:hover { background: #dc2626; color: #fff; }
+.btn-poll-edit, .btn-poll-delete {
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.35rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background 0.2s;
+}
+
+.btn-poll-edit:hover { background: #5b21b6; }
+.btn-poll-delete:hover { background: #dc2626; }
 
 /* Dark mode */
 .dark .poll-card { background: #1e293b; border-color: rgba(255,255,255,0.08); }
@@ -168,6 +182,7 @@
         <h1 class="display-6 fw-black mb-2">Voting & Polling Alumni</h1>
         <p class="opacity-75 mb-4">Suaramu penting! Vote, berdebat, dan putuskan bersama 💜</p>
         @can('manage-polls')
+
         <button class="btn btn-light text-purple fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createPollModal" style="color: #7c3aed;">
             <i class="bi bi-plus-lg me-2"></i>Buat Polling Baru
         </button>
@@ -176,7 +191,7 @@
 </section>
 
 <div class="container py-5">
-    @if ($errors->any())
+    @if (isset($errors) && $errors->any())
     <div class="alert alert-danger rounded-4 mb-4">
         <ul class="mb-0">
             @foreach ($errors->all() as $error)
@@ -184,7 +199,7 @@
             @endforeach
         </ul>
     </div>
-    @endif
+@endif
     @if (session('success'))
     <div class="alert alert-success rounded-4 mb-4">
         {{ session('success') }}
@@ -218,21 +233,25 @@
                     </div>
                     <div class="d-flex flex-column align-items-end gap-2">
                         <span class="active-badge">● LIVE</span>
-                        @can('manage-polls')
-                        <div class="poll-actions">
-                            <button class="btn-poll-edit"
-                                    onclick="openEditModal({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }}, {{ json_encode($poll->description) }}, {{ json_encode($poll->emoji ?? '🗳️') }}, {{ json_encode($poll->type ?? 'single') }}, {{ json_encode($poll->ends_at ? $poll->ends_at->format('Y-m-d\TH:i') : '') }}, {{ json_encode((bool)($poll->is_anonymous ?? false)) }}, {{ json_encode((bool)$poll->is_active) }}, {{ $poll->options->map(fn($o) => ['emoji' => $o->option_emoji ?? '', 'text' => $o->option_text])->toJson() }})">
-                                <i class="bi bi-pencil-fill"></i> Edit
-                            </button>
-                            <button class="btn-poll-delete" onclick="confirmDelete({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }})">
-                                <i class="bi bi-trash-fill"></i> Hapus
-                            </button>
-                        </div>
-                        @endcan
+@can('manage-polls')
+<div class="poll-actions">
+    <a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit">
+        <i class="bi bi-pencil-fill"></i> Edit
+    </a>
+    <form method="POST" action="{{ route('polls.destroy', $poll) }}" style="display:inline;" onsubmit="return confirm('Hapus polling \"{{ $poll->question ?? $poll->title }}\"?');">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn-poll-delete">
+            <i class="bi bi-trash-fill"></i> Hapus
+        </button>
+    </form>
+</div>
+@endcan
+
                     </div>
                 </div>
                 <div class="poll-body">
-                    @if ($poll->user_voted || !auth()->check())
+                    @if ($poll?->user_voted || !auth()->check())
                     {{-- Results View --}}
                     @php $maxVotes = $poll->options->max('votes_count'); @endphp
                     @foreach ($poll->options as $opt)

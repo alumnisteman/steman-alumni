@@ -13,6 +13,15 @@
     <div class="row mb-4 justify-content-center text-center">
         <div class="col-md-8">
             <form action="{{ route('jobs.index') }}" method="GET" class="mb-4">
+                @php
+                    $tabInput = request('tab');
+                    if (is_array($tabInput)) {
+                        // Handles query like tab[$eq]=all
+                        $tab = $tabInput['$eq'] ?? 'all';
+                    } else {
+                        $tab = $tabInput ?? 'all';
+                    }
+                @endphp
                 <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
                     <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" class="form-control border-0 py-3" placeholder="Nama perusahaan, posisi, atau lokasi..." value="{{ request('search') }}">
@@ -22,10 +31,10 @@
             </form>
 
             <div class="d-inline-flex bg-white p-1 rounded-pill shadow-sm mb-4 border border-light">
-                <a href="{{ request()->fullUrlWithQuery(['tab' => 'all']) }}" class="btn {{ request('tab', 'all') === 'all' ? 'btn-primary' : 'btn-light border-0' }} rounded-pill px-4 py-2 fw-bold transition-all">
+                <a href="{{ request()->fullUrlWithQuery(['tab' => 'all']) }}" class="btn {{ $tab === 'all' ? 'btn-primary' : 'btn-light border-0' }} rounded-pill px-4 py-2 fw-bold transition-all">
                     SEMUA LOWONGAN
                 </a>
-                <a href="{{ request()->fullUrlWithQuery(['tab' => 'recommended']) }}" class="btn {{ request('tab') === 'recommended' ? 'btn-primary' : 'btn-light border-0' }} rounded-pill px-4 py-2 fw-bold transition-all position-relative">
+                <a href="{{ request()->fullUrlWithQuery(['tab' => 'recommended']) }}" class="btn {{ $tab === 'recommended' ? 'btn-primary' : 'btn-light border-0' }} rounded-pill px-4 py-2 fw-bold transition-all position-relative">
                     REKOMENDASI major
                     @if($matchCount > 0)
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white">
@@ -35,7 +44,7 @@
                 </a>
             </div>
             
-            @if(request('tab') === 'recommended')
+            @if($tab === 'recommended')
                 <div class="alert alert-info border-0 rounded-4 shadow-sm py-3 px-4 text-start">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-robot fs-2 text-primary me-3"></i>
