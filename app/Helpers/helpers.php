@@ -40,7 +40,7 @@ if (!function_exists('getAds')) {
      * @param string|null $slot Identifier for the ad placement.
      * @return \Illuminate\Support\Collection
      */
-    function getAds(string $slot = null): \Illuminate\Support\Collection
+    function getAds(?string $slot): \Illuminate\Support\Collection
     {
         try {
             // TODO: Implement real ad retrieval logic.
