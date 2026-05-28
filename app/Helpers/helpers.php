@@ -18,32 +18,6 @@ if (!function_exists('session')) {
         return $default;
     }
 }
-if (!function_exists('old')) {
-    function old(string $key, $default = null) {
-        return $default;
-    }
-}
-if (!function_exists('auth')) {
-    function auth() {
-        return new class {
-            public function user(){ return null; }
-        };
-    }
-}
-if (!function_exists('asset')) {
-    function asset(string $path, $secure = null) {
-        return $path;
-    }
-}
-/**
- * Escape a value for HTML output.
- *
- * @param mixed $value The value to escape.
- * @return mixed The original value.
- */
-function e($value) {
-    return $value;
-}
 if (!function_exists('now')) {
     function now($tz = null): Carbon {
         return Carbon::now($tz);
@@ -61,22 +35,23 @@ if (!function_exists('storage_path')) {
 }
 if (!function_exists('getAds')) {
     /**
-     * Retrieve advertisement HTML for a given slot.
-     * Currently returns an empty string as placeholder.
+     * Retrieve advertisement collection for a given slot.
      *
      * @param string|null $slot Identifier for the ad placement.
-     * @return string
+     * @return \Illuminate\Support\Collection
      */
-    function getAds(string $slot = null): string
-{
-    // Placeholder HTML for ad slot. Replace with real ad logic later.
-    if ($slot) {
-        return "<div class=\"ad-slot\">Ad for slot: {$slot}</div>";
+    function getAds(string $slot = null): \Illuminate\Support\Collection
+    {
+        try {
+            // TODO: Implement real ad retrieval logic.
+            // For now return an empty collection to avoid errors.
+            return collect();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('getAds() error: ' . $e->getMessage());
+            return collect();
+        }
     }
-    return "<div class=\"ad-slot\">Default Advertisement</div>";
-}
-}
-function setting(string $key, $default = null) {
+}function setting(string $key, $default = null) {
     return Config::get('settings.' . $key, $default);
 }
 ?>

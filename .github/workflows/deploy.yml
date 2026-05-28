@@ -3,6 +3,7 @@ name: Steman Alumni CI/CD [v4.2 Stable]
 on:
   push:
     branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,6 +14,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Install PHP Dependencies
+        run: |
+          echo "Installing PHP Dependencies via Docker..."
           docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
           # Verify install
           test -f vendor/autoload.php || (echo "Composer install failed" && exit 1)
@@ -73,3 +77,41 @@ jobs:
           docker compose -f docker-compose.prod.yml down
           docker compose -f docker-compose.prod.yml up -d --build
 
+  manual_rollback:
+    name: Manual Rollback (triggered via workflow_dispatch)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout previous commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}~1
+      - name: Deploy previous version
+        run: |
+          echo "Manual rollback to previous commit ${GITHUB_SHA}~1"
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml up -d --build
+  install_and_deploy:
+    name: Install Deps & Deploy (manual trigger)
+    runs-on: ubuntu-latest
+    if: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install PHP dependencies via Docker
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
+          # verify
+          test -f vendor/autoload.php || (echo "Composer failed" && exit 1)
+      - name: Build Frontend Assets via Docker
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/app" -w /app node:20-alpine sh -c "npm install && npm run build"
+      - name: Deploy containers
+        run: |
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml up -d --build
+      - name: Clear Laravel cache
+        run: |
+          docker compose -f docker-compose.prod.yml exec -T app php artisan cache:clear
+          docker compose -f docker-compose.prod.yml exec -T app php artisan config:clear
+          docker compose -f docker-compose.prod.yml exec -T app php artisan view:clear
+          docker compose -f docker-compose.prod.yml exec -T app php artisan route:clear

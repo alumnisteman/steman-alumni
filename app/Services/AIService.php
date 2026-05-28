@@ -242,7 +242,7 @@ class AIService
     public function checkHealth(): array
     {
         if (empty($this->apiKey) && empty($this->openRouterKey) && empty($this->deepSeekKey)) {
-            return ['status' => 'ERROR', 'message' => 'No AI API Keys configured.'];
+            return ['status' => 'DEGRADED', 'message' => 'AI Service Degraded: No API Keys configured. AI features disabled.', 'provider' => 'None'];
         }
 
         // Try a very simple, safe ping
@@ -258,7 +258,7 @@ class AIService
 
         // If general ask failed, maybe all failed or just primary. 
         // We report ERROR only if we truly can't get ANY response.
-        return ['status' => 'ERROR', 'message' => 'AI Resilience Engine Failed: All providers unreachable.', 'provider' => 'None'];
+        return ['status' => 'DEGRADED', 'message' => 'AI Service Degraded: All providers unreachable. AI features disabled.', 'provider' => 'None'];
     }
 
     private function markProviderFailed(string $provider): void

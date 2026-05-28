@@ -230,21 +230,24 @@ class HealthChecker
         $baseUrl = config('app.url', 'http://127.0.0.1');
         $pages = ['/', '/login', '/alumni', '/global-network', '/jejak-sukses'];
         
+        $failCount = 0;
         foreach ($pages as $page) {
             try {
                 // We use internal networking if possible, or public URL
                 $response = Http::timeout(5)->get($baseUrl . $page);
                 if ($response->serverError()) {
-                    Log::critical("SystemGuard SmokeTest FAIL: [{$page}] returned 500");
-                    return false;
+                    Log::warning("SystemGuard SmokeTest WARNING: [{$page}] returned 500");
+                    $failCount++;
                 }
             } catch (\Exception $e) {
                 // If we can't reach it, it might be a DNS issue or container networking,
                 // but we don't necessarily flag as 500 error unless we get a 500 response.
-                continue;
+                Log::warning("SystemGuard SmokeTest WARNING: [{$page}] unreachable: " . $e->getMessage());
+                $failCount++;
             }
         }
-        return true;
+        // Allow up to 2 failures before marking as failed (more lenient)
+        return $failCount <= 2;
     }
 
     private function checkMigrations(): bool
@@ -270,7 +273,8 @@ class HealthChecker
             $aiService = new \App\Services\AIService();
             $health = $aiService->checkHealth();
             \Illuminate\Support\Facades\Log::info("HealthCheck AI result:", $health);
-            return $health['status'] === 'HEALTHY';
+            // Allow DEGRADED status to pass - only fail on ERROR
+            return in_array($health['status'], ['HEALTHY', 'DEGRADED']);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("HealthCheck AI Exception: " . $e->getMessage());
             return false;

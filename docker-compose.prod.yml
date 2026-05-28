@@ -39,7 +39,7 @@ services:
       - ./routes:/var/www/routes
       - ./config:/var/www/config
       - ./database:/var/www/database
-      - ./vendor:/var/www/vendor
+      # - ./vendor:/var/www/vendor  # disabled to allow composer to manage vendor inside container
     networks:
       - steman-network
     logging:
@@ -72,7 +72,7 @@ services:
       - ./routes:/var/www/routes
       - ./config:/var/www/config
       - ./database:/var/www/database
-      - ./vendor:/var/www/vendor
+#      - ./vendor:/var/www/vendor   # disabled to allow composer to manage vendor inside container
     networks:
       - steman-network
     logging:
@@ -130,7 +130,7 @@ services:
     volumes:
       - ./bootstrap:/var/www/bootstrap
       - ./artisan:/var/www/artisan
-      - ./vendor:/var/www/vendor
+#      - ./vendor:/var/www/vendor   # disabled to allow composer to manage vendor inside container
       - app_public:/var/www/public
 
   webserver:

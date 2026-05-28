@@ -55,8 +55,17 @@ return new class extends Migration
         // =====================================================
         // 2. VOTING & POLLING
         // =====================================================
-        if (!Schema::hasTable('polls')) {
-            Schema::create('polls', function (Blueprint $table) {
+        // Ensure polls table is fresh
+        Schema::dropIfExists('polls');
+        Schema::create('polls', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->json('options');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+        });
                 $table->id();
                 $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
                 $table->string('question');
