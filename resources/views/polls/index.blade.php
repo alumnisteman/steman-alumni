@@ -236,7 +236,7 @@
                         <span class="active-badge">● LIVE</span>
 @php $gateResult = auth()->check() && auth()->user()->can('manage-polls'); @endphp
 <div style="color:lime;">Gate check: {{ $gateResult ? 'YES' : 'NO' }}</div>
-@if(true)
+@can('manage-polls')
 <div class="poll-actions">
 <a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit" style="display:inline-block;">
     <i class="bi bi-pencil-fill"></i> Edit
