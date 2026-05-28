@@ -204,10 +204,12 @@ class User extends Authenticatable
     }
     public function hasRole($roles): bool
     {
+        // Compare roles case‑insensitively to avoid mismatches like 'Admin' vs 'admin'
         if (is_array($roles)) {
-            return in_array($this->role, $roles);
+            $lowerRoles = array_map('strtolower', $roles);
+            return in_array(strtolower($this->role), $lowerRoles);
         }
-        return $this->role === $roles;
+        return strtolower($this->role) === strtolower($roles);
     }
 
     public function canAccessAdminPanel(): bool

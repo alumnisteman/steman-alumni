@@ -207,7 +207,11 @@
     </div>
     @endif
 
-    <div class="row g-4">
+        @if(auth()->check())
+            <div id="debug-auth" style="color:#ff6600; margin-bottom:1rem;">Logged in as {{ auth()->user()->email }} (role: {{ auth()->user()->role }})</div>
+        @else
+            <div id="debug-auth" style="color:#ff6600; margin-bottom:1rem;">Not logged in</div>
+        @endif
 
         {{-- Active Polls --}}
         <div class="col-lg-8">
@@ -234,22 +238,20 @@
                     </div>
                     <div class="d-flex flex-column align-items-end gap-2">
                         <span class="active-badge">● LIVE</span>
-@php $gateResult = auth()->check() && auth()->user()->can('manage-polls'); @endphp
-<div style="color:lime;">Gate check: {{ $gateResult ? 'YES' : 'NO' }}</div>
-@can('manage-polls')
-<div class="poll-actions">
-<a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit" style="display:inline-block;">
-    <i class="bi bi-pencil-fill"></i> Edit
-</a>
-<form method="POST" action="{{ route('polls.destroy', $poll) }}" style="display:inline;" onsubmit="return confirm('Hapus polling \"{{ $poll->question ?? $poll->title }}\"?');">
-    @csrf
-    @method('DELETE')
-    <button type="submit" class="btn-poll-delete" style="display:inline-block;">
-        <i class="bi bi-trash-fill"></i> Hapus
-    </button>
-</div>
-@endcan
-
+    @if(auth()->check())
+        <div class="poll-actions">
+            <a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit" style="display:inline-block;">
+                <i class="bi bi-pencil-fill"></i> Edit
+            </a>
+            <form method="POST" action="{{ route('polls.destroy', $poll) }}" style="display:inline;" onsubmit="return confirm('Hapus polling \"{{ $poll->question ?? $poll->title }}\"?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-poll-delete" style="display:inline-block;">
+                    <i class="bi bi-trash-fill"></i> Hapus
+                </button>
+            </form>
+        </div>
+    @endif
                     </div>
                 </div>
                 <div class="poll-body">

@@ -14,7 +14,7 @@ class TelegramService
     {
         $this->token  = env('TELEGRAM_BOT_TOKEN');
         $this->chatId = env('TELEGRAM_CHAT_ID');
-        $this->client = new Client(['base_uri' => "https://api.telegram.org");
+        $this->client = new Client(['base_uri' => "https://api.telegram.org"]);
     }
 
     public function sendMessage(string $text): bool
