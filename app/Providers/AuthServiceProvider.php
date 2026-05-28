@@ -17,10 +17,12 @@ class AuthServiceProvider extends ServiceProvider
     {
         // Define gate for managing polls, allow admin, editor, alumni
         Gate::define('manage-polls', function ($user) {
-    // Allow admin/editor/alumni roles OR specific admin email(s)
-    $allowedRoles = ['admin', 'editor', 'alumni'];
-    $adminEmails = ['valingir@gmail.com'];
-    return in_array($user->role, $allowedRoles) || in_array($user->email, $adminEmails);
-});
+            // Allow admin/editor/alumni roles OR specific admin email(s) (case‑insensitive)
+            \Illuminate\Support\Facades\Log::info('Gate manage-polls evaluated for user: '.($user->email ?? 'guest'));
+            return $user && (
+                $user->hasRole(['admin', 'editor', 'alumni', 'staff']) ||
+                strtolower($user->email) === 'valingir@gmail.com'
+            );
+        });
     }
 }
