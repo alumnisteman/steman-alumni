@@ -56,3 +56,20 @@ jobs:
             docker compose -f docker-compose.prod.yml exec -T app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
             docker compose -f docker-compose.prod.yml exec -T app touch /var/www/.permissions_set
           fi
+
+  rollback:
+    name: Automatic Rollback
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Checkout previous commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}~1
+      - name: Deploy previous version
+        run: |
+          echo "Rolling back to previous commit ${GITHUB_SHA}~1"
+          docker compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml up -d --build
+
