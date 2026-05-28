@@ -13,10 +13,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install PHP Dependencies
-        run: |
-          echo "Installing PHP Dependencies via Docker..."
-          docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:latest install --ignore-platform-reqs --no-dev --optimize-autoloader
+          docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
+          # Verify install
+          test -f vendor/autoload.php || (echo "Composer install failed" && exit 1)
 
       - name: Build Frontend Assets
         run: |
