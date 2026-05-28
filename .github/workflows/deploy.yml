@@ -15,12 +15,11 @@ jobs:
 
       - name: Install PHP Dependencies
         run: |
-          composer install --no-dev --optimize-autoloader
+          docker run --rm -v ${{ github.workspace }}:/app composer:latest install --ignore-platform-reqs --no-dev --optimize-autoloader
 
       - name: Build Frontend Assets
         run: |
-          npm install
-          npm run build
+          docker run --rm -v ${{ github.workspace }}:/app -w /app node:20-alpine sh -c "npm install && npm run build"
 
       - name: Deploy with Docker Compose (Rolling Update)
         run: |
