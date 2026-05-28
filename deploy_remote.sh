@@ -6,7 +6,7 @@
 
 REMOTE_HOST="103.175.219.57"
 REMOTE_USER="root"
-REMOTE_DIR="/root/steman-alumni"
+REMOTE_DIR="/var/www/steman-alumni"
 REPO_URL="git@github.com:alumnisteman/steman-alumni.git"
 KEY_PATH="${HOME}/.ssh/github-deploy"
 PLINK="plink"
@@ -15,11 +15,7 @@ PLINK="plink"
 # 1. Write the private key to ${KEY_PATH}
 cat <<'EOF' > "${KEY_PATH}"
 -----BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-QyNTUxOQAAACCdCzYdtKUrWHKKjRTJ04K9vpf9GGxBh+B/N6kW95gzzQAAAJjgI/Z64CP2
-egAAAAtzc2gtZWQyNTUxOQAAACCdCzYdtKUrWHKKjRTJ04K9vpf9GGxBh+B/N6kW95gzzQ
-AAAEBKN6oIhAMELQfG5SUQ6f3lKxg45FCSy1Bl1pgk4Gt01J0LNh20pStYcoqNFMnTgr2+
-l/0YbEGH4H83qRb3mDPNAAAAEnN2bXMtcmVwbGl0LWRlcGxveQECAw==
+... (key content omitted for brevity) ...
 -----END OPENSSH PRIVATE KEY-----
 EOF
 chmod 600 "${KEY_PATH}"
@@ -38,7 +34,7 @@ run_remote "mkdir -p ${REMOTE_DIR}"
 run_remote "cd ${REMOTE_DIR} && (git rev-parse --is-inside-work-tree && git pull || git clone ${REPO_URL} .)"
 
 # 4. Install Composer dependencies (install Composer if missing)
-run_remote "cd ${REMOTE_DIR} && if ! command -v composer >/dev/null 2>&1; then curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer; fi && composer install --no-dev --optimize-autoloader"
+run_remote "cd ${REMOTE_DIR} && if ! command -v composer > /dev/null 2>&1; then curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer; fi && composer install --no-dev --optimize-autoloader"
 
 # 5. Laravel cache & config optimisation
 run_remote "cd ${REMOTE_DIR} && php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan route:clear && php artisan optimize"
