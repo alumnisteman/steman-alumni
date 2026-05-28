@@ -40,7 +40,7 @@ until nc -z redis 6379 || [ $REDIS_TRIES -eq 10 ]; do
 done
 
 echo "Running Database Migrations..."
-php artisan migrate --force
+# php artisan migrate --force  # Temporarily disabled to fix database user issue
 
 # --- 4. Performance Tuning (Production) ---
 if [ "$APP_ENV" = "production" ]; then
