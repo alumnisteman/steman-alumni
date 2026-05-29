@@ -36,8 +36,8 @@ class Poll extends Model
 
     public function getTotalVotesAttribute(): int
     {
-        $options = $this->options ?? [];
-        return array_sum(array_column($options, 'votes_count'));
+        $options = $this->options ?? collect([]);
+        return $options->sum('votes_count');
     }
 
     public function getUserVotedAttribute(): bool
