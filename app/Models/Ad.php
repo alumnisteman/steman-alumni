@@ -105,7 +105,18 @@ class Ad extends Model
     private function resolveImageUrl($value)
     {
         if (!$value) return null;
+        
+        // If it's already a full URL, extract the path and regenerate with current domain
         if (filter_var($value, FILTER_VALIDATE_URL)) {
+            $parsed = parse_url($value);
+            if (isset($parsed['path'])) {
+                $path = ltrim($parsed['path'], '/');
+                // Remove 'storage/' prefix if present to avoid duplication
+                if (str_starts_with($path, 'storage/')) {
+                    $path = substr($path, 8);
+                }
+                return asset('storage/' . ltrim($path, '/'));
+            }
             return $value;
         }
         
