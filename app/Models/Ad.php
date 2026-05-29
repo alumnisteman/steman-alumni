@@ -115,7 +115,9 @@ class Ad extends Model
                 if (str_starts_with($path, 'storage/')) {
                     $path = substr($path, 8);
                 }
-                return asset('storage/' . ltrim($path, '/'));
+                // Use current request's scheme and host instead of APP_URL
+                $request = request();
+                return $request->getSchemeAndHttpHost() . '/storage/' . ltrim($path, '/');
             }
             return $value;
         }
@@ -125,6 +127,8 @@ class Ad extends Model
             $path = substr($path, 8);
         }
         
-        return asset('storage/' . ltrim($path, '/'));
+        // Use current request's scheme and host instead of APP_URL
+        $request = request();
+        return $request->getSchemeAndHttpHost() . '/storage/' . ltrim($path, '/');
     }
 }
