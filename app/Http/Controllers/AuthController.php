@@ -187,7 +187,7 @@ class AuthController extends Controller
                 $request->header('User-Agent')
             );
 
-            // GROWTH HACK: Auto-follow batch mates
+            // Auto-follow batch mates for community engagement
             \App\Jobs\AutoFollowBatchMates::dispatch($user->id);
 
             Auth::login($user);

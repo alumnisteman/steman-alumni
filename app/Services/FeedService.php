@@ -15,7 +15,17 @@ use App\Jobs\GenerateFeedJob;
 class FeedService
 {
     /**
-     * Create a new post and trigger distribution
+     * Create a new post and trigger distribution to followers' feeds.
+     * 
+     * This method:
+     * 1. Creates the post in the database
+     * 2. Invalidates the author's feed cache in Redis
+     * 3. Triggers background job to regenerate author's feed
+     * 4. Invalidates all followers' feed caches
+     * 5. Triggers background jobs to regenerate followers' feeds
+     * 
+     * This approach uses precomputed Redis feeds for better performance
+     * instead of querying the database on every feed load.
      */
     public function createPost(User $user, array $data)
     {

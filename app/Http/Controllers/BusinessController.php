@@ -12,7 +12,9 @@ class BusinessController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Business::where('status', 'approved')->with(['owner', 'photos']);
+        $query = Business::where('status', 'approved')->with(['owner', 'photos', 'owner' => function($query) {
+            $query->select('id', 'name', 'profile_picture', 'major', 'graduation_year');
+        }]);
 
         if ($request->has('category') && $request->category != 'all' && $request->category != '') {
             $query->where('category', $request->category);

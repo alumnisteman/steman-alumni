@@ -10,7 +10,7 @@ class SystemController extends Controller
 {
     /**
      * Display the last few entries of the system logs.
-     * This provides a "no-ssh" way for admins to debug issues.
+     * This provides a way for admins to debug issues without SSH access.
      */
     public function logs(Request $request)
     {

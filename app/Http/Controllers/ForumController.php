@@ -12,13 +12,15 @@ class ForumController extends Controller
 {
     public function index()
     {
-        $forums = Forum::where('status', 'active')->with('user')->latest()->paginate(15);
+        $forums = Forum::where('status', 'active')->with(['user', 'comments.user'])->latest()->paginate(15);
         return view('forums.index', compact('forums'));
     }
 
     public function show($id)
     {
-        $forum = Forum::where('status', 'active')->with(['user', 'comments.user'])->findOrFail($id);
+        $forum = Forum::where('status', 'active')->with(['user', 'comments.user', 'comments' => function($query) {
+            $query->latest();
+        }])->findOrFail($id);
         return view('forums.show', compact('forum'));
     }
 

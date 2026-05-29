@@ -33,9 +33,13 @@ class GalleryController extends Controller
     {
                 $type = $request->input('type', 'photo');
         if ($type === 'video') {
-            $media = Gallery::whereIn('type', ['video', 'tiktok'])->where('status', 'published')->latest()->paginate(12);
+            $media = Gallery::whereIn('type', ['video', 'tiktok'])->where('status', 'published')->with(['user' => function($query) {
+                $query->select('id', 'name', 'profile_picture');
+            }])->latest()->paginate(12);
         } else {
-            $media = Gallery::where('type', $type)->where('status', 'published')->latest()->paginate(12);
+            $media = Gallery::where('type', $type)->where('status', 'published')->with(['user' => function($query) {
+                $query->select('id', 'name', 'profile_picture');
+            }])->latest()->paginate(12);
         }
         return view('gallery.index', compact('media', 'type'));
     }

@@ -66,7 +66,6 @@ class AIService
         foreach ($providers as $provider) {
             // Skip provider if it failed recently (cooldown)
             if (\Illuminate\Support\Facades\Cache::has("ai_provider_fail_{$provider}")) {
-                Log::debug("AIService: Skipping provider [{$provider}] due to recent failure.");
                 continue;
             }
 
@@ -175,13 +174,12 @@ class AIService
 
                 // If 404, maybe this model is not in this API version, try next version
                 if ($status === 404 && $apiVersion === 'v1beta' && count($apiVersions) > 1) {
-                    Log::debug("AIService: Model [$model] not found in v1beta, trying v1...");
                     continue; 
                 }
 
                 // Differentiate between quota (429) and real errors
                 if ($status === 429) {
-                    Log::debug("AIService: Gemini quota exceeded for [$model]. Will fallback to next model.");
+                    // Quota exceeded, try next provider
                 } else {
                     Log::warning("AIService: Gemini API Error ($status) for [$model] in [$apiVersion]", [
                         'url' => "{$this->baseUrl}/{$apiVersion}/models/{$model}",
