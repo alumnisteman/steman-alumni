@@ -12,13 +12,11 @@ class PollController extends Controller
     {
         $activePolls = Poll::where('status', 'active')
             ->orderByDesc('created_at')
-            ->get()
-            ->toArray();
+            ->get();
 
         $closedPolls = Poll::where('status', 'closed')
             ->orderByDesc('created_at')
-            ->get()
-            ->toArray();
+            ->get();
 
         return view('polls.index', compact('activePolls', 'closedPolls'));
     }
