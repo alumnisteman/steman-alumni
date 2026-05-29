@@ -38,3 +38,4 @@ fix_*.sh
 *_dump.html
 homepage.html
 scratch/
+debug/
