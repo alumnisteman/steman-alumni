@@ -479,7 +479,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     });
 });
 
-    Route::get('/polls', [AppHttpControllersPollController::class, 'index'])->name('polls.index');
+    Route::get('/polls', [\App\Http\Controllers\PollController::class, 'index'])->name('polls.index');
 // Media Proxy (Fix for Nginx Volume Sync)
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
