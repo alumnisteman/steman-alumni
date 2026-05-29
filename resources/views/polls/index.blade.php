@@ -28,7 +28,7 @@
 .poll-card .poll-header {
     padding: 1.5rem 1.5rem 1rem;
     border-bottom: 1px solid #f1f5f9;
-}
+
 .poll-emoji { font-size: 2.5rem; }
 .poll-card .poll-body { padding: 1.2rem 1.5rem 1.5rem; }
 
