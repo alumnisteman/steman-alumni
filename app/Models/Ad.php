@@ -106,7 +106,7 @@ class Ad extends Model
     {
         if (!$value) return null;
         
-        // If it's already a full URL, extract the path and regenerate with current domain
+        // If it's already a full URL, extract the path and regenerate with main domain
         if (filter_var($value, FILTER_VALIDATE_URL)) {
             $parsed = parse_url($value);
             if (isset($parsed['path'])) {
@@ -115,9 +115,8 @@ class Ad extends Model
                 if (str_starts_with($path, 'storage/')) {
                     $path = substr($path, 8);
                 }
-                // Use current request's scheme and host instead of APP_URL
-                $request = request();
-                return $request->getSchemeAndHttpHost() . '/storage/' . ltrim($path, '/');
+                // Always use main domain for storage files since only main domain has nginx config
+                return 'https://alumni-steman.my.id/storage/' . ltrim($path, '/');
             }
             return $value;
         }
@@ -127,8 +126,7 @@ class Ad extends Model
             $path = substr($path, 8);
         }
         
-        // Use current request's scheme and host instead of APP_URL
-        $request = request();
-        return $request->getSchemeAndHttpHost() . '/storage/' . ltrim($path, '/');
+        // Always use main domain for storage files since only main domain has nginx config
+        return 'https://alumni-steman.my.id/storage/' . ltrim($path, '/');
     }
 }
