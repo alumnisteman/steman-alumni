@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('content')
 @php $currentUser = auth()->user(); @endphp
 <div style="margin-bottom:1rem; color:#555;">Logged in as: {{ $currentUser ? $currentUser->email : 'guest' }}</div>
 <style>
