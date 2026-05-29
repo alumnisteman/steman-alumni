@@ -7,11 +7,6 @@ use Illuminate\Http\Request;
 
 class PollController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth')->only(['store', 'edit', 'update', 'destroy', 'vote']);
-        $this->middleware('can:manage-polls')->only(['create', 'store', 'edit', 'update', 'destroy']);
-    }
 
     public function index()
     {
