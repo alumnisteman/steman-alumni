@@ -43,9 +43,17 @@ if (!function_exists('getAds')) {
     function getAds(?string $slot): \Illuminate\Support\Collection
     {
         try {
-            // TODO: Implement real ad retrieval logic.
-            // For now return an empty collection to avoid errors.
-            return collect();
+            $slot = strtolower(trim($slot));
+            
+            // Query active ads for the given position
+            $ads = \App\Models\Ad::active()
+                ->when($slot, function($query) use ($slot) {
+                    return $query->position($slot);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return $ads;
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('getAds() error: ' . $e->getMessage());
             return collect();
