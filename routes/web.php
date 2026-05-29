@@ -442,7 +442,6 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
 
     // =====================================================
     // VOTING & POLLING (public index, protected actions)
-    Route::get('/polls', [\App\Http\Controllers\PollController::class, 'index'])->name('polls.index');
     Route::middleware(['auth'])->group(function () {
         Route::post('/polls', [\App\Http\Controllers\PollController::class, 'store'])->name('polls.store');
         Route::get('/polls/{poll}/edit', [\App\Http\Controllers\PollController::class, 'edit'])->name('polls.edit');
@@ -480,6 +479,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     });
 });
 
+    Route::get('/polls', [AppHttpControllersPollController::class, 'index'])->name('polls.index');
 // Media Proxy (Fix for Nginx Volume Sync)
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
