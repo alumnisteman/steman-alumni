@@ -441,9 +441,9 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     Route::post('/museum/{museumItem}/like', [\App\Http\Controllers\MuseumController::class, 'toggleLike'])->name('museum.like');
 
     // =====================================================
-    // VOTING & POLLING (protected)
+    // VOTING & POLLING (public index, protected actions)
+    Route::get('/polls', [\App\Http\Controllers\PollController::class, 'index'])->name('polls.index');
     Route::middleware(['auth'])->group(function () {
-        Route::get('/polls', [\App\Http\Controllers\PollController::class, 'index'])->name('polls.index');
         Route::post('/polls', [\App\Http\Controllers\PollController::class, 'store'])->name('polls.store');
         Route::get('/polls/{poll}/edit', [\App\Http\Controllers\PollController::class, 'edit'])->name('polls.edit');
         Route::put('/polls/{poll}', [\App\Http\Controllers\PollController::class, 'update'])->name('polls.update');
