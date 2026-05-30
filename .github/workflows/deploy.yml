@@ -6,10 +6,18 @@ on:
   workflow_dispatch:
 
 jobs:
+<<<<<<< Updated upstream
   deploy:
     name: Deploy to Local Server
     runs-on: ubuntu-latest
 
+=======
+  deploy-staging:
+    name: Deploy to Staging Environment
+    runs-on: self-hosted
+    environment: staging
+    
+>>>>>>> Stashed changes
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,13 +34,69 @@ jobs:
           echo "Building Frontend Assets via Docker..."
           docker run --rm -v "${{ github.workspace }}:/app" -w /app node:20-alpine sh -c "npm install && npm run build"
 
-      - name: Deploy with Docker Compose (Rolling Update)
+      - name: Deploy Staging with Docker Compose (Rolling Update)
         run: |
+<<<<<<< Updated upstream
           set -e
+=======
+          # Use --wait to ensure the services with healthchecks are healthy before finishing
+          docker compose -f docker-compose.staging.yml up -d --build --scale app=2 --wait
+          
+      - name: Final Health Check Verification
+        run: |
+          echo "Starting Comprehensive Health Check for Staging..."
+          # Give a small buffer for Nginx proxy pass to stabilize
+          sleep 5
+          
+          # Ping the /health endpoint through the staging webserver port (8080)
+          HEALTH_STATUS=$(curl --silent --fail http://localhost:8080/health)
+          
+          if [ $? -eq 0 ]; then
+                echo "Staging Deployment Success! JSON Status: $HEALTH_STATUS"
+                docker image prune -f
+          else
+                echo "CRITICAL: Staging Health Check Failed! Reverting or alerting team..."
+                exit 1
+          fi
+
+      - name: Staging Initialization & Migrations
+        run: |
+          docker compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
+          
+          # Full v4.1 Optimization Stack
+          docker compose -f docker-compose.staging.yml exec -T app php artisan optimize:clear
+          docker compose -f docker-compose.staging.yml exec -T app php artisan optimize
+          
+          # Final Permission Enforcement
+          docker compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www
+          docker compose -f docker-compose.staging.yml exec -T app chmod -R 755 /var/www
+          docker compose -f docker-compose.staging.yml exec -T app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: self-hosted
+    environment: 
+      name: production
+      # Note: For this to wait for approval, configure Environment Protection Rules in your GitHub Repo settings for the 'production' environment.
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Pre-deployment Cleanup
+        run: |
+          rm -rf public/assets/build || true
+
+      - name: Deploy Production with Docker Compose (Rolling Update)
+        run: |
+>>>>>>> Stashed changes
           docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
 
       - name: Final Health Check Verification
         run: |
+<<<<<<< Updated upstream
           echo "Starting Health Check..."
           sleep 5
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
@@ -40,11 +104,27 @@ jobs:
           if [ "$HTTP_CODE" != "200" ]; then
             echo "CRITICAL: Health Check Failed (HTTP $HTTP_CODE)"
             exit 1
+=======
+          echo "Starting Comprehensive Health Check for Production..."
+          sleep 5
+          HEALTH_STATUS=$(curl --silent --fail http://localhost:8000/health)
+          
+          if [ $? -eq 0 ]; then
+                echo "Production Deployment Success! JSON Status: $HEALTH_STATUS"
+                docker image prune -f
+          else
+                echo "CRITICAL: Production Health Check Failed! Reverting or alerting team..."
+                exit 1
+>>>>>>> Stashed changes
           fi
           echo "Deployment Success! Health endpoint OK."
           docker image prune -f
 
+<<<<<<< Updated upstream
       - name: Production Initialization & Migrations (v4.2 Stable)
+=======
+      - name: Production Initialization & Migrations
+>>>>>>> Stashed changes
         run: |
           docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
