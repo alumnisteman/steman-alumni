@@ -12,7 +12,7 @@ npm-debug.log
 yarn-error.log
 
 # ─── PHP Dev Tools ────────────────────────────────────────
-vendor
+# vendor (included for production)
 composer.phar
 
 # ─── Testing ──────────────────────────────────────────────

@@ -88,7 +88,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    command: php artisan reverb:start --host=0.0.0.0 --port=8081
     logging:
       driver: "json-file"
       options:

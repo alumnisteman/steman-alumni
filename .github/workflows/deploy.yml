@@ -1,4 +1,4 @@
-name: Steman Alumni CI/CD [v4.2 Stable]
+name: Steman Alumni CI/CD
 
 on:
   push:
@@ -6,192 +6,46 @@ on:
   workflow_dispatch:
 
 jobs:
-<<<<<<< Updated upstream
-  deploy:
-    name: Deploy to Local Server
-    runs-on: ubuntu-latest
-
-=======
   deploy-staging:
-    name: Deploy to Staging Environment
+    name: Deploy to Staging
     runs-on: self-hosted
     environment: staging
-    
->>>>>>> Stashed changes
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install PHP Dependencies
+      - name: Install PHP dependencies
         run: |
-          echo "Installing PHP Dependencies via Docker..."
           docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
-          # Verify install
-          test -f vendor/autoload.php || (echo "Composer install failed" && exit 1)
-
-      - name: Build Frontend Assets
+      - name: Build assets
         run: |
-          echo "Building Frontend Assets via Docker..."
           docker run --rm -v "${{ github.workspace }}:/app" -w /app node:20-alpine sh -c "npm install && npm run build"
-
-      - name: Deploy Staging with Docker Compose (Rolling Update)
+      - name: Deploy Staging
         run: |
-<<<<<<< Updated upstream
-          set -e
-=======
-          # Use --wait to ensure the services with healthchecks are healthy before finishing
           docker compose -f docker-compose.staging.yml up -d --build --scale app=2 --wait
-          
-      - name: Final Health Check Verification
+      - name: Staging health check
         run: |
-          echo "Starting Comprehensive Health Check for Staging..."
-          # Give a small buffer for Nginx proxy pass to stabilize
           sleep 5
-          
-          # Ping the /health endpoint through the staging webserver port (8080)
-          HEALTH_STATUS=$(curl --silent --fail http://localhost:8080/health)
-          
-          if [ $? -eq 0 ]; then
-                echo "Staging Deployment Success! JSON Status: $HEALTH_STATUS"
-                docker image prune -f
-          else
-                echo "CRITICAL: Staging Health Check Failed! Reverting or alerting team..."
-                exit 1
-          fi
-
-      - name: Staging Initialization & Migrations
+          curl --silent --fail http://localhost:8081/health || exit 1
+      - name: Staging migrations
         run: |
           docker compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
-          
-          # Full v4.1 Optimization Stack
-          docker compose -f docker-compose.staging.yml exec -T app php artisan optimize:clear
-          docker compose -f docker-compose.staging.yml exec -T app php artisan optimize
-          
-          # Final Permission Enforcement
-          docker compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www
-          docker compose -f docker-compose.staging.yml exec -T app chmod -R 755 /var/www
-          docker compose -f docker-compose.staging.yml exec -T app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
 
   deploy-production:
     name: Deploy to Production
     needs: deploy-staging
     runs-on: self-hosted
-    environment: 
+    environment:
       name: production
-      # Note: For this to wait for approval, configure Environment Protection Rules in your GitHub Repo settings for the 'production' environment.
-    
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Pre-deployment Cleanup
-        run: |
-          rm -rf public/assets/build || true
-
-      - name: Deploy Production with Docker Compose (Rolling Update)
-        run: |
->>>>>>> Stashed changes
-          docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
-
-      - name: Final Health Check Verification
-        run: |
-<<<<<<< Updated upstream
-          echo "Starting Health Check..."
-          sleep 5
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
-          echo "Health endpoint returned HTTP $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "CRITICAL: Health Check Failed (HTTP $HTTP_CODE)"
-            exit 1
-=======
-          echo "Starting Comprehensive Health Check for Production..."
-          sleep 5
-          HEALTH_STATUS=$(curl --silent --fail http://localhost:8000/health)
-          
-          if [ $? -eq 0 ]; then
-                echo "Production Deployment Success! JSON Status: $HEALTH_STATUS"
-                docker image prune -f
-          else
-                echo "CRITICAL: Production Health Check Failed! Reverting or alerting team..."
-                exit 1
->>>>>>> Stashed changes
-          fi
-          echo "Deployment Success! Health endpoint OK."
-          docker image prune -f
-
-<<<<<<< Updated upstream
-      - name: Production Initialization & Migrations (v4.2 Stable)
-=======
-      - name: Production Initialization & Migrations
->>>>>>> Stashed changes
-        run: |
-          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-
-          docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
-
-          docker compose -f docker-compose.prod.yml exec -T webserver sh -c 'rm -rf /tmp/nginx_cache/*'
-          docker compose -f docker-compose.prod.yml restart webserver
-
-          if [ ! -f /var/www/.permissions_set ]; then
-            docker compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www
-            docker compose -f docker-compose.prod.yml exec -T app chmod -R 755 /var/www
-            docker compose -f docker-compose.prod.yml exec -T app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-            docker compose -f docker-compose.prod.yml exec -T app touch /var/www/.permissions_set
-          fi
-
-  rollback:
-    name: Automatic Rollback
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: failure()
-    steps:
-      - name: Checkout previous commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}~1
-      - name: Deploy previous version
-        run: |
-          echo "Rolling back to previous commit ${GITHUB_SHA}~1"
-          docker compose -f docker-compose.prod.yml down
-          docker compose -f docker-compose.prod.yml up -d --build
-
-  manual_rollback:
-    name: Manual Rollback (triggered via workflow_dispatch)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout previous commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}~1
-      - name: Deploy previous version
-        run: |
-          echo "Manual rollback to previous commit ${GITHUB_SHA}~1"
-          docker compose -f docker-compose.prod.yml down
-          docker compose -f docker-compose.prod.yml up -d --build
-  install_and_deploy:
-    name: Install Deps & Deploy (manual trigger)
-    runs-on: ubuntu-latest
-    if: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install PHP dependencies via Docker
+      - name: Deploy Production
         run: |
-          docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
-          # verify
-          test -f vendor/autoload.php || (echo "Composer failed" && exit 1)
-      - name: Build Frontend Assets via Docker
+          docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
+      - name: Production health check
         run: |
-          docker run --rm -v "${{ github.workspace }}:/app" -w /app node:20-alpine sh -c "npm install && npm run build"
-      - name: Deploy containers
+          sleep 5
+          curl --silent --fail http://localhost:8000/health || exit 1
+      - name: Production migrations
         run: |
-          docker compose -f docker-compose.prod.yml down
-          docker compose -f docker-compose.prod.yml up -d --build
-      - name: Clear Laravel cache
-        run: |
-          docker compose -f docker-compose.prod.yml exec -T app php artisan cache:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan config:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan view:clear
-          docker compose -f docker-compose.prod.yml exec -T app php artisan route:clear
+          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force

@@ -39,7 +39,7 @@ services:
       - ./routes:/var/www/routes
       - ./config:/var/www/config
       - ./database:/var/www/database
-      # - ./vendor:/var/www/vendor  # disabled to allow composer to manage vendor inside container
+      - ./vendor:/var/www/vendor  # enabled for production
     networks:
       - steman-network
     logging:
