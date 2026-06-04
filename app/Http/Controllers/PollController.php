@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Poll;
 use Illuminate\Http\Request;
 
-class PollController extends Controller
-{
+use App\Http\Controllers\Controller;
+class PollController extends Controller {
 
     public function index()
     {

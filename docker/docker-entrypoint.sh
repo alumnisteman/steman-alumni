@@ -1,99 +1,27 @@
 #!/bin/sh
 set -e
 
-# --- 1. Environment Preparation ---
-if [ ! -f .env ]; then
-    echo "Creating .env from .env.example..."
-    cp .env.example .env
-fi
-
-# --- 2. Security: Key Generation ---
-if ! grep -q "^APP_KEY=base64:" .env; then
-    echo "Generating Application Key..."
-    php artisan key:generate --force
-fi
-
-# --- 2b. Package Discovery (skipped during build, run here with .env available) ---
-echo "Running package discovery..."
-php artisan package:discover --ansi || true
-
-# --- 3. Database: Migration ---
-MAX_TRIES=30
-TRIES=0
-until nc -z db 3306 || [ $TRIES -eq $MAX_TRIES ]; do
-  echo "Waiting for database (db:3306) to be ready... ($TRIES/$MAX_TRIES)"
+# Wait for DB and Redis services to be ready
+while ! nc -z db 3306; do
+  echo "Waiting for MariaDB..."
   sleep 2
-  TRIES=$((TRIES+1))
+done
+while ! nc -z redis 6379; do
+  echo "Waiting for Redis..."
+  sleep 2
 done
 
-if [ $TRIES -eq $MAX_TRIES ]; then
-  echo "Error: Database not reachable after $MAX_TRIES tries."
-  exit 1
+# Run migrations once if enabled
+if [ "${RUN_MIGRATIONS}" = "true" ]; then
+  php artisan migrate --force
 fi
 
-# Wait for Redis
-echo "Waiting for Redis (redis:6379)..."
-REDIS_TRIES=0
-until nc -z redis 6379 || [ $REDIS_TRIES -eq 10 ]; do
-  sleep 1
-  REDIS_TRIES=$((REDIS_TRIES+1))
-done
+# Laravel housekeeping
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+php artisan key:generate --force
 
-echo "Running Database Migrations..."
-php artisan migrate --force
-
-# --- 4. Performance Tuning (Production) ---
-if [ "$APP_ENV" = "production" ]; then
-    echo "Optimizing Laravel for Production..."
-    # Manual purge to avoid Artisan race conditions during boot
-    rm -f bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/services.php bootstrap/cache/packages.php
-    
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
-    php artisan event:cache
-    # Ensure all storage links are created
-    php artisan storage:link || true
-fi
-
-# --- 5. Permissions Enforcement (Optimized) ---
-echo "Applying runtime permissions to storage and cache..."
-chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
-chmod -R 775 storage bootstrap/cache 2>/dev/null || true
-
-# --- 6. Laravel Scheduler (Cron) ---
-echo "Setting up Laravel Scheduler..."
-echo "* * * * * cd /var/www && php artisan schedule:run >> /var/www/storage/logs/scheduler.log 2>&1" | crontab -
-crond -b -l 8
-echo "Scheduler cron is active."
-
-# --- 7. Meilisearch: Auto-Configure & Re-Index (Resilient) ---
-MEILI_HOST="${MEILISEARCH_HOST:-http://steman_meilisearch:7700}"
-MEILI_KEY="${MEILISEARCH_KEY:-stemanMasterKey123}"
-
-echo "Waiting for Meilisearch at $MEILI_HOST ..."
-MEILI_TRIES=0
-MEILI_MAX=20
-until wget -q --spider "${MEILI_HOST}/health" 2>/dev/null || [ $MEILI_TRIES -eq $MEILI_MAX ]; do
-    sleep 2
-    MEILI_TRIES=$((MEILI_TRIES+1))
-done
-
-if [ $MEILI_TRIES -lt $MEILI_MAX ]; then
-    echo "Meilisearch is ready. Configuring index settings (geo-sort)..."
-    # Configure sortable & filterable attributes for geo radar feature
-    curl -s -X PATCH \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer ${MEILI_KEY}" \
-        -d '{"sortableAttributes":["_geo"],"filterableAttributes":["major","graduation_year","id"]}' \
-        "${MEILI_HOST}/indexes/users/settings" || true
-    echo "Meilisearch configured. Importing user index..."
-    php artisan scout:import "App\Models\User" >> /var/www/storage/logs/scheduler.log 2>&1 &
-    echo "Scout import running in background."
-else
-    echo "WARNING: Meilisearch not reachable within timeout. App will use Eloquent fallback."
-fi
-
-# --- 8. Start PHP-FPM or Custom Command ---
-echo "Steman Alumni Portal is ready! Executing: $@"
+# Execute the CMD (php-fpm)
 exec "$@"

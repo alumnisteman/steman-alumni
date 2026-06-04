@@ -1,0 +1,12 @@
+groups:
+  - name: docker_containers
+    rules:
+      # Alert if a container restarts more than 0 times in 5 minutes
+      - alert: ContainerRestarted
+        expr: increase(engine_daemon_container_states_total{state="restarting"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.container }} is restarting"
+          description: "The container {{ $labels.container }} in task {{ $labels.task }} has restarted. Please check the logs."

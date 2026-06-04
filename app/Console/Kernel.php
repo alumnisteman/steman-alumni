@@ -16,6 +16,9 @@ class Kernel extends ConsoleKernel
         // Register custom commands here
         \App\Console\Commands\MaintenanceCleanup::class,
         \App\Console\Commands\MonitorTelegram::class,
+        \App\Console\Commands\SystemHealth::class,
+        \App\Console\Commands\CleanLogs::class,
+
     ];
 
     /**
@@ -23,10 +26,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Run cleanup daily at 02:00
-        $schedule->command('maintenance:cleanup')->dailyAt('02:00');
-        // Check logs every 30 minutes and notify via Telegram
-        $schedule->command('monitor:telegram')->everyThirtyMinutes();
+        // Run system health check every 5 minutes
+        // Run system health check every 5 minutes
+        // $schedule->command('system:health')->everyFiveMinutes()->withoutOverlapping();
+        // Daily MySQL backup at 02:15
+        $schedule->command('steman:backup')->dailyAt('02:15')->withoutOverlapping();
+        // Clean old logs daily at 02:30
+        $schedule->command('logs:clean')->dailyAt('02:30');
     }
 
     /**

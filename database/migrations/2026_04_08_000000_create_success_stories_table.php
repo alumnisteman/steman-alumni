@@ -10,19 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
+
     {
-        Schema::create('success_stories', function (Blueprint $blueprint) {
-            $blueprint->id();
-            $blueprint->string('name');
-            $blueprint->string('title'); // e.g., "CEO & Founder"
-            $blueprint->string('major_year'); // e.g., "TKJ '12"
-            $blueprint->text('quote');
-            $blueprint->string('image_path')->nullable();
-            $blueprint->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Link to alumni if exists
-            $blueprint->boolean('is_published')->default(true);
-            $blueprint->integer('order')->default(0);
-            $blueprint->timestamps();
-        });
+        if (!Schema::hasTable('success_stories')) {
+            Schema::create('success_stories', function (Blueprint $blueprint) {
+                $blueprint->id();
+                $blueprint->string('name');
+                $blueprint->string('title'); // e.g., "CEO & Founder"
+                $blueprint->string('major_year'); // e.g., "TKJ '12"
+                $blueprint->text('quote');
+                $blueprint->string('image_path')->nullable();
+                $blueprint->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+                $blueprint->boolean('is_published')->default(true);
+                $blueprint->integer('order')->default(0);
+                $blueprint->timestamps();
+            });
+        }
     }
 
     /**

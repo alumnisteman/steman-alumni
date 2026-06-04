@@ -2,6 +2,14 @@ global:
   scrape_interval: 30s
   evaluation_interval: 30s
 
+rule_files:
+  - 'rules.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['steman_alertmanager:9093']
+
 scrape_configs:
   - job_name: 'steman-laravel'
     static_configs:

@@ -26,7 +26,7 @@ The codebase is generally well-structured with proper error handling, database m
 ## Minor Issues
 
 ### 2. **Debug Code in Production Files**
-- **Location:** 
+- **Location:**
   - `tools/tinker_reply.php` line 15: `die("FAILED: Message not found")`
   - `public/debug_ad.php` line 13: `die("Ad not found\n")`
 - **Issue:** Debug files with `die()` statements exist in the codebase
@@ -34,7 +34,7 @@ The codebase is generally well-structured with proper error handling, database m
 - **Recommendation:** Remove or move debug files to a separate debug directory not deployed to production
 
 ### 3. **TODO/FIXME Comments**
-- **Location:** 
+- **Location:**
   - `app/Http/Controllers/AuthController.php` line 190: "GROWTH HACK: Auto-follow batch mates"
   - `app/Http/Controllers/Admin/SystemController.php` line 13: "no-ssh" way for admins to debug
   - `app/Services/AIService.php` lines 69, 178, 184: Debug logging comments

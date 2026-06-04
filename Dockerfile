@@ -21,7 +21,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev --no-scripts && ls -la /app/vendor/autoload.php
 
 # --- Stage 3: Runner Stage (Final Image) ---
-FROM php:8.4-fpm-alpine
+FROM php:8.2-fpm-alpine
 LABEL maintainer="Forum Silaturahmi Alumni Steman Ternate"
 
 # Install runtime system dependencies
