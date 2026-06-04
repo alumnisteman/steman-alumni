@@ -16,12 +16,11 @@ if [ "${RUN_MIGRATIONS}" = "true" ]; then
   php artisan migrate --force
 fi
 
-# Laravel housekeeping
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
-php artisan key:generate --force
+# Laravel housekeeping (ignore errors for non-critical commands)
+php artisan config:clear || true
+php artisan cache:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
 
 # Execute the CMD (php-fpm)
 exec "$@"
