@@ -393,5 +393,7 @@ volumes:
 
   db_backup:
     name: steman-alumni_dbbackup
+  grafana_data:
+    name: steman-alumni_grafana_data
   prometheus_data:
     name: steman-alumni_prometheus_data
