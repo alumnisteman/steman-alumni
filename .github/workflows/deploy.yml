@@ -1,42 +1,51 @@
-name: Deploy to Production
+name: Steman Alumni CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - production
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: self-hosted
+    environment: staging
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install PHP dependencies
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
+      - name: Build assets
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/app" -w /app node:20-alpine sh -c "npm install && npm run build"
+      - name: Deploy Staging
+        run: |
+          docker compose -f docker-compose.staging.yml up -d --build --scale app=2 --wait
+      - name: Staging health check
+        run: |
+          sleep 5
+          curl --silent --fail http://localhost:8081/health || exit 1
+      - name: Staging migrations
+        run: |
+          docker compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
 
-    - name: Deploy and Test via SSH
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        script: |
-          cd /var/www
-          
-          echo "Pulling latest code..."
-          git pull origin main || echo "Git pull failed or no git repo"
-          
-          echo "Running Database Backup..."
-          if [ -f /var/www/scripts/backup-db.sh ]; then
-            bash /var/www/scripts/backup-db.sh
-          else
-            echo "Backup script not found, skipping..."
-          fi
-          
-          echo "Deploying Containers..."
-          docker-compose up -d --build
-          
-          echo "Running End-to-End Tests (Dusk)..."
-          # Wait for app to be ready
-          sleep 10
-          docker exec -i steman_app php artisan dusk
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: self-hosted
+    environment:
+      name: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy Production
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
+      - name: Production health check
+        run: |
+          sleep 5
+          curl --silent --fail http://localhost:8000/health || exit 1
+      - name: Production migrations
+        run: |
+          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
