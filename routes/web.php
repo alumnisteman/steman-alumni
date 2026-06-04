@@ -14,8 +14,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\HeroController;
 use App\Models\Ad;
-use function response;
-use function abort;
+
 use App\Http\Controllers\ChairmanController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\JobController;
