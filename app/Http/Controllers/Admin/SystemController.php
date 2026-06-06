@@ -10,7 +10,7 @@ class SystemController extends Controller
 {
     /**
      * Display the last few entries of the system logs.
-     * This provides a "no-ssh" way for admins to debug issues.
+     * This provides a way for admins to debug issues without SSH access.
      */
     public function logs(Request $request)
     {
@@ -87,33 +87,33 @@ class SystemController extends Controller
             $status['nodes']['redis']['status'] = 'up';
         } catch (\Exception $e) {}
 
-        // Check External APIs (cached HTTP probe — key-only check was misleading)
-        $status['nodes']['newsapi']['status'] = \Illuminate\Support\Facades\Cache::remember(
-            'pulse_newsapi_status',
-            300,
-            function () {
-                $key = config('services.newsapi.key');
-                if (!$key) {
-                    return 'down';
-                }
-                try {
-                    $res = \Illuminate\Support\Facades\Http::timeout(3)->get('https://newsapi.org/v2/top-headlines', [
-                        'country' => 'id',
-                        'pageSize' => 1,
-                        'apiKey' => $key,
-                    ]);
-                    return $res->successful() ? 'up' : 'down';
-                } catch (\Exception $e) {
-                    return 'down';
-                }
+        // Check News API — gunakan cache agar tidak spam ke newsapi.org setiap 10 detik
+        $newsApiUp = \Illuminate\Support\Facades\Cache::remember('pulse:newsapi_status', 300, function () {
+            $key = config('services.newsapi.key');
+            if (empty($key)) return false;
+            try {
+                $res = \Illuminate\Support\Facades\Http::timeout(5)->get('https://newsapi.org/v2/top-headlines', [
+                    'country' => 'id',
+                    'pageSize' => 1,
+                    'apiKey'  => $key,
+                ]);
+                return $res->successful() && ($res->json()['status'] ?? '') === 'ok';
+            } catch (\Exception $e) {
+                return false;
             }
-        );
-        
+        });
+        $status['nodes']['newsapi']['status'] = $newsApiUp ? 'up' : 'down';
+
         // Check RSSHub (Assume up if reachable)
-        try {
-            $res = \Illuminate\Support\Facades\Http::timeout(3)->get('https://rsshub.app/');
-            if ($res->status() < 500) $status['nodes']['rsshub']['status'] = 'up';
-        } catch (\Exception $e) {}
+        $rssHubUp = \Illuminate\Support\Facades\Cache::remember('pulse:rsshub_status', 300, function () {
+            try {
+                $res = \Illuminate\Support\Facades\Http::timeout(5)->get('https://rsshub.app/');
+                return $res->status() < 500;
+            } catch (\Exception $e) {
+                return false;
+            }
+        });
+        $status['nodes']['rsshub']['status'] = $rssHubUp ? 'up' : 'down';
 
         return response()->json($status);
     }

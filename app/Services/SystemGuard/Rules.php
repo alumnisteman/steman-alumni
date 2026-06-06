@@ -113,7 +113,8 @@ class Rules
             'session_domain', 'captcha_patch', 'nginx_down',
             'audit_broken', 'route_mismatch', 'route_shadowing',
             'smoke_test', 'migration_mismatch', 'symlink_broken',
-            'ai_offline', 'earth_data_mismatch',
+            'ai_offline', 'earth_data_mismatch', 'news_api_down',
+            'scheduler_dead', 'queue_worker_dead',
         ];
 
         $stats = [];

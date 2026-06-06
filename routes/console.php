@@ -59,9 +59,15 @@ Schedule::command('app:audit-integrity --fix')->dailyAt('00:00')->name('app:audi
 Schedule::command('app:system-check')->dailyAt('00:30')->name('app:system-check-daily');
 Schedule::command('system:autofix --force')->dailyAt('01:30')->name('system:autofix-daily');
 
+// ─── Scheduler Heartbeat: Tulis tanda hidup setiap menit ────────────
+// Digunakan oleh SystemGuard checkScheduler() untuk verifikasi scheduler aktif.
+Schedule::call(function () {
+    \Illuminate\Support\Facades\Cache::put('system_guard:scheduler_heartbeat', time(), 900);
+})->everyMinute()->name('scheduler:heartbeat');
+
 // ─── SystemGuard: Auto-healing every 5 minutes ──────────────────────
-// Detects DB/Redis/Meilisearch/Disk/Storage issues, fixes what it can,
-// and sends a Telegram alert for anything needing human attention.
+// Mendeteksi masalah DB/Redis/Meilisearch/Disk/Storage/NewsAPI, memperbaiki
+// yang bisa diatasi otomatis, dan mengirim alert Telegram untuk sisanya.
 Schedule::command('system:guard')->everyFiveMinutes()->name('system:guard');
 
 // Daily morning health report to Telegram (confirms all-clear or flags issues)
