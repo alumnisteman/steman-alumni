@@ -126,7 +126,7 @@
                             </div>
                             <div>
                                 <h6 class="fw-bold mb-1">{{ $p->title }}</h6>
-                                <p class="small text-muted mb-0">{{ Str::limit($p->description, 40) }}</p>
+                                <p class="small text-muted mb-0">{{ \Illuminate\Support\Str::limit($p->description, 40) }}</p>
                             </div>
                         </a>
                     @endforeach

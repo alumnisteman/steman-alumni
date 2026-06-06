@@ -49,7 +49,7 @@ class AdsImageService
             $w = $dims['width'];
             $h = $dims['height'];
 
-            $filename = 'ads/' . Str::random(40) . ($isMobile ? '_mobile' : '_desktop') . '.jpg';
+            $filename = 'ads/' . str()->random(40) . ($isMobile ? '_mobile' : '_desktop') . '.jpg';
 
             $img = $this->manager->read($file->getRealPath());
             
@@ -88,9 +88,9 @@ class AdsImageService
             $offsetY = $params['offset_y'] ?? 50;
             $zoom = $params['zoom'] ?? 1.0;
 
-            $filename = Str::replaceFirst('_desktop.jpg', '_mobile_auto.jpg', $desktopPath);
+            $filename = str()->replaceFirst('_desktop.jpg', '_mobile_auto.jpg', $desktopPath);
             if ($filename === $desktopPath) {
-                $filename = 'ads/' . Str::random(40) . '_mobile_auto.jpg';
+                $filename = 'ads/' . str()->random(40) . '_mobile_auto.jpg';
             }
 
             $fullPath = Storage::disk('public')->path($desktopPath);

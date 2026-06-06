@@ -68,7 +68,7 @@ class AIGenerateNews extends Command
         News::create([
             'user_id' => 1, // Assuming admin ID is 1
             'title' => $data['title'],
-            'slug' => Str::slug($data['title']) . '-' . now()->format('YmdHi'),
+            'slug' => str()->slug($data['title']) . '-' . now()->format('YmdHi'),
             'content' => $data['content'],
             'status' => 'draft',
             'category' => 'AI Generated',

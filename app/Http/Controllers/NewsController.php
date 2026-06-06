@@ -3,11 +3,11 @@ namespace App\Http\Controllers;
 
 use App\Models\News;
 use App\Models\ActivityLog;
+use App\Support\WelcomeCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Cache;
 use App\Jobs\LogActivity;
 
 class NewsController extends Controller
@@ -17,10 +17,12 @@ class NewsController extends Controller
     // Public Views
     public function index(Request $request, \App\Services\NewsAggregator $agg, \App\Services\TrendingService $trendService)
     {
-        $query = News::where('status', 'published');
+        $query = News::published();
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%')
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('content', 'like', '%' . $request->search . '%');
+            });
         }
         $news = $query->latest()->paginate(9)->withQueryString();
         
@@ -36,13 +38,13 @@ class NewsController extends Controller
         
         // If not published, only allow admin/editor to see it (Preview mode)
         if (!auth()->check() || (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('editor'))) {
-            $query->where('status', 'published');
+            $query->published();
         }
 
         $item = $query->firstOrFail();
 
         // Get related news (same category, excluding current item)
-        $related = News::where('status', 'published')
+        $related = News::published()
             ->where('category', $item->category)
             ->where('id', '!=', $item->id)
             ->latest()
@@ -56,7 +58,10 @@ class NewsController extends Controller
     public function adminIndex()
     {
         // Select only columns needed for the list; skip 'content' (large rich text) to avoid 502 OOM crash
-        $news = News::latest()->select('id', 'title', 'slug', 'category', 'thumbnail', 'status', 'created_at')->paginate(20);
+        $news = News::latest()
+            ->select('id', 'title', 'slug', 'category', 'thumbnail', 'status', 'is_published', 'created_at')
+            ->paginate(20);
+
         return view('admin.news.index', compact('news'));
     }
 
@@ -70,7 +75,7 @@ class NewsController extends Controller
         $request->validate([
             'title'     => 'required|max:255',
             'content'   => 'required',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'category'  => 'required'
         ]);
 
@@ -81,23 +86,22 @@ class NewsController extends Controller
             try {
                 $path = $this->optimizeAndStoreImage($file, 'news', 'public', 70, 1200);
             } catch (\Exception $e) {
+                \Log::warning('News thumbnail optimization failed, using original: ' . $e->getMessage());
                 $imageName = Str::random(40) . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('news', $imageName, 'public');
             }
-            // Ensure the path starts with /storage/ to match existing DB conventions
             if (!str_starts_with($path, '/storage/')) {
-                $path = '/storage/' . $path;
+                $path = '/storage/' . ltrim($path, '/');
             }
         }
 
-        $news = News::create([
-            'user_id'      => auth()->id(),
-            'title'        => $request->title,
-            'content'      => $request->content,
-            'category'     => $request->category,
-            'thumbnail'    => $path,
-            'status'       => $request->status ?? 'draft'
-        ]);
+        $news = News::create(array_merge([
+            'user_id'   => auth()->id(),
+            'title'     => $request->title,
+            'content'   => $request->content,
+            'category'  => $request->category,
+            'thumbnail' => $path,
+        ], News::publishAttributes($request->has('status'))));
 
         LogActivity::dispatch(
             Auth::id(),
@@ -106,7 +110,7 @@ class NewsController extends Controller
             $request->ip(),
             $request->header('User-Agent')
         );
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
 
         return redirect()->route('admin.news.index')->with('success', 'Berita berhasil diterbitkan.');
     }
@@ -119,9 +123,10 @@ class NewsController extends Controller
     public function update(Request $request, News $news)
     {
         $request->validate([
-            'title'    => 'required|max:255',
-            'content'  => 'required',
-            'category' => 'required'
+            'title'     => 'required|max:255',
+            'content'   => 'required',
+            'category'  => 'required',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
         $path = $news->thumbnail;
@@ -136,20 +141,20 @@ class NewsController extends Controller
             try {
                 $optimizedPath = $this->optimizeAndStoreImage($file, 'news', 'public', 70, 1200);
             } catch (\Exception $e) {
+                \Log::warning('News thumbnail optimization failed, using original: ' . $e->getMessage());
                 $imageName = Str::random(40) . '.' . $file->getClientOriginalExtension();
                 $optimizedPath = $file->storeAs('news', $imageName, 'public');
             }
             
-            $path = str_starts_with($optimizedPath, '/storage/') ? $optimizedPath : '/storage/' . $optimizedPath;
+            $path = str_starts_with($optimizedPath, '/storage/') ? $optimizedPath : '/storage/' . ltrim($optimizedPath, '/');
         }
 
-        $news->update([
-            'title'        => $request->title,
-            'content'      => $request->content,
-            'category'     => $request->category,
-            'thumbnail'    => $path,
-            'status'       => $request->status ?? 'draft'
-        ]);
+        $news->update(array_merge([
+            'title'     => $request->title,
+            'content'   => $request->content,
+            'category'  => $request->category,
+            'thumbnail' => $path,
+        ], News::publishAttributes($request->has('status'))));
 
         LogActivity::dispatch(
             Auth::id(),
@@ -158,7 +163,7 @@ class NewsController extends Controller
             $request->ip(),
             $request->header('User-Agent')
         );
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
 
         return redirect()->route('admin.news.index')->with('success', 'Berita berhasil diperbarui.');
     }
@@ -166,7 +171,6 @@ class NewsController extends Controller
     public function destroy(News $news)
     {
         if ($news->thumbnail) {
-            // Path is stored as '/storage/news/file.jpg', strip '/storage/' prefix for disk delete
             $relativePath = ltrim(str_replace('/storage/', '', $news->thumbnail), '/');
             Storage::disk('public')->delete($relativePath);
         }
@@ -180,26 +184,26 @@ class NewsController extends Controller
             request()->ip(),
             request()->header('User-Agent')
         );
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
 
         return redirect()->route('admin.news.index')->with('success', 'Berita berhasil dihapus.');
     }
 
     public function togglePublish(News $news)
     {
-        $newStatus = ($news->status === 'published') ? 'draft' : 'published';
-        $news->update(['status' => $newStatus]);
+        $published = !$news->isPublished();
+        $news->update(News::publishAttributes($published));
         
         LogActivity::dispatch(
             Auth::id(),
-            ($newStatus === 'published' ? 'Publish' : 'Unpublish') . ' News',
-            ($newStatus === 'published' ? 'Published' : 'Unpublished') . ' news: ' . $news->title,
+            ($published ? 'Publish' : 'Unpublish') . ' News',
+            ($published ? 'Published' : 'Unpublished') . ' news: ' . $news->title,
             request()->ip(),
             request()->header('User-Agent')
         );
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
         
-        $message = ($newStatus === 'published' ? 'Berita berhasil diterbitkan!' : 'Berita berhasil dikembalikan ke draft.');
+        $message = $published ? 'Berita berhasil diterbitkan!' : 'Berita berhasil dikembalikan ke draft.';
         return back()->with('success', $message);
     }
 }

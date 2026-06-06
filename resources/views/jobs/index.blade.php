@@ -76,8 +76,8 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <h5 class="fw-bold mb-1 text-dark">{{ Str::limit($job->title, 40) }}</h5>
-                                        <p class="text-primary small mb-0 fw-bold">{{ Str::limit($job->company, 25) }}</p>
+                                        <h5 class="fw-bold mb-1 text-dark">{{ \Illuminate\Support\Str::limit($job->title, 40) }}</h5>
+                                        <p class="text-primary small mb-0 fw-bold">{{ \Illuminate\Support\Str::limit($job->company, 25) }}</p>
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -86,7 +86,7 @@
                                     </span>
                                 </div>
                                 <p class="text-muted small mb-4" style="height: 4.5em; overflow: hidden;">
-                                    {{ Str::limit($job->description, 120) }}
+                                    {{ \Illuminate\Support\Str::limit($job->description, 120) }}
                                 </p>
                                 <div class="d-grid mt-auto">
                                     @if($job->external_link)

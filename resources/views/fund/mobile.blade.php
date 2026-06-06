@@ -126,7 +126,7 @@
                         <img src="{{ $s->cover }}" class="w-full h-full rounded-full object-cover border border-white/10">
                     </div>
                 </div>
-                <span class="text-[10px] mt-2 text-white font-bold tracking-wide drop-shadow-md">{{ Str::limit($s->title, 10) }}</span>
+                <span class="text-[10px] mt-2 text-white font-bold tracking-wide drop-shadow-md">{{ \Illuminate\Support\Str::limit($s->title, 10) }}</span>
             </div>
             @endforeach
         </div>

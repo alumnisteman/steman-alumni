@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('meta')
     <meta property="og:title" content="{{ $item->title }}">
-    <meta property="og:description" content="{{ Str::limit(strip_tags($item->content), 160) }}">
-    <meta property="og:image" content="{{ $item->thumbnail ? (Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail)) : asset('/images/hero_iluni.png') }}">
+    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($item->content), 160) }}">
+    <meta property="og:image" content="{{ $item->thumbnail ? (\Illuminate\Support\Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail)) : asset('/images/hero_iluni.png') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
 @endsection
@@ -116,13 +116,13 @@
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted small">Beranda</a></li>
                         <li class="breadcrumb-item"><a href="/news" class="text-decoration-none text-muted small">Berita</a></li>
-                        <li class="breadcrumb-item active small text-muted" aria-current="page">{{ Str::limit($item->title, 20) }}</li>
+                        <li class="breadcrumb-item active small text-muted" aria-current="page">{{ \Illuminate\Support\Str::limit($item->title, 20) }}</li>
                     </ol>
                 </nav>
 
                 <div class="news-header mb-4">
                     @php
-                        $isPressRelease = Str::contains(strtoupper($item->title), 'SIARAN PERS');
+                        $isPressRelease = \Illuminate\Support\Str::contains(strtoupper($item->title), 'SIARAN PERS');
                     @endphp
 
                     @if($isPressRelease)
@@ -150,7 +150,7 @@
 
                 @if($item->thumbnail)
                     <div class="mb-5">
-                        <img src="{{ Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="img-fluid w-100 rounded-4 shadow-lg" alt="{{ $item->title }}" style="max-height: 500px; object-fit: cover;">
+                        <img src="{{ \Illuminate\Support\Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="img-fluid w-100 rounded-4 shadow-lg" alt="{{ $item->title }}" style="max-height: 500px; object-fit: cover;">
                         @if($item->caption)
                             <p class="text-muted small mt-3 text-center opacity-75"><em>Foto: {{ $item->caption }}</em></p>
                         @endif
@@ -196,10 +196,10 @@
                         }
 
                         // Special handling for sign-off (Only if NOT already semantically wrapped)
-                        if (!Str::contains($finalContent, ['class="mt-5', 'border-top'])) {
+                        if (!\Illuminate\Support\Str::contains($finalContent, ['class="mt-5', 'border-top'])) {
                             $signOffKeywords = ["Hormat kami,", "Hormat Kami,", "Ttd,", "Salam,"];
                             foreach ($signOffKeywords as $keyword) {
-                                if (Str::contains($finalContent, $keyword)) {
+                                if (\Illuminate\Support\Str::contains($finalContent, $keyword)) {
                                     // Split at keyword and wrap in a separate paragraph with styling
                                     $parts = explode($keyword, $finalContent, 2);
                                     $finalContent = $parts[0] . '</p><div class="mt-5 pt-4 border-top"><p class="fw-bold text-dark mb-1">' . $keyword . '</p><p class="fw-bold text-dark">' . $parts[1] . '</p></div>';
@@ -238,7 +238,7 @@
                                     <img src="{{ asset($r->thumbnail) }}" class="sidebar-news-thumb" alt="{{ $r->title }}">
                                 @endif
                                 <div>
-                                    <h6 class="fw-bold mb-1 text-dark small lh-base">{{ Str::limit($r->title, 60) }}</h6>
+                                    <h6 class="fw-bold mb-1 text-dark small lh-base">{{ \Illuminate\Support\Str::limit($r->title, 60) }}</h6>
                                     <span class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-clock me-1"></i> {{ $r->created_at->diffForHumans() }}</span>
                                 </div>
                             </a>

@@ -60,8 +60,11 @@ class AIService
         $this->activeProvider = null;
         $primary = config('services.ai_gateway.primary_provider', 'gemini');
 
-        // Define provider execution order: Gateway First (Resilience)
-        $providers = ['gateway', 'gemini', 'deepseek', 'openrouter'];
+        // Cek apakah gateway tersedia sebelum coba
+        $gatewayEnabled = !empty($this->gatewayUrl) && !str_contains($this->gatewayUrl, 'ai-gateway');
+        $providers = array_filter(['gateway', 'gemini', 'deepseek', 'openrouter'], function($p) use ($gatewayEnabled) {
+            return $p !== 'gateway' || $gatewayEnabled;
+        });
 
         foreach ($providers as $provider) {
             // Skip provider if it failed recently (cooldown)
@@ -78,7 +81,7 @@ class AIService
                 }
                 $this->markProviderFailed('gateway');
             } elseif ($provider === 'gemini') {
-                $models = $model ? [$model] : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash-lite'];
+                $models = $model ? [$model] : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
                 foreach ($models as $currentModel) {
                     for ($attempt = 1; $attempt <= 2; $attempt++) {
                         $result = $this->tryRequest($prompt, $temperature, $currentModel);
@@ -147,8 +150,8 @@ class AIService
             return null;
         }
 
-        // v1 is stable, v1beta has newest models
-        $apiVersions = ['v1', 'v1beta'];
+        // v1beta first karena gemini-2.5-flash hanya tersedia di v1beta
+        $apiVersions = ['v1beta', 'v1'];
 
         foreach ($apiVersions as $apiVersion) {
             try {
@@ -172,9 +175,9 @@ class AIService
                 $status = $response->status();
                 $body = $response->body();
 
-                // If 404, maybe this model is not in this API version, try next version
-                if ($status === 404 && $apiVersion === 'v1beta' && count($apiVersions) > 1) {
-                    continue; 
+                // Jika 404, model tidak ada di versi ini, coba versi berikutnya
+                if ($status === 404) {
+                    continue;
                 }
 
                 // Differentiate between quota (429) and real errors

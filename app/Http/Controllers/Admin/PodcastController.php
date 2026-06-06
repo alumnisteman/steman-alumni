@@ -34,7 +34,7 @@ class PodcastController extends Controller
             'duration' => 'required|string|max:20',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . rand(1000, 9999);
+        $validated['slug'] = str()->slug($validated['title']) . '-' . rand(1000, 9999);
         $validated['is_published'] = $request->has('is_published');
         $validated['user_id'] = Auth::id();
         
@@ -63,7 +63,7 @@ class PodcastController extends Controller
         ]);
 
         if ($podcast->title !== $validated['title']) {
-            $validated['slug'] = Str::slug($validated['title']) . '-' . rand(1000, 9999);
+            $validated['slug'] = str()->slug($validated['title']) . '-' . rand(1000, 9999);
         }
         $validated['is_published'] = $request->has('is_published');
 

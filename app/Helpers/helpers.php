@@ -1,65 +1,54 @@
 <?php
-use Carbon\Carbon;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Log;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
-if (!function_exists('env')) {
-    function env(string $key, $default = null) {
-        return $default;
-    }
-}
-if (!function_exists('route')) {
-    function route(string $name, $parameters = [], bool $absolute = true) {
-        return '';
-    }
-}
-if (!function_exists('session')) {
-    function session($key = null, $default = null) {
-        return $default;
-    }
-}
-if (!function_exists('now')) {
-    function now($tz = null): Carbon {
-        return Carbon::now($tz);
-    }
-}
-if (!function_exists('base_path')) {
-    function base_path($path = '') {
-        return App::basePath($path);
-    }
-}
-if (!function_exists('storage_path')) {
-    function storage_path($path = '') {
-        return App::storagePath($path);
-    }
-}
-if (!function_exists('getAds')) {
-    /**
-     * Retrieve advertisement collection for a given slot.
-     *
-     * @param string|null $slot Identifier for the ad placement.
-     * @return \Illuminate\Support\Collection
-     */
-    function getAds(?string $slot): \Illuminate\Support\Collection
-    {
+if (! function_exists('setting')) {
+    function setting($key, $default = null) {
         try {
-            $slot = strtolower(trim($slot));
-            
-            // Query active ads for the given position
-            $ads = \App\Models\Ad::active()
-                ->when($slot, function($query) use ($slot) {
-                    return $query->position($slot);
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
-            
-            return $ads;
+            return \App\Models\Setting::get($key, $default);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('getAds() error: ' . $e->getMessage());
-            return collect();
+            Log::error('Setting Helper Error: ' . $e->getMessage());
+            return $default;
         }
     }
-}function setting(string $key, $default = null) {
-    return Config::get('settings.' . $key, $default);
 }
-?>
+
+if (! function_exists('getAds')) {
+    function getAds($position)
+    {
+        return \App\Models\Ad::active()
+            ->where('position', $position)
+            ->inRandomOrder()
+            ->select('id','title','image_desktop','image_mobile','link')
+            ->get();
+    }
+}
+if (! function_exists('thumbnail')) {
+    /**
+     * Generate optimized image URL
+     * @param string $path Original storage path (e.g. storage/uploads/...)
+     * @param int|null $width
+     * @param int|null $height
+     * @param string $format
+     * @return string
+     */
+    function thumbnail($path, $width = null, $height = null, $format = 'webp')
+    {
+        if (!$path) return $path;
+        
+        // Convert /storage/path to path
+        $cleanPath = preg_replace('#^/?storage/#', '', $path);
+        
+        try {
+            return route('image.optimize', [
+                'path' => $cleanPath,
+                'w' => $width,
+                'h' => $height,
+                'f' => $format
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Thumbnail Route Error: ' . $e->getMessage());
+            return $path; // Fallback to original
+        }
+    }
+}

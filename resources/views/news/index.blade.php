@@ -41,7 +41,7 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="news-card card h-100">
                             @if($item->thumbnail)
-                                <img src="{{ Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="card-img-top" alt="{{ $item->title }}" loading="lazy">
+                                <img src="{{ \Illuminate\Support\Str::startsWith($item->thumbnail, 'http') ? $item->thumbnail : asset($item->thumbnail) }}" class="card-img-top" alt="{{ $item->title }}" loading="lazy">
                             @else
                                 <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 200px;">
                                     <i class="bi bi-image display-4"></i>
@@ -49,8 +49,8 @@
                             @endif
                             <div class="card-body">
                                 <div class="date-tag mb-2">{{ $item->created_at->format('d M Y') }}</div>
-                                <h5 class="fw-bold mb-3"><a href="{{ route('news.show', $item->slug) }}" class="text-dark text-decoration-none">{{ Str::limit($item->title, 100) }}</a></h5>
-                                <p class="text-muted small mb-0">{{ Str::limit(strip_tags($item->content), 100) }}</p>
+                                <h5 class="fw-bold mb-3"><a href="{{ route('news.show', $item->slug) }}" class="text-dark text-decoration-none">{{ \Illuminate\Support\Str::limit($item->title, 100) }}</a></h5>
+                                <p class="text-muted small mb-0">{{ \Illuminate\Support\Str::limit(strip_tags($item->content), 100) }}</p>
                             </div>
                         </div>
                     </div>
@@ -87,7 +87,7 @@
                                     {{ $n['title'] }}
                                 </h6>
                                 <p class="text-muted small mb-0" style="font-size: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                    {{ Str::limit($n['desc'], 80) }}
+                                    {{ \Illuminate\Support\Str::limit($n['desc'], 80) }}
                                 </p>
                                 <a href="{{ $n['url'] }}" target="_blank" class="text-info text-decoration-none small mt-2 d-inline-block fw-bold" style="font-size: 0.75rem;">
                                     Baca Selengkapnya <i class="bi bi-arrow-right"></i>

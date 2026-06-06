@@ -36,7 +36,7 @@ class PasswordResetController extends Controller
         }
 
         // Generate Token
-        $token = Str::random(64);
+        $token = str()->random(64);
 
         // Store Token in password_reset_tokens
         DB::table('password_reset_tokens')->updateOrInsert(

@@ -138,6 +138,7 @@ services:
       - ./storage:/var/www/storage:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/auth:/etc/nginx/auth:ro
       - ./certs:/etc/nginx/ssl:ro
       - certbot_certs:/etc/letsencrypt
       - certbot_www:/var/www/certbot
@@ -187,16 +188,7 @@ services:
       MARIADB_USER: ${DB_USERNAME}
       MARIADB_PASSWORD: ${DB_PASSWORD}
       MARIADB_ROOT_PASSWORD: Ch4v4run3@
-    command: [
-      "mysqld",
-      "--innodb-buffer-pool-size=256M",
-      "--innodb-log-file-size=64M",
-      "--query-cache-size=32M",
-      "--query-cache-type=1",
-      "--max-connections=150",
-      "--character-set-server=utf8mb4",
-      "--collation-server=utf8mb4_unicode_ci"
-    ]
+    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=$${MARIADB_ROOT_PASSWORD} || exit 1"]
       interval: 30s
@@ -209,6 +201,7 @@ services:
           memory: 512M
     volumes:
       - dbdata:/var/lib/mysql
+      - ./docker/mariadb/tuning.cnf:/etc/mysql/conf.d/tuning.cnf:ro
     logging:
       driver: "json-file"
       options:

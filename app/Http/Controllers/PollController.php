@@ -10,11 +10,11 @@ class PollController extends Controller {
 
     public function index()
     {
-        $activePolls = Poll::where('status', 'active')
+        $activePolls = Poll::where('is_active', true)
             ->orderByDesc('created_at')
             ->get();
 
-        $closedPolls = Poll::where('status', 'closed')
+        $closedPolls = Poll::where('is_active', false)
             ->orderByDesc('created_at')
             ->get();
 

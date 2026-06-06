@@ -490,6 +490,19 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
     if (!\Illuminate\Support\Facades\File::exists($fullPath)) {
+        // Fallback berdasarkan jenis folder storage
+        if (str_starts_with($path, 'avatars/')) {
+            $hash = md5(basename($path));
+            $colors = ['4f46e5', '7c3aed', 'db2777', 'ea580c', '16a34a', '0284c7'];
+            $bg = $colors[hexdec(substr($hash, 0, 2)) % count($colors)];
+            return redirect('https://ui-avatars.com/api/?name=Alumni&background=' . $bg . '&color=fff&size=128');
+        }
+        if (str_starts_with($path, 'ads/')) {
+            return redirect('https://placehold.co/1280x300/e2e8f0/94a3b8?text=Iklan+Tidak+Tersedia');
+        }
+        if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'news/') || str_starts_with($path, 'gallery/')) {
+            return redirect('https://placehold.co/800x400/e2e8f0/94a3b8?text=Gambar+Tidak+Tersedia');
+        }
         \abort(404);
     }
     $file = \Illuminate\Support\Facades\File::get($fullPath);

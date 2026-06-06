@@ -8,6 +8,7 @@ use App\Models\User;
 class Gallery extends Model
 {
     use SoftDeletes;
+    use \App\Traits\HasPublishStatus;
 
     protected $fillable = [
         'user_id',
@@ -22,7 +23,13 @@ class Gallery extends Model
 
     public function getIsPublishedAttribute(): bool
     {
-        return $this->status === 'published';
+        return $this->isPublished();
+    }
+
+    /** Normalize legacy "video" type to DB enum value. */
+    public static function normalizeType(string $type): string
+    {
+        return $type === 'video' ? 'youtube' : $type;
     }
 
     public function user()

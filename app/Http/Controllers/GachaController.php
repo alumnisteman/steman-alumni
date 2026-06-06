@@ -50,7 +50,7 @@ class GachaController extends Controller
             ->whereIn('status', ['approved', 'active']);
 
         if ($major)    $query->where('major', $major);
-        if ($city)     $query->where('city', 'like', "%{$city}%");
+        if ($city)     $query->where('city_name', 'like', "%{$city}%");
         if ($interest) $query->where('interests', 'like', "%{$interest}%");
 
         $alumni = $query->inRandomOrder()->first();

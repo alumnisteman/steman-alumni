@@ -117,7 +117,7 @@ class DonationController extends Controller
                 'is_anonymous' => $request->has('is_anonymous'),
             ]);
 
-            $hash = hash('sha256', $donation->id . $donation->amount . $donation->created_at . Str::random(10));
+            $hash = hash('sha256', $donation->id . $donation->amount . $donation->created_at . str()->random(10));
             $donation->update(['hash' => $hash]);
 
             // Create Immutable Audit Log
@@ -242,7 +242,7 @@ class DonationController extends Controller
             'image'        => 'nullable|image|max:2048',
         ]);
 
-        $data['slug'] = Str::slug($request->title) . '-' . time();
+        $data['slug'] = str()->slug($request->title) . '-' . time();
         $data['is_featured'] = $request->boolean('is_featured');
 
         if ($request->hasFile('image')) {

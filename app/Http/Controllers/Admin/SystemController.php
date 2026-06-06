@@ -10,7 +10,7 @@ class SystemController extends Controller
 {
     /**
      * Display the last few entries of the system logs.
-     * This provides a way for admins to debug issues without SSH access.
+     * This provides a "no-ssh" way for admins to debug issues.
      */
     public function logs(Request $request)
     {
@@ -87,8 +87,27 @@ class SystemController extends Controller
             $status['nodes']['redis']['status'] = 'up';
         } catch (\Exception $e) {}
 
-        // Check External APIs (Simple ping or cache check)
-        $status['nodes']['newsapi']['status'] = config('services.newsapi.key') ? 'up' : 'down';
+        // Check External APIs (cached HTTP probe — key-only check was misleading)
+        $status['nodes']['newsapi']['status'] = \Illuminate\Support\Facades\Cache::remember(
+            'pulse_newsapi_status',
+            300,
+            function () {
+                $key = config('services.newsapi.key');
+                if (!$key) {
+                    return 'down';
+                }
+                try {
+                    $res = \Illuminate\Support\Facades\Http::timeout(3)->get('https://newsapi.org/v2/top-headlines', [
+                        'country' => 'id',
+                        'pageSize' => 1,
+                        'apiKey' => $key,
+                    ]);
+                    return $res->successful() ? 'up' : 'down';
+                } catch (\Exception $e) {
+                    return 'down';
+                }
+            }
+        );
         
         // Check RSSHub (Assume up if reachable)
         try {

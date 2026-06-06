@@ -42,7 +42,7 @@ class JobVacancy extends Model
 
         static::creating(function ($job) {
             if (empty($job->slug)) {
-                $job->slug = Str::slug($job->title) . '-' . Str::random(5);
+                $job->slug = str()->slug($job->title) . '-' . str()->random(5);
             }
         });
     }

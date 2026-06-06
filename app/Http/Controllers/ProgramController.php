@@ -39,7 +39,7 @@ class ProgramController extends Controller
         ]);
 
         $data = $request->all();
-        $data['slug'] = Str::slug($request->title);
+        $data['slug'] = str()->slug($request->title);
 
         if ($request->hasFile('image')) {
             $storedPath = $request->file('image')->store('uploads/programs', 'public');
@@ -79,7 +79,7 @@ class ProgramController extends Controller
         ]);
 
         $data = $request->all();
-        $data['slug'] = Str::slug($request->title);
+        $data['slug'] = str()->slug($request->title);
 
         if ($request->hasFile('image')) {
             // Delete old image if exists

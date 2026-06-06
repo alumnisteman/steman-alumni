@@ -424,7 +424,7 @@
                         <div class="col-md-6">
                             <a href="{{ route('news.show', $news->slug) }}" class="text-decoration-none group">
                                 <div class="rounded-4 overflow-hidden mb-3" style="height: 160px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <img src="{{ $news->thumbnail ? (Str::startsWith($news->thumbnail, 'http') ? $news->thumbnail : asset($news->thumbnail)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop' }}" class="w-100 h-100 object-fit-cover hover-lift" alt="News" loading="lazy">
+                                    <img src="{{ $news->thumbnail ? (\Illuminate\Support\Str::startsWith($news->thumbnail, 'http') ? $news->thumbnail : asset($news->thumbnail)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070&auto=format&fit=crop' }}" class="w-100 h-100 object-fit-cover hover-lift" alt="News" loading="lazy">
                                 </div>
                                 <h6 class="text-white fw-bold line-clamp-2">{{ $news->title }}</h6>
                                 <span class="text-white-50 extra-small">{{ $news->created_at->diffForHumans() }}</span>

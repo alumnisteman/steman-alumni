@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\ActivityLog;
+use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;

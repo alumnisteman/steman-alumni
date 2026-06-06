@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
 @section('meta')
-    <meta name="description" content="{{ Str::limit($successStory->quote, 160) }}">
+    <meta name="description" content="{{ \Illuminate\Support\Str::limit($successStory->quote, 160) }}">
     <meta property="og:title" content="Kisah Inspiratif: {{ $successStory->name }} - {{ $successStory->title }}">
-    <meta property="og:description" content="{{ Str::limit($successStory->quote, 160) }}">
+    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit($successStory->quote, 160) }}">
     <meta property="og:image" content="{{ $successStory->image_path ? asset('storage/'.$successStory->image_path) : 'https://ui-avatars.com/api/?name='.urlencode($successStory->name).'&size=600&background=ffcc00&color=000' }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $successStory->name }} - {{ $successStory->title }}">
-    <meta name="twitter:description" content="{{ Str::limit($successStory->quote, 160) }}">
+    <meta name="twitter:description" content="{{ \Illuminate\Support\Str::limit($successStory->quote, 160) }}">
     <meta name="twitter:image" content="{{ $successStory->image_path ? asset('storage/'.$successStory->image_path) : 'https://ui-avatars.com/api/?name='.urlencode($successStory->name).'&size=600&background=ffcc00&color=000' }}">
 @endsection
 
@@ -299,7 +299,7 @@
             ctx.fillText('alumni-steman.my.id', 540, 1870);
 
             const link = document.createElement('a');
-            link.download = 'Poster_Inspirasi_{{ Str::slug($successStory->name) }}.png';
+            link.download = 'Poster_Inspirasi_{{ \Illuminate\Support\Str::slug($successStory->name) }}.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
 

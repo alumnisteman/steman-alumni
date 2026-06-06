@@ -111,7 +111,9 @@ class Rules
             'db_down', 'redis_down', 'queue_overload', 'meili_down',
             'disk_low', 'storage_broken', 'log_bloated',
             'session_domain', 'captcha_patch', 'nginx_down',
-            'audit_broken', 'route_mismatch',
+            'audit_broken', 'route_mismatch', 'route_shadowing',
+            'smoke_test', 'migration_mismatch', 'symlink_broken',
+            'ai_offline', 'earth_data_mismatch',
         ];
 
         $stats = [];

@@ -1,29 +1,44 @@
 [mariadb]
-# --- Performance Tuning for Steman Alumni ---
-# Based on 8GB Server RAM (5.2GB Available)
+# ============================================================
+# STEMAN ALUMNI — MariaDB 10.6+ Performance Tuning
+# NOTE: query_cache removed — deprecated & removed in 10.6+
+# ============================================================
 
-# InnoDB Buffers (Crucial for speed)
-# Increased from 256MB to 2GB (About 40% of available RAM)
-innodb_buffer_pool_size = 2G
-innodb_buffer_pool_instances = 2
-innodb_log_file_size = 512M
-innodb_flush_log_at_trx_commit = 2
-innodb_flush_method = O_DIRECT
+# ── InnoDB Engine ────────────────────────────────────────────
+innodb_buffer_pool_size         = 512M
+innodb_buffer_pool_instances    = 2
+innodb_log_file_size            = 128M
+# 2 = flush log once per second (best perf, max 1s data risk)
+innodb_flush_log_at_trx_commit  = 2
+innodb_flush_method             = O_DIRECT
+innodb_read_io_threads          = 4
+innodb_write_io_threads         = 4
+innodb_io_capacity              = 400
+innodb_file_per_table           = 1
 
-# Connection Handling
-max_connections = 250
-thread_cache_size = 32
+# ── Connections ──────────────────────────────────────────────
+max_connections                 = 150
+thread_cache_size               = 16
+wait_timeout                    = 600
+interactive_timeout             = 600
 
-# Query Cache (Useful for read-heavy apps)
-query_cache_type = 1
-query_cache_size = 128M
-query_cache_limit = 2M
+# ── Buffers ──────────────────────────────────────────────────
+tmp_table_size                  = 64M
+max_heap_table_size             = 64M
+sort_buffer_size                = 4M
+join_buffer_size                = 4M
+read_rnd_buffer_size            = 4M
+key_buffer_size                 = 32M
 
-# Temporary Tables
-tmp_table_size = 64M
-max_heap_table_size = 64M
+# ── Slow Query Log ───────────────────────────────────────────
+slow_query_log                  = 1
+slow_query_log_file             = /var/log/mysql/slow.log
+long_query_time                 = 1
+log_queries_not_using_indexes   = 0
 
-# Slow Query Log (For debugging future bottlenecks)
-slow_query_log = 1
-slow_query_log_file = /var/log/mysql/slow.log
-long_query_time = 2
+# ── Character Set ────────────────────────────────────────────
+character_set_server            = utf8mb4
+collation_server                = utf8mb4_unicode_ci
+
+# ── Performance Schema ───────────────────────────────────────
+performance_schema              = ON

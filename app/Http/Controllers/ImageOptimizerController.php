@@ -24,26 +24,41 @@ class ImageOptimizerController extends Controller
         $quality = (int)$request->query('q', 75);
         $format = $request->query('f', 'webp');
 
+        // Fallback ke jpeg jika GD tidak support WebP
+        if ($format === 'webp' && !function_exists('imagewebp')) {
+            $format = 'jpg';
+        }
+
         $cacheKey = "img_opt_v2_" . md5($path . $width . $height . $quality . $format);
 
         $imageData = Cache::remember($cacheKey, 86400 * 7, function () use ($fullPath, $width, $height, $quality, $format) {
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($fullPath);
+            try {
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($fullPath);
 
-            if ($width || $height) {
-                // Use cover() to crop and resize precisely if both provided, or scale() if one
-                if ($width && $height) {
-                    $image->cover($width, $height);
-                } else {
-                    $image->scale($width, $height);
+                if ($width || $height) {
+                    if ($width && $height) {
+                        $image->cover($width, $height);
+                    } else {
+                        $image->scale($width, $height);
+                    }
                 }
-            }
 
-            return $image->encodeByExtension($format, $quality)->toString();
+                return $image->encodeByExtension($format, $quality)->toString();
+            } catch (\Exception $e) {
+                return file_get_contents($fullPath);
+            }
         });
 
+        $mimeType = match($format) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            default => 'image/' . $format,
+        };
+
         return response($imageData)
-            ->header('Content-Type', 'image/' . $format)
+            ->header('Content-Type', $mimeType)
             ->header('Cache-Control', 'public, max-age=604800, immutable');
     }
 }

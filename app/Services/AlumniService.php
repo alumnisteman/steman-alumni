@@ -50,7 +50,7 @@ class AlumniService
     public function getDashboardData($user)
     {
         // 1. News
-        $latestNews = \App\Models\News::where('status', 'published')->latest()->take(2)->get();
+        $latestNews = \App\Models\News::published()->latest()->take(2)->get();
         
         // 2. Job Recommendations
         $recommendedJobs = \App\Models\JobVacancy::where('status', 'active')
@@ -194,9 +194,9 @@ class AlumniService
             $mapAnalytics = User::getMapAnalytics();
 
             return [
-                'latestNews' => \App\Models\News::where('status', 'published')->latest()->take(3)->get(),
-                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->where('status', 'published')->latest()->take(4)->get(),
-                'latestVideos' => \App\Models\Gallery::where('type', 'video')->where('status', 'published')->latest()->take(2)->get(),
+                'latestNews' => \App\Models\News::published()->latest()->take(3)->get(),
+                'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->published()->latest()->take(4)->get(),
+                'latestVideos' => \App\Models\Gallery::whereIn('type', ['youtube', 'video'])->published()->latest()->take(2)->get(),
                 'activePrograms' => \App\Models\Program::where('status', 'active')->latest()->take(3)->get(),
                 'latestJobs' => \App\Models\JobVacancy::where('status', 'active')->latest()->take(3)->get(),
                 'successStories' => \App\Models\SuccessStory::where('is_published', true)->orderBy('order')->take(3)->get(),
@@ -207,7 +207,7 @@ class AlumniService
                 'internationalCount' => $mapAnalytics['internationalCount'],
                 'aiInsights' => $aiService->getGlobalInsights(),
                 'topAlumni' => \App\Models\User::where('role', 'alumni')->with('badges')->orderBy('points', 'desc')->take(3)->get(),
-                'schoolName' => setting('school_name', 'SMKN 2 Ternate'),
+                'schoolName' => 'SMKN 2 Ternate',
                 'totalPoints' => \App\Models\User::sum('points'),
                 'featuredAvatars' => User::active()->inRandomOrder()->take(5)->get()->map(fn($u) => $u->profile_picture_url)->toArray(),
                 'recentActivities' => \App\Models\ActivityLog::with('user')->whereNotNull('user_id')->latest()->take(10)->get(),

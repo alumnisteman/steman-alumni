@@ -101,7 +101,7 @@ class ProgramRegistrationController extends Controller
 
         // Generate Ticket if approved and is an event
         if ($request->status == 'approved' && $registration->program->is_event && !$registration->ticket_code) {
-            $ticketCode = 'STMN-' . strtoupper(\Illuminate\Support\Str::random(8)) . '-' . $registration->id;
+            $ticketCode = 'STMN-' . strtoupper(\Illuminate\Support\str()->random(8)) . '-' . $registration->id;
             $registration->update([
                 'ticket_code' => $ticketCode
             ]);

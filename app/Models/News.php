@@ -8,8 +8,9 @@ use Illuminate\Support\Str;
 class News extends Model
 {
     use SoftDeletes;
+    use \App\Traits\HasPublishStatus;
 
-    protected $fillable = ['user_id', 'title', 'slug', 'content', 'thumbnail', 'category', 'status'];
+    protected $fillable = ['user_id', 'title', 'slug', 'content', 'thumbnail', 'category', 'status', 'is_published'];
 
     protected static function boot()
     {
@@ -23,7 +24,7 @@ class News extends Model
 
     public function getIsPublishedAttribute(): bool
     {
-        return $this->status === 'published';
+        return $this->isPublished();
     }
 
     public function user()

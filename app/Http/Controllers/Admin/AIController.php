@@ -8,8 +8,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use App\Jobs\LogActivity;
+use App\Support\WelcomeCache;
 
 class AIController extends Controller
 {
@@ -47,7 +46,7 @@ class AIController extends Controller
 
     public function publish(News $news)
     {
-        $news->update(['status' => 'published']);
+        $news->update(News::publishAttributes(true));
 
         // Award points to the admin for publishing content
         $admin = Auth::user();
@@ -60,7 +59,7 @@ class AIController extends Controller
             request()->ip(),
             request()->header('User-Agent')
         );
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
 
         return back()->with('success', 'Berita kebanggaan alumni berhasil diterbitkan! Anda mendapatkan 50 poin otoritas.');
     }

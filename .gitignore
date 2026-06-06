@@ -39,3 +39,10 @@ fix_*.sh
 homepage.html
 scratch/
 debug/
+*.gz
+*.bak
+*.bak_*
+certs/
+docker/nginx/ssl/
+db_backup*
+reset_password*

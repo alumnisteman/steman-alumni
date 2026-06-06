@@ -27,7 +27,7 @@
                     @forelse($news as $item)
                     <tr>
                         <td class="ps-4 small text-muted">{{ $item->created_at->format('d/m/Y') }}</td>
-                        <td><span class="fw-bold text-dark">{{ Str::limit($item->title, 100) }}</span></td>
+                        <td><span class="fw-bold text-dark">{{ \Illuminate\Support\Str::limit($item->title, 100) }}</span></td>
                         <td><span class="badge bg-light text-dark shadow-sm px-3 rounded-pill">{{ $item->category }}</span></td>
                         <td>
                             @if($item->status === 'published')

@@ -26,7 +26,7 @@
                         </div>
                         <h5 class="fw-bold mb-3">{{ $forum->title }}</h5>
                         <p class="text-muted small mb-4 text-truncate-2">
-                            {{ Str::limit($forum->content, 150) }}
+                            {{ \Illuminate\Support\Str::limit($forum->content, 150) }}
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-light text-dark rounded-pill px-3 py-2">

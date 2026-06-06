@@ -45,7 +45,7 @@ class Program extends Model
 
         static::creating(function ($program) {
             if (empty($program->slug)) {
-                $program->slug = Str::slug($program->title);
+                $program->slug = str()->slug($program->title);
             }
         });
     }

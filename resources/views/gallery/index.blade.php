@@ -60,7 +60,7 @@
                             @endif
                         </div>
                         @if($item->description && $item->description !== $item->title)
-                            <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ Str::limit($item->description, 80) }}</p>
+                            <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ \Illuminate\Support\Str::limit($item->description, 80) }}</p>
                         @endif
                     </div>
                 </div>

@@ -136,6 +136,11 @@ class User extends Authenticatable
         return (bool) $this->mentoring;
     }
 
+    public function getCityAttribute(): ?string
+    {
+        return $this->city_name;
+    }
+
     public function badges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')->withTimestamps();

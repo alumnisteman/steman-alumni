@@ -121,7 +121,7 @@
                     <tr>
                         <td class="ps-4 py-3">
                             <span class="fw-bold d-block">{{ $draft->title }}</span>
-                            <small class="text-muted">{{ Str::limit(strip_tags($draft->content), 80) }}</small>
+                            <small class="text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($draft->content), 80) }}</small>
                         </td>
                         <td><span class="badge bg-info bg-opacity-10 text-info px-3 py-1">{{ $draft->category }}</span></td>
                         <td>{{ $draft->created_at->format('d M Y H:i') }}</td>

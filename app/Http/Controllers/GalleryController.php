@@ -7,8 +7,7 @@ use App\Jobs\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-
+use App\Support\WelcomeCache;
 
 class GalleryController extends Controller
 {
@@ -31,15 +30,14 @@ class GalleryController extends Controller
 
     public function index(Request $request)
     {
-                $type = $request->input('type', 'photo');
+        $type = $request->get('type', 'photo');
         if ($type === 'video') {
-            $media = Gallery::whereIn('type', ['video', 'tiktok'])->where('status', 'published')->with(['user' => function($query) {
-                $query->select('id', 'name', 'profile_picture');
-            }])->latest()->paginate(12);
+            $media = Gallery::whereIn('type', ['youtube', 'video', 'tiktok'])
+                ->where('status', 'published')
+                ->latest()
+                ->paginate(12);
         } else {
-            $media = Gallery::where('type', $type)->where('status', 'published')->with(['user' => function($query) {
-                $query->select('id', 'name', 'profile_picture');
-            }])->latest()->paginate(12);
+            $media = Gallery::where('type', $type)->where('status', 'published')->latest()->paginate(12);
         }
         return view('gallery.index', compact('media', 'type'));
     }
@@ -68,11 +66,11 @@ class GalleryController extends Controller
 
         $tiktokUrl  = null;
 
-        if ($request->input('type') == 'video' && $request->input('youtube_url') && strpos($request->input('youtube_url'), 'tiktok') !== false) {
+        if ($request->type == 'video' && $request->youtube_url && strpos($request->youtube_url, 'tiktok') !== false) {
             return back()->with('error', 'Link TikTok harus dimasukkan pada Tipe Media TikTok, bukan Video/YouTube.');
         }
 
-        if ($request->input('type') == 'photo') {
+        if ($request->type == 'photo') {
             if (!$request->hasFile('file')) return back()->with('error', 'Foto wajib diunggah.');
             $file = $request->file('file');
             
@@ -85,9 +83,9 @@ class GalleryController extends Controller
             }
 
             $fileUrl = '/storage/' . $path;
-        } elseif ($request->input('type') == 'tiktok') {
-            if (!$request->input('tiktok_url')) return back()->with('error', 'Wajib menyertakan link TikTok.');
-            $tiktokUrl = $this->cleanTiktokUrl($request->input('tiktok_url'));
+        } elseif ($request->type == 'tiktok') {
+            if (!$request->tiktok_url) return back()->with('error', 'Wajib menyertakan link TikTok.');
+            $tiktokUrl = $this->cleanTiktokUrl($request->tiktok_url);
         } else {
             if ($request->youtube_url) {
                 $url = $request->youtube_url;
@@ -102,14 +100,14 @@ class GalleryController extends Controller
         }
 
         $gallery = new Gallery();
-                $gallery->user_id     = auth()->id();
-        $gallery->title       = $request->input('title');
-        $gallery->type        = $request->input('type');
+        $gallery->user_id     = auth()->id();
+        $gallery->title       = $request->title;
+        $gallery->type        = Gallery::normalizeType($request->type);
         $gallery->file_path   = $fileUrl;
         $gallery->youtube_url = $youtubeUrl;
-        $gallery->tiktok_url  = ($request->input('type') === 'tiktok') ? $tiktokUrl : null;
-        $gallery->description = $request->input('description');
-        $gallery->status      = $request->input('status') ?? 'published';
+        $gallery->tiktok_url  = ($request->type === 'tiktok') ? $tiktokUrl : null;
+        $gallery->description = $request->description;
+        $gallery->status      = $request->status ?? 'published';
         $gallery->save();
 
         ActivityLog::create([
@@ -119,7 +117,7 @@ class GalleryController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
         ]);
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
 
         return back()->with('success', 'Media berhasil ditambahkan.');
     }
@@ -141,6 +139,7 @@ class GalleryController extends Controller
             request()->ip(),
             request()->header('User-Agent')
         );
+        WelcomeCache::forget();
 
         return back()->with('success', 'Konten berhasil dihapus.');
     }
@@ -162,19 +161,19 @@ class GalleryController extends Controller
         ]);
 
         $data = [
-            'title'       => $request->input('title'),
-            'description' => $request->input('description'),
-                        'type'        => $request->input('type'),
-            'status'      => $request->input('status'),
+            'title'       => $request->title,
+            'description' => $request->description,
+            'type'        => Gallery::normalizeType($request->type),
+            'status'      => $request->status,
         ];
 
-                if ($request->input('type') === 'tiktok' && $request->input('tiktok_url')) {
-            $data['tiktok_url'] = $this->cleanTiktokUrl($request->input('tiktok_url'));
+        if ($request->type === 'tiktok' && $request->tiktok_url) {
+            $data['tiktok_url'] = $this->cleanTiktokUrl($request->tiktok_url);
         }
 
-                if ($request->input('type') === 'video') {
-            if ($request->input('youtube_url')) {
-                $url = $request->input('youtube_url');
+        if ($request->type === 'video') {
+            if ($request->youtube_url) {
+                $url = $request->youtube_url;
                 if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?|live|shorts)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
                     $url = 'https://www.youtube.com/embed/' . $match[1];
                 }
@@ -182,7 +181,7 @@ class GalleryController extends Controller
             }
         }
 
-                if ($request->hasFile('file') && $request->input('type') === 'photo') {
+        if ($request->hasFile('file') && $request->type === 'photo') {
             // Delete old file if it exists
             if ($gallery->file_path) {
                 $relativePath = ltrim(str_replace('/storage/', '', $gallery->file_path), '/');
@@ -211,7 +210,7 @@ class GalleryController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
         ]);
-        Cache::forget('welcome_data');
+        WelcomeCache::forget();
 
         return back()->with('success', 'Media berhasil diperbarui.');
     }

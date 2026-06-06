@@ -76,16 +76,22 @@ class MuseumController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            // Compress & store as WebP via GD
-            $image   = $request->file('image');
-            $imgRes  = imagecreatefromstring(file_get_contents($image->getRealPath()));
+            $image = $request->file('image');
+            $imgRes = imagecreatefromstring(file_get_contents($image->getRealPath()));
+
             ob_start();
-            imagewebp($imgRes, null, 80);
-            $webpData = ob_get_clean();
+            if (function_exists('imagewebp')) {
+                imagewebp($imgRes, null, 80);
+                $ext = 'webp';
+            } else {
+                imagejpeg($imgRes, null, 80);
+                $ext = 'jpg';
+            }
+            $imgData = ob_get_clean();
             imagedestroy($imgRes);
 
-            $filename  = 'museum/' . uniqid() . '.webp';
-            Storage::disk('public')->put($filename, $webpData);
+            $filename = 'museum/' . uniqid() . '.' . $ext;
+            Storage::disk('public')->put($filename, $imgData);
             $imagePath = $filename;
         }
 
