@@ -1,0 +1,217 @@
+echo y | plink -ssh root@103.175.219.57 -pw Ch4v4run3@ "echo Connected via plink" Saya kasih otoritas penuh replit eksekusi jgn lupa backup dulu
+Untuk sistem Laravel + Docker + Cloudflare seperti yang sedang saya bangun, pendekatan terbaik adalah membuat Self-Healing Infrastructure (otomatis mendeteksi, memperbaiki, dan rollback saat terjadi error).(Pake Bahasa Indonesia)
+
+Arsitektur Self-Healing
+GitHub Push
+     ↓
+GitHub Actions
+     ↓
+Deploy Server
+     ↓
+Health Check
+     ↓
+┌───────────────┐
+│ Healthy?      │
+└───────┬───────┘
+        │
+   YES  │  NO
+        │
+        ↓
+     Online
+        │
+        ↓
+ Auto Monitor
+        │
+        ↓
+ Error Detected
+        │
+        ↓
+ Auto Repair
+        │
+        ↓
+ Still Error?
+        │
+   YES  │  NO
+        │
+        ↓
+ Auto Rollback
+1. Auto Container Recovery
+
+Tambahkan pada semua service:
+
+restart: unless-stopped
+
+atau:
+
+restart: always
+
+Contoh:
+
+app:
+  build: .
+  restart: unless-stopped
+
+queue:
+  build: .
+  restart: unless-stopped
+
+reverb:
+  build: .
+  restart: unless-stopped
+
+db:
+  image: mysql:8
+  restart: unless-stopped
+2. Health Check Otomatis
+
+Laravel:
+
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost/up"]
+  interval: 30s
+  timeout: 10s
+  retries: 5
+
+MySQL:
+
+healthcheck:
+  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  interval: 10s
+  timeout: 5s
+  retries: 10
+
+Redis:
+
+healthcheck:
+  test: ["CMD", "redis-cli", "ping"]
+3. Auto Repair Script
+
+Buat:
+
+/usr/local/bin/steman-heal.sh
+#!/bin/bash
+
+cd /var/www/steman-alumni
+
+APP=$(docker inspect --format='{{.State.Health.Status}}' steman_app 2>/dev/null)
+
+if [ "$APP" != "healthy" ]; then
+    echo "$(date) APP unhealthy" >> /var/log/steman-heal.log
+
+    docker compose restart app queue reverb
+
+    sleep 30
+
+    APP=$(docker inspect --format='{{.State.Health.Status}}' steman_app 2>/dev/null)
+
+    if [ "$APP" != "healthy" ]; then
+        echo "$(date) FULL REBUILD" >> /var/log/steman-heal.log
+        docker compose down
+        docker compose up -d
+    fi
+fi
+4. Cron Self-Healing
+crontab -e
+
+Tambahkan:
+
+*/5 * * * * /usr/local/bin/steman-heal.sh
+
+Setiap 5 menit sistem memeriksa dirinya sendiri.
+
+5. Auto Rollback Deploy
+
+Simpan release:
+
+/var/www/releases/
+├── release-001
+├── release-002
+├── release-003
+
+Current:
+
+/var/www/current -> release-003
+
+Jika health check gagal:
+
+ln -sfn /var/www/releases/release-002 /var/www/current
+docker compose restart
+
+Otomatis kembali ke versi terakhir yang sehat.
+
+6. Auto Cloudflare Recovery
+
+Script:
+
+curl -fsS https://alumni-steman.my.id/up
+
+Jika gagal:
+
+docker compose restart nginx
+
+Jika masih gagal:
+
+docker compose restart
+7. Auto Database Backup
+
+Backup harian:
+
+mysqldump \
+-u root \
+-pPASSWORD \
+steman_alumni \
+| gzip > \
+/backup/steman_$(date +%F).sql.gz
+
+Cron:
+
+0 2 * * * /usr/local/bin/backup.sh
+8. Auto Monitoring
+
+Pasang:
+
+Uptime Kuma
+
+Monitoring:
+
+Website
+API
+Database
+Reverb
+Redis
+
+Notifikasi:
+
+Telegram
+Email
+9. Auto Security Update
+apt install unattended-upgrades
+
+Aktifkan:
+
+dpkg-reconfigure unattended-upgrades
+10. Production Self-Healing Stack
+Cloudflare
+    ↓
+Nginx
+    ↓
+Laravel App
+    ↓
+Redis
+    ↓
+MySQL
+
+         ↓
+ Health Checks
+
+         ↓
+ Auto Restart
+
+         ↓
+ Auto Repair
+
+         ↓
+ Auto Rollback
+
+         ↓
+ Telegram Alert
