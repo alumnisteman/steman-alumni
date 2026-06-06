@@ -9,11 +9,29 @@ use Illuminate\Support\Str;
 
 class SocialController extends Controller
 {
+    private function isConfigured(string $provider): bool
+    {
+        $placeholders = [
+            'your-google-client-id', 'your-google-client-secret',
+            'your-linkedin-client-id', 'your-linkedin-client-secret',
+        ];
+        $clientId     = config("services.{$provider}.client_id");
+        $clientSecret = config("services.{$provider}.client_secret");
+        return !empty($clientId)
+            && !empty($clientSecret)
+            && !in_array($clientId, $placeholders)
+            && !in_array($clientSecret, $placeholders);
+    }
+
     public function redirect($provider)
     {
-        // Always use the main domain for OAuth callback to simplify Google Console config
-        // and ensure only one redirect URI needs to be registered.
-        $mainDomain = parse_url(config('app.url'), PHP_URL_HOST);
+        if (!$this->isConfigured($provider)) {
+            return redirect()->route('login')->with('error',
+                'Login via ' . ucfirst($provider) . ' belum dikonfigurasi oleh admin. '
+                . 'Silakan gunakan email dan password untuk masuk.');
+        }
+
+        $mainDomain  = parse_url(config('app.url'), PHP_URL_HOST);
         $callbackUrl = 'https://' . $mainDomain . '/auth/' . $provider . '/callback';
 
         return Socialite::driver($provider)->redirectUrl($callbackUrl)->redirect();

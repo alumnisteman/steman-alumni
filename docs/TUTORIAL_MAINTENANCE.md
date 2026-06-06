@@ -1,250 +1,446 @@
-# 🛠️ Panduan Pemeliharaan (Maintenance) – v4.1 [Hardened Edition]
-
-> Versi terakhir diperbarui: April 2026
-> Status: Production Stable [Hardened]
-
-Ikuti panduan ini secara rutin agar portal tetap **stabil, cepat, dan aman**.
+# Panduan Pemeliharaan (Maintenance) — Portal Alumni STEMAN
+**Terakhir diperbarui: Juni 2026 | Status: Production Active**
 
 ---
 
-## 📋 Ringkasan Jadwal Maintenance
+## Daftar Isi
+1. [Jadwal Pemeliharaan Rutin](#1-jadwal-pemeliharaan-rutin)
+2. [Cek Status Sistem](#2-cek-status-sistem)
+3. [System Guard — Pengawas Otomatis](#3-system-guard--pengawas-otomatis)
+4. [Backup dan Restore Database](#4-backup-dan-restore-database)
+5. [Deploy Update Kode Terbaru](#5-deploy-update-kode-terbaru)
+6. [Optimasi dan Bersihkan Cache](#6-optimasi-dan-bersihkan-cache)
+7. [Reset Password Admin](#7-reset-password-admin)
+8. [Troubleshooting Error Umum](#8-troubleshooting-error-umum)
+9. [Penghapusan Data Permanen](#9-penghapusan-data-permanen)
 
-| Frekuensi | Tugas |
+---
+
+## 1. Jadwal Pemeliharaan Rutin
+
+| Frekuensi | Tugas | Cara |
+|---|---|---|
+| Setiap menit | Heartbeat scheduler | Otomatis |
+| Setiap menit | Jalankan antrian queue | Otomatis (container `steman_queue`) |
+| Setiap 5 menit | Cek kesehatan health_guard | Otomatis (cron) |
+| Setiap jam | Autoheal sistem | Otomatis (cron) |
+| Setiap hari pukul 02:00 | Backup database | Otomatis (cron) |
+| Setiap hari pukul 03:00 | Bersihkan cache & optimasi | Otomatis (cron) |
+| Seminggu sekali | Hapus file sampah storage | Otomatis (Minggu pukul 04:00) |
+| Bulanan | Update dependency, cek keamanan | Manual oleh admin teknis |
+
+---
+
+## 2. Cek Status Sistem
+
+### Cek Semua Container
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+```
+
+Semua container berikut harus berstatus `Up (healthy)`:
+
+| Container | Fungsi |
 |---|---|
-| Setiap hari | Backup otomatis database + file |
-| Seminggu sekali | Bersihkan log, optimasi cache |
-| Setiap bulan | Update dependency, cek keamanan & Hapus gambar usang |
-| Setiap ada error | Baca log, identifikasi penyebab |
+| `steman_app` | Aplikasi Laravel |
+| `steman_nginx` | Web Server |
+| `steman_db` | Database |
+| `steman_queue` | Worker queue |
+| `steman_redis` | Cache & Session |
+| `steman_meilisearch` | Pencarian |
 
----
+### Cek Log Error Laravel secara Live
 
-## 1️⃣ Melihat Status Aplikasi
-
-### Cek semua container berjalan:
 ```bash
-docker compose ps
-```
-Status semua service harus `Up (healthy)`. Jika ada yang `Exit` atau `Unhealthy`:
-```bash
-docker compose restart
+docker exec steman_app tail -f /var/www/storage/logs/laravel.log
 ```
 
-### Cek log error Laravel secara live:
+### Cek Log Nginx
+
 ```bash
-docker exec steman_app tail -f storage/logs/laravel.log
+docker compose -f docker-compose.prod.yml logs -f nginx
 ```
 
-### Cek log Nginx:
+### Cek Log Scheduler
+
 ```bash
-docker compose logs -f nginx
+tail -30 /var/log/steman-scheduler.log
 ```
 
-### Cek log WebSocket (Reverb):
+### Cek Log Autoheal
+
 ```bash
-docker compose logs -f reverb
+tail -30 /var/www/steman-alumni/storage/logs/autoheal.log
 ```
 
 ---
 
-## 2️⃣ Deploy Update Terbaru (Dari GitHub)
+## 3. System Guard — Pengawas Otomatis
 
-Setiap kali ada update kode dari repositori GitHub, jalankan:
+System Guard adalah fitur pengawas otomatis yang memeriksa **21 titik kesehatan** setiap menit dan memperbaiki masalah secara otomatis jika bisa.
 
-```powershell
-# Windows PowerShell — One-Click Deploy
-.\deploy.ps1
+### Jalankan Pengecekan Manual
+
+```bash
+docker exec steman_app php artisan system:guard
 ```
 
-Script ini otomatis:
-1. Pull kode terbaru dari GitHub
-2. Build ulang image Docker
-3. Jalankan migrasi database
-4. Rebuild cache Laravel (config, view, route)
-5. Restart semua container
+Output normal (semua aman):
+```
+✅ ALL SYSTEMS OPERATIONAL — No issues found.
+```
+
+### Kirim Laporan Status ke Telegram
+
+```bash
+docker exec steman_app php artisan system:guard --report
+```
+
+### Titik Pemeriksaan System Guard
+
+| Kode | Pemeriksaan | Keterangan |
+|---|---|---|
+| `db_down` | Koneksi database | Ping ke MySQL |
+| `redis_down` | Koneksi Redis | Ping ke Redis |
+| `queue_overload` | Antrian queue | Jumlah job > 1.000 |
+| `meili_down` | Meilisearch | Cek endpoint `/health` |
+| `disk_low` | Ruang disk | Alert jika < 1 GB |
+| `storage_broken` | Folder storage | Cek bisa ditulis |
+| `log_bloated` | Ukuran log | Alert jika > 50 MB |
+| `scheduler_dead` | Scheduler hidup | Cek heartbeat tiap menit |
+| `news_api_down` | News API | Cek jika API key dikonfigurasi |
+| `smoke_test` | Halaman publik | Coba akses halaman utama |
+| `symlink_broken` | Symlink storage | Cek `/public/storage` |
+| `ai_offline` | AI Service | Cek Gemini/OpenRouter |
+
+### Cara Membaca Status Circuit Breaker
+
+Jika sebuah masalah gagal diperbaiki berkali-kali, System Guard akan masuk mode **OPEN** (10 menit tidak mencoba lagi) untuk menghindari spam. Reset manual:
+
+```bash
+docker exec steman_app php artisan tinker --execute "
+  cache()->forget('system_guard_circuit_NAMA_ISSUE_state');
+  echo 'Circuit breaker direset';
+"
+```
+
+Ganti `NAMA_ISSUE` dengan kode masalah (misalnya: `scheduler_dead`, `news_api_down`).
 
 ---
 
-## 3️⃣ Backup Manual
+## 4. Backup dan Restore Database
 
-### Backup Database:
+### Backup Manual Segera
+
 ```bash
-# Backup MySQL ke file .sql
-docker exec steman_db mysqldump -u root -p steman_alumni > backup_$(date +%Y%m%d).sql
+# Backup database ke file terkompresi
+docker exec steman_db mysqldump -u app_user -pPASSWORD_DB steman_alumni 2>/dev/null \
+  | gzip > /root/backup_steman_$(date +%Y%m%d_%H%M%S).sql.gz
+
+echo "Backup selesai: /root/backup_steman_*.sql.gz"
+ls -lh /root/backup_steman_*.sql.gz | tail -3
 ```
 
-### Backup File Upload (Foto, Dokumen):
+### Cek Jadwal Backup Otomatis
+
 ```bash
-# Salin seluruh folder storage ke direktori backup
-cp -r storage/app/public ./backups/storage_$(date +%Y%m%d)
+crontab -l | grep backup
 ```
 
-### Restore Database dari Backup:
-```bash
-docker exec -i steman_db mysql -u root -p steman_alumni < backup_TANGGAL.sql
+Seharusnya ada baris:
+```
+0 2 * * * cd /var/www/steman-alumni && ./scripts/backup_database.sh
+0 2 * * * /usr/local/bin/steman-backup.sh
 ```
 
----
-
-## 4️⃣ Optimasi & Bersihkan Cache
-
-Jalankan perintah ini minimal seminggu sekali:
+### Jalankan Script Backup Otomatis secara Manual
 
 ```bash
-# Bersihkan aplikasi cache
+bash /var/www/steman-alumni/scripts/backup_database.sh
+```
+
+### Lihat Daftar File Backup
+
+```bash
+ls -lh /var/www/steman-alumni/backups/database/ 2>/dev/null || \
+ls -lh /root/backup_steman_*.sql.gz 2>/dev/null
+```
+
+### Restore Database dari Backup
+
+> ⚠️ **PERINGATAN:** Restore akan **menghapus semua data saat ini** di database. Pastikan Anda yakin!
+
+```bash
+# Dekompresi dan restore
+gunzip < /root/NAMA_FILE_BACKUP.sql.gz | \
+  docker exec -i steman_db mysql -u app_user -pPASSWORD_DB steman_alumni
+
+echo "Restore selesai"
+```
+
+Setelah restore, bersihkan cache Laravel:
+
+```bash
 docker exec steman_app php artisan cache:clear
-
-# Rebuild config cache (percepat load)
 docker exec steman_app php artisan config:cache
+```
 
-# Rebuild view cache
+---
+
+## 5. Deploy Update Kode Terbaru
+
+### Deploy via Script Otomatis (Direkomendasikan)
+
+```bash
+cd /var/www/steman-alumni
+bash scripts/deploy.sh
+```
+
+Script ini secara otomatis:
+1. Pull kode terbaru dari GitHub (`git pull`)
+2. Rebuild image Docker
+3. Jalankan migrasi database
+4. Bersihkan dan rebuild cache Laravel
+5. Set ulang permission folder storage
+6. Restart container
+
+### Deploy Manual (Langkah Demi Langkah)
+
+```bash
+cd /var/www/steman-alumni
+
+# 1. Pull kode terbaru
+git pull origin main
+
+# 2. Rebuild dan restart container
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 3. Jalankan migrasi (jika ada perubahan database)
+docker exec steman_app php artisan migrate --force
+
+# 4. Bersihkan cache lama
+docker exec steman_app php artisan optimize:clear
+
+# 5. Rebuild cache production
+docker exec steman_app php artisan config:cache
+docker exec steman_app php artisan route:cache
 docker exec steman_app php artisan view:cache
 
-# Hapus log yang membengkak (hati-hati: ini menghapus log lama)
-docker exec steman_app truncate -s 0 storage/logs/laravel.log
+# 6. Perbaiki permission
+docker exec steman_app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+docker exec steman_app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# (Opsional) Bersihkan file cache WebP jika direktori storage/news membengkak
-# Sistem otomatis memutus gambar WebP tapi rutin dicek
-docker exec steman_app chmod -R 775 storage/app/public/news
+echo "Deploy selesai!"
+```
+
+### Upload File Spesifik dari Lokal ke Server
+
+```bash
+# Dari komputer lokal, upload file tunggal
+scp -o StrictHostKeyChecking=no \
+  app/Services/NamaService.php \
+  root@103.175.219.57:/var/www/steman-alumni/app/Services/NamaService.php
+
+# Terapkan di server
+ssh root@103.175.219.57 "docker exec steman_app php artisan config:cache"
 ```
 
 ---
 
-## 5️⃣ Troubleshooting Error
+## 6. Optimasi dan Bersihkan Cache
 
-### ❌ 502 Bad Gateway
-**Penyebab:** PHP-FPM kehabisan memori atau timeout karena query besar.
+### Bersihkan Semua Cache (Jalankan Saat Ada Masalah Tampilan)
 
-**Solusi:**
 ```bash
-# Restart PHP-FPM
-docker compose restart app
-
-# Cek log untuk detail error
-docker exec steman_app tail -50 storage/logs/laravel.log
+docker exec steman_app php artisan optimize:clear
 ```
 
-### ❌ 500 Server Error (View / Path Not Found)
-**Penyebab:** View cache rusak atau direktori framework di `storage/` terhapus (karena masuk .gitignore).
+Ini akan membersihkan: config cache, view cache, route cache, event cache, compiled files.
 
-**Solusi:**
-```bash
-# 1. Pastikan folder framework ada
-docker exec steman_app mkdir -p storage/framework/{views,sessions,cache}
-docker exec steman_app chmod -R 775 storage/framework
-docker exec steman_app chown -R www-data:www-data storage/framework
+### Rebuild Cache Production (Jalankan Setelah Bersihkan)
 
-# 2. Bersihkan view cache
-docker exec steman_app php artisan view:clear
-```
-
-### ❌ Entrypoint Crash (Read-only System)
-**Penyebab:** Docker entrypoint mencoba melakukan `chmod` pada volume yang di-mount sebagai `:ro` (Read-only).
-
-**Solusi:** Update `docker-entrypoint.sh` untuk menggunakan `2>/dev/null || true` pada perintah `chmod`. Ini sudah diperbaiki di v6.1.
-
-### ❌ 404 Not Found
-**Penyebab:** Route tidak ditemukan, view hilang, atau file tidak ada.
-
-**Solusi:**
 ```bash
 docker exec steman_app php artisan config:cache
 docker exec steman_app php artisan route:cache
 docker exec steman_app php artisan view:cache
-docker exec steman_app php artisan event:cache
-```
-> Catatan: Jika ada route yang menggunakan closure (anonymous function), `route:cache` akan gagal. Ini normal — jalankan hanya `route:clear`.
-
-### ❌ 419 Page Expired (CSRF)
-**Penyebab:** Sesi PHP kadaluarsa atau token CSRF tidak cocok.
-
-**Solusi:** Refresh halaman. Jika terus terjadi:
-```bash
-docker exec steman_app php artisan session:clear
-docker exec steman_app php artisan cache:clear
 ```
 
-### ❌ Gambar/Foto Tidak Muncul
-**Penyebab:** Symlink storage belum dibuat atau volume Nginx tidak sinkron.
+### Bersihkan Log yang Membengkak
 
-**Solusi:**
 ```bash
-docker exec steman_app php artisan storage:link
-docker exec steman_app chmod -R 775 storage
-docker exec steman_app chown -R www-data:www-data storage
+# Cek ukuran log saat ini
+docker exec steman_app du -sh /var/www/storage/logs/laravel.log
+
+# Potong log (file tidak dihapus, hanya dikosongkan)
+docker exec steman_app truncate -s 0 /var/www/storage/logs/laravel.log
+
+echo "Log dikosongkan"
 ```
 
-### ❌ Notifikasi Real-time Tidak Masuk
-**Penyebab:** Container Reverb tidak berjalan.
+### Optimasi Database (Bulanan)
 
-**Solusi:**
 ```bash
-docker compose up -d reverb
-# Pastikan port 8080 tidak diblok firewall
+docker exec steman_db mysql -u app_user -pPASSWORD_DB steman_alumni \
+  -e "OPTIMIZE TABLE users, news, jobs, alumni_profiles, audit_logs;"
+```
+
+### Bersihkan Image Docker yang Tidak Terpakai
+
+```bash
+docker image prune -f
+docker volume prune -f
+echo "Pembersihan Docker selesai"
 ```
 
 ---
 
-## 6️⃣ Emergency: Reset Database Permissions
+## 7. Reset Password Admin
 
-Jika `app_user` kehilangan akses atau container DB restart dengan IP baru yang tidak dikenali:
+### Via Artisan Tinker
 
-1. Gunakan script recovery:
-```bash
-bash scripts/db/reset_db.sh
-```
-Script ini akan otomatis menghentikan aplikasi, menjalankan MariaDB dalam mode pemulihan (`--skip-grant-tables`), memperbaiki izin user `app_user` ke host `%` (any host), dan merestart sistem secara aman.
-
----
-
-## 7️⃣ Pembaruan IP Server (Jaringan Berubah)
-Setiap kali IP server berubah (DHCP/restart router), jalankan:
-```powershell
-# Windows
-.\scripts\deploy\update-ip.ps1
-```
-
----
-
-## 8️⃣ Reset Password Admin
-Jika lupa password admin, gunakan Artisan Tinker:
 ```bash
 docker exec -it steman_app php artisan tinker
 ```
-Lalu di Tinker:
+
+Di dalam Tinker, jalankan:
+
 ```php
-$user = \App\Models\User::where('role', 'admin')->first();
-$user->password = Hash::make('PasswordBaru@123');
+$user = \App\Models\User::where('email', 'email_admin@gmail.com')->first();
+$user->password = Hash::make('PasswordBaru@2026');
 $user->save();
+echo "Password berhasil diubah untuk: " . $user->email;
+exit
+```
+
+### Via Perintah Langsung (Non-Interaktif)
+
+```bash
+docker exec steman_app php artisan tinker --execute \
+  "\$u = \App\Models\User::where('email','email_admin@gmail.com')->first(); \$u->password = Hash::make('PasswordBaru@2026'); \$u->save(); echo 'Password diubah';"
 ```
 
 ---
 
-## 9️⃣ Pembersihan Data Sampah (Soft Deletes)
-Aplikasi menggunakan *SoftDeletes*. Untuk menghapus permanen data yang sudah masuk "Trash":
+## 8. Troubleshooting Error Umum
+
+### ❌ Error 502 Bad Gateway
+
+**Penyebab:** Container `steman_app` crash atau tidak merespons.
+
+**Solusi:**
+```bash
+# Restart container PHP
+docker compose -f docker-compose.prod.yml restart app
+
+# Cek log untuk detail
+docker exec steman_app tail -50 /var/www/storage/logs/laravel.log
+```
+
+### ❌ Error 500 Server Error
+
+**Penyebab:** Kesalahan di kode PHP, view cache rusak, atau folder framework hilang.
+
+**Solusi:**
+```bash
+# Pastikan folder framework ada
+docker exec steman_app mkdir -p /var/www/storage/framework/{views,sessions,cache/data}
+docker exec steman_app chmod -R 775 /var/www/storage/framework
+docker exec steman_app chown -R www-data:www-data /var/www/storage/framework
+
+# Bersihkan view cache
+docker exec steman_app php artisan optimize:clear
+docker exec steman_app php artisan optimize
+```
+
+### ❌ Foto / Gambar Tidak Muncul (404)
+
+**Penyebab:** Storage symlink rusak atau permission salah.
+
+**Solusi:**
+```bash
+docker exec steman_app php artisan storage:link --force
+docker exec steman_app chown -R www-data:www-data /var/www/storage/app/public
+docker exec steman_app chmod -R 775 /var/www/storage/app/public
+```
+
+### ❌ 419 Page Expired (CSRF Error)
+
+**Penyebab:** Session kadaluarsa atau konfigurasi domain session salah.
+
+**Solusi:**
+```bash
+docker exec steman_app php artisan cache:clear
+# Pastikan SESSION_DOMAIN di .env sudah benar: .alumni-steman.my.id
+```
+
+### ❌ Scheduler Terdeteksi Mati
+
+**Penyebab:** Heartbeat belum ditulis setelah container restart.
+
+**Solusi:**
+```bash
+# Tulis ulang heartbeat secara manual
+docker exec steman_app php artisan scheduler:heartbeat
+
+# Verifikasi
+docker exec steman_app php artisan system:guard
+```
+
+### ❌ Antrian (Queue) Macet
+
+**Penyebab:** Container `steman_queue` crash atau tidak berjalan.
+
+**Solusi:**
+```bash
+# Cek status container queue
+docker ps | grep steman_queue
+
+# Restart queue worker
+docker compose -f docker-compose.prod.yml restart queue
+
+# Restart semua worker yang menggantung
+docker exec steman_app php artisan queue:restart
+```
+
+### ❌ SSL Expired / Tidak Bisa Akses HTTPS
+
+**Penyebab:** Certbot gagal memperbarui sertifikat.
+
+**Solusi:**
+```bash
+# Perbarui SSL secara manual
+docker exec steman_certbot certbot renew --force-renewal
+
+# Reload Nginx
+docker exec steman_nginx nginx -s reload
+```
+
+---
+
+## 9. Penghapusan Data Permanen
+
+Aplikasi menggunakan fitur *Soft Deletes* — data yang "dihapus" dari panel admin sebenarnya hanya disembunyikan (bisa dipulihkan). Untuk menghapus permanen:
+
 ```bash
 docker exec -it steman_app php artisan tinker
 ```
+
+Di dalam Tinker:
+
 ```php
+# Hapus permanen berita yang sudah di-trash
 \App\Models\News::onlyTrashed()->forceDelete();
-\App\Models\User::onlyTrashed()->forceDelete();
+
+# Hapus permanen alumni yang sudah di-trash
+\App\Models\User::onlyTrashed()->where('role', 'alumni')->forceDelete();
+
+echo "Penghapusan permanen selesai";
+exit
 ```
+
+> ⚠️ **Data yang sudah di-forceDelete tidak bisa dipulihkan. Lakukan backup terlebih dahulu!**
 
 ---
 
-## 🔟 Cek Kesehatan Sistem (Full Audit)
-Jalankan audit rutin:
-```bash
-# Cek semua container
-docker compose ps
-
-# Uji koneksi DB dari dalam App
-docker exec steman_app php artisan db:show
-
-# Cek log 50 baris terakhir
-docker exec steman_app tail -n 50 storage/logs/laravel.log
-```
-
----
-
-> _"Satu tetes pemeliharaan mencegah seember perbaikan."_
-> **Ikatan Alumni STEMAN — Arsitektur v4.1 [Hardened]**
+*© 2026 Portal Alumni SMKN 2 Ternate (STEMAN)*
