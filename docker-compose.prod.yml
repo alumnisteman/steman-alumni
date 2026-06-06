@@ -1,6 +1,7 @@
 # Steman Alumni - PRODUCTION Docker Compose
 services:
   app:
+    container_name: steman_app
     image: steman-alumni-app:latest
     build:
       context: .
@@ -52,6 +53,7 @@ services:
       - redis
 
   queue:
+    container_name: steman_queue
     image: steman-alumni-app:latest
     restart: always
     env_file: .env

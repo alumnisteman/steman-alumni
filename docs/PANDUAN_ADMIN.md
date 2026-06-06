@@ -1,608 +1,508 @@
-# 📘 BUKU PANDUAN ADMINISTRATOR
-## Portal Ikatan Alumni SMKN 2 Ternate (STEMAN)
-**Versi 4.1 [Hardened CI/CD Edition] | Dokumen Resmi**
+# Buku Panduan Administrator
+## Portal Alumni SMKN 2 Ternate (STEMAN)
+**Versi Juni 2026 | Dokumen Resmi**
 
 ---
 
-## 📋 DAFTAR ISI
+## Daftar Isi
 
 1. [Pendahuluan](#1-pendahuluan)
-2. [Akses & Login Dashboard](#2-akses--login-dashboard)
+2. [Akses dan Login Dashboard](#2-akses-dan-login-dashboard)
 3. [Tampilan Utama Dashboard](#3-tampilan-utama-dashboard)
-4. [Manajemen Pengguna (User)](#4-manajemen-pengguna-user)
+4. [Manajemen Pengguna](#4-manajemen-pengguna)
 5. [Manajemen Jurusan](#5-manajemen-jurusan)
 6. [Manajemen Berita](#6-manajemen-berita)
 7. [Manajemen Lowongan Kerja](#7-manajemen-lowongan-kerja)
-8. [Manajemen Program](#8-manajemen-program)
+8. [Manajemen Program / Kegiatan](#8-manajemen-program--kegiatan)
 9. [Manajemen Galeri](#9-manajemen-galeri)
-10. [Manajemen Pesan Masuk (Inbox)](#10-manajemen-pesan-masuk-inbox)
-11. [Pengaturan Situs (Settings)](#11-pengaturan-situs-settings)
+10. [Pesan Masuk (Inbox)](#10-pesan-masuk-inbox)
+11. [Pengaturan Situs](#11-pengaturan-situs)
 12. [Ekspor Data Alumni](#12-ekspor-data-alumni)
-13. [Backup & Restore Database](#13-backup--restore-database)
-14. [Keamanan & Pemeliharaan](#14-keamanan--pemeliharaan)
-15. [FAQ & Pemecahan Masalah](#15-faq--pemecahan-masalah)
+13. [Backup dan Restore Database](#13-backup-dan-restore-database)
+14. [System Guard — Monitor Kesehatan Sistem](#14-system-guard--monitor-kesehatan-sistem)
+15. [Keamanan Akun](#15-keamanan-akun)
+16. [FAQ dan Pemecahan Masalah](#16-faq-dan-pemecahan-masalah)
 
 ---
 
-## 1. PENDAHULUAN
+## 1. Pendahuluan
 
-Portal Alumni STEMAN adalah sistem informasi berbasis web yang dirancang untuk mengelola data alumni SMKN 2 Ternate. Sistem ini dilengkapi dengan fitur berikut:
+Portal Alumni STEMAN adalah sistem informasi berbasis web untuk mengelola data alumni SMKN 2 Ternate. Fitur utama meliputi:
 
-- ✅ Manajemen data alumni dan pengguna
-- ✅ Publikasi berita dan pengumuman
-- ✅ Manajemen lowongan kerja
-- ✅ Manajemen program dan kegiatan
-- ✅ Galeri foto
-- ✅ Peta sebaran alumni global
-- ✅ Pengaturan tampilan situs secara dinamis
-- ✅ Kotak pesan dari alumni/publik
-- ✅ Akses API via Laravel Sanctum untuk Integrasi Mobile App
+- Manajemen data alumni dan akun pengguna
+- Publikasi berita dan pengumuman
+- Lowongan kerja dari alumni dan mitra
+- Program / kegiatan organisasi
+- Galeri foto dan video
+- Peta sebaran alumni global
+- Pengaturan tampilan situs secara dinamis
+- Kotak pesan dari publik
+- System Guard — pengawas kesehatan sistem otomatis
+- Notifikasi Telegram saat terjadi masalah di server
 
-### Peran Pengguna
+### Tingkatan Akses Pengguna
 
 | Peran | Akses |
-|-------|-------|
-| **Admin (Superadmin)** | Akses penuh ke seluruh fitur dashboard, termasuk User Management dan Settings |
-| **Editor** | Dapat mengelola Berita, Galeri, Program, dan Lowongan – TIDAK bisa akses User & Settings |
-| **Alumni** | Hanya akses halaman alumni (profil, direktori, dsb.) |
+|---|---|
+| **Admin** | Akses penuh ke seluruh fitur termasuk User Management, Settings, dan System Guard |
+| **Editor** | Dapat mengelola Berita, Galeri, Program, Lowongan — tidak bisa akses User & Settings |
+| **Alumni** | Hanya akses halaman alumni (profil, direktori, jejak karir) |
 
 ---
 
-## 2. AKSES & LOGIN DASHBOARD
+## 2. Akses dan Login Dashboard
 
-### 2.1 Membuka Halaman Login
+### Membuka Halaman Login
 
-1. Buka browser dan kunjungi: `https://[domain-atau-ip-server]/login`
-2. Masukkan **Email** dan **Password** akun admin Anda.
-3. Jawab pertanyaan keamanan Captcha (misalnya: `5 + 3 = ?`).
-4. Klik tombol **"Login Sekarang"**.
+1. Buka browser, kunjungi: `https://alumni-steman.my.id/login`
+2. Masukkan **Email** dan **Password** akun Admin
+3. Jawab pertanyaan keamanan Captcha (contoh: `5 + 3 = ?`)
+4. Klik tombol **"Login Sekarang"**
 
-> [!IMPORTANT]
-> Gunakan akun dengan role `admin` untuk mendapatkan akses penuh ke Dashboard.
+### Menuju Panel Admin
 
-### 2.2 Akun Admin Default
+Setelah login, klik **"Dashboard"** di menu navigasi, atau akses langsung:
+`https://alumni-steman.my.id/admin/dashboard`
 
-```
-Email    : admin@steman.ac.id
-Password : Admin@1234
-```
+### Panel Admin Terpisah (Subdomain)
 
-> [!CAUTION]
-> **Ganti password default segera setelah login pertama kali!** Buka menu **Dashboard → Profil → Ubah Password**.
+Panel admin juga bisa diakses melalui:
+`https://admin.alumni-steman.my.id`
 
-### 2.3 Menuju Dashboard Admin
-
-Setelah login berhasil, klik **"Dashboard"** di menu navigasi bagian atas, atau akses langsung melalui:
-`https://[domain]/admin/dashboard`
+> ⚠️ Gunakan akun dengan role `admin` untuk akses penuh. Akun `editor` tidak bisa mengakses menu User dan Settings.
 
 ---
 
-## 3. TAMPILAN UTAMA DASHBOARD
+## 3. Tampilan Utama Dashboard
 
-Halaman dashboard menampilkan ringkasan data sistem secara real-time.
+### Kartu Statistik
 
-### 3.1 Kartu Statistik
-
-Di bagian atas dashboard terdapat 4 kartu statistik:
+Di bagian atas dashboard terdapat kartu ringkasan:
 
 | Kartu | Keterangan |
-|-------|------------|
-| 🎓 **Total Alumni** | Jumlah alumni terdaftar dan sudah disetujui |
-| 🌍 **Internasional** | Alumni yang bekerja/tinggal di luar Indonesia |
-| 📚 **Jurusan** | Total jurusan yang aktif terdaftar |
-| 💼 **Lowongan** | Total lowongan kerja yang sedang aktif |
+|---|---|
+| Total Alumni | Jumlah alumni terdaftar dan sudah disetujui |
+| Internasional | Alumni yang bekerja/tinggal di luar Indonesia |
+| Jurusan | Total jurusan aktif yang terdaftar |
+| Lowongan | Total lowongan kerja yang sedang aktif |
 
-### 3.2 Menu Manajemen
+### Menu Manajemen Cepat
 
-Di bawah statistik, tersedia tombol cepat menuju semua halaman admin:
+Tombol akses cepat ke semua halaman admin:
 
-- 👥 **User** – Kelola akun alumni dan admin
-- 🎓 **Jurusan** – Tambah/ubah jurusan
-- 💼 **Lowongan** – Kelola loker
-- ⚙️ **Email & Situs** – Pengaturan konten dan branding
-- 📰 **Berita** – Kelola artikel dan pengumuman
-- 📅 **Program** – Kelola kegiatan alumni
-- 🖼️ **Galeri** – Kelola foto dan video
-- ✉️ **Inbox** – Pesan masuk dari publik
+- **User** — Kelola akun alumni dan admin
+- **Jurusan** — Tambah atau ubah jurusan
+- **Lowongan** — Kelola informasi lowongan kerja
+- **Settings** — Pengaturan konten dan tampilan situs
+- **Berita** — Kelola artikel dan pengumuman
+- **Program** — Kelola kegiatan alumni
+- **Galeri** — Kelola foto dan video
+- **Inbox** — Pesan masuk dari publik
 
-### 3.3 Peta Sebaran Alumni
+### Peta Sebaran Alumni
 
-Di bagian bawah dashboard terdapat **peta interaktif** yang menampilkan lokasi alumni di seluruh dunia.
-
----
-
-## 4. MANAJEMEN PENGGUNA (USER)
-
-> [!IMPORTANT]
-> Fitur ini hanya bisa diakses oleh Admin (Superadmin), bukan Editor.
-
-**Akses**: Dashboard → Menu **User** atau URL `/admin/users`
-
-### 4.1 Melihat Daftar Pengguna
-
-Halaman ini menampilkan seluruh pengguna yang terdaftar, lengkap dengan:
-- Nama & Email
-- Status (Pending / Approved / Rejected)
-- Peran (Admin / Editor / Alumni)
-- Tanggal Daftar
-
-### 4.2 Menyetujui Pendaftar Baru
-
-1. Temukan alumni yang berstatus **"Pending"**.
-2. Klik tombol **"Setujui"** (ikon ✅) atau **"Tolak"** (ikon ❌).
-3. Status akan langsung berubah.
-
-### 4.3 Mengubah Peran Pengguna
-
-1. Klik dropdown **"Role"** pada baris pengguna.
-2. Pilih peran: `admin`, `editor`, atau `alumni`.
-3. Perubahan tersimpan otomatis.
-
-### 4.4 Menambah Admin/Editor Baru
-
-1. Klik tombol **"+ Tambah Pengguna"**.
-2. Isi formulir: Nama, Email, Password, dan Peran.
-3. Klik **"Simpan"**.
-
-### 4.5 Menghapus Pengguna
-
-1. Klik ikon 🗑️ pada baris pengguna yang ingin dihapus.
-2. Konfirmasi penghapusan dengan klik **"Ya, Hapus"**.
-
-> [!WARNING]
-> Penghapusan pengguna bersifat permanen dan tidak dapat dibatalkan.
+Di bagian bawah dashboard terdapat peta interaktif yang menampilkan lokasi alumni di seluruh dunia berdasarkan data alamat yang diisi saat registrasi.
 
 ---
 
-## 5. MANAJEMEN JURUSAN
+## 4. Manajemen Pengguna
 
-**Akses**: Dashboard → Menu **Jurusan** atau URL `/admin/majors`
+> Hanya bisa diakses oleh **Admin** (bukan Editor).
 
-### 5.1 Menambah Jurusan Baru
+**Akses:** Admin Panel → **User** → URL: `/admin/users`
 
-1. Isi kolom **"Nama Jurusan"** pada formulir di bagian atas.
-2. Isi **"Kelompok/Bidang"** (misal: Teknologi Informasi, Teknik, dsb.).
-3. Klik tombol **"Tambah"**.
+### Melihat Daftar Pengguna
 
-### 5.2 Mengubah Jurusan
+Tabel menampilkan semua pengguna dengan informasi:
+- Nama dan email
+- Status: Pending / Approved / Rejected
+- Peran: Admin / Editor / Alumni
+- Tanggal mendaftar
 
-1. Klik ikon ✏️ (Edit) pada jurusan yang ingin diubah.
-2. Ubah nama atau kelompok.
-3. Klik **"Simpan Perubahan"**.
+### Menyetujui Pendaftar Baru
 
-### 5.3 Menonaktifkan Jurusan
+1. Temukan alumni berstatus **"Pending"**
+2. Klik tombol **"Setujui"** (✅) atau **"Tolak"** (❌)
+3. Status berubah otomatis dan alumni mendapat notifikasi email
 
-Ubah status jurusan menjadi `inactive` agar tidak muncul di formulir pendaftaran alumni.
+### Mengubah Peran Pengguna
+
+1. Klik dropdown **"Role"** pada baris pengguna
+2. Pilih peran: `admin`, `editor`, atau `alumni`
+3. Perubahan tersimpan otomatis
+
+### Menambah Admin atau Editor Baru
+
+1. Klik tombol **"+ Tambah Pengguna"**
+2. Isi formulir: Nama, Email, Password, Peran
+3. Klik **"Simpan"**
+
+### Menghapus Pengguna
+
+1. Klik ikon 🗑️ pada baris pengguna
+2. Konfirmasi penghapusan
+
+> ⚠️ Penghapusan bersifat *soft delete* — data bisa dipulihkan oleh Admin Teknis jika diperlukan.
 
 ---
 
-## 6. MANAJEMEN BERITA
+## 5. Manajemen Jurusan
 
-**Akses**: Dashboard → Menu **Berita** atau URL `/admin/news`
+**Akses:** Admin Panel → **Jurusan** → URL: `/admin/majors`
 
-### 6.1 Membuat Artikel Baru
+### Menambah Jurusan Baru
 
-1. Klik tombol **"+ Tulis Berita"**.
+1. Isi kolom **"Nama Jurusan"** (contoh: Rekayasa Perangkat Lunak)
+2. Isi **"Bidang/Kelompok"** (contoh: Teknologi Informasi)
+3. Klik **"Tambah"**
+
+### Mengedit Jurusan
+
+1. Klik ikon ✏️ pada jurusan
+2. Ubah nama atau bidang
+3. Klik **"Simpan Perubahan"**
+
+### Menonaktifkan Jurusan
+
+Ubah status jurusan menjadi `inactive` agar tidak muncul di formulir pendaftaran alumni baru.
+
+---
+
+## 6. Manajemen Berita
+
+**Akses:** Admin Panel → **Berita** → URL: `/admin/news`
+
+### Membuat Artikel Baru
+
+1. Klik **"+ Tulis Berita"**
 2. Isi formulir:
-   - **Judul**: Judul artikel
-   - **Kategori**: Pilih kategori berita
-   - **Konten**: Isi artikel (mendukung format teks panjang)
-   - **Thumbnail**: Unggah gambar sampul (Sistem otomatis melakukan optimasi WebP dan kompresi untuk performa maksimal).
-   - **Status**: Pilih `Draft` (Arsip/Belum Tayang) atau `Published` (Publikasikan Langsung).
-3. Klik **"Simpan & Terbitkan"**.
+   - **Judul** — Judul artikel
+   - **Kategori** — Pilih kategori yang sesuai
+   - **Konten** — Isi artikel lengkap
+   - **Thumbnail** — Upload gambar sampul (sistem otomatis mengoptimasi ke format WebP)
+   - **Status** — `Draft` (belum tayang) atau `Published` (langsung tayang)
+3. Klik **"Simpan & Terbitkan"**
 
-### 6.2 Mengedit Artikel
+### Mengedit Artikel
 
-1. Klik ikon ✏️ pada artikel yang ingin diedit.
-2. Ubah konten yang diperlukan.
-3. Klik **"Update"**.
+1. Klik ikon ✏️ pada artikel
+2. Lakukan perubahan
+3. Klik **"Update"**
 
-### 6.3 Menghapus Artikel
+### Status Artikel
 
-1. Klik ikon 🗑️ pada artikel.
-2. Konfirmasi penghapusan.
+| Status | Keterangan |
+|---|---|
+| `Draft` | Artikel tersimpan tapi tidak terlihat oleh publik |
+| `Published` | Artikel langsung tayang di halaman berita dan beranda |
 
-### 6.4 Mengubah Status Artikel
+### Menghapus Artikel
 
-- **Draft**: Artikel tidak terlihat oleh publik.
-- **Published**: Artikel langsung terlihat di halaman depan dan halaman berita.
+1. Klik ikon 🗑️ pada artikel
+2. Konfirmasi penghapusan
+
+Data artikel yang dihapus masuk ke *Trash* (bisa dipulihkan oleh Admin Teknis).
 
 ---
 
-## 7. MANAJEMEN LOWONGAN KERJA
+## 7. Manajemen Lowongan Kerja
 
-**Akses**: Dashboard → Menu **Lowongan** atau URL `/admin/jobs`
+**Akses:** Admin Panel → **Lowongan** → URL: `/admin/jobs`
 
-### 7.1 Menambah Lowongan Baru
+### Menambah Lowongan Baru
 
-1. Klik **"+ Tambah Lowongan"**.
+1. Klik **"+ Tambah Lowongan"**
 2. Isi formulir:
-   - **Judul Posisi**: Nama pekerjaan yang ditawarkan
-   - **Perusahaan**: Nama perusahaan
-   - **Lokasi**: Kota/Provinsi/Negara
-   - **Tipe**: `Full-time`, `Part-time`, `Magang`, atau `Remote`
-   - **Deskripsi Pekerjaan**: Detail persyaratan dan job desk
-   - **Deadline**: Batas waktu pendaftaran
-   - **Status**: `active` (aktif) atau `closed` (ditutup)
-3. Klik **"Simpan"**.
+   - **Judul Posisi** — Nama pekerjaan
+   - **Perusahaan** — Nama perusahaan pemberi lowongan
+   - **Lokasi** — Kota / Provinsi / Negara
+   - **Tipe** — `Full-time`, `Part-time`, `Magang`, atau `Remote`
+   - **Deskripsi** — Detail persyaratan dan tanggung jawab pekerjaan
+   - **Deadline** — Batas waktu pendaftaran
+   - **Status** — `active` atau `closed`
+3. Klik **"Simpan"**
 
-### 7.2 Menutup Lowongan
+### Menutup Lowongan
 
-1. Klik ✏️ Edit pada lowongan.
-2. Ubah Status menjadi `closed`.
-3. Klik **"Update"**.
+1. Klik ✏️ Edit pada lowongan
+2. Ubah Status menjadi `closed`
+3. Klik **"Update"**
 
 ---
 
-## 8. MANAJEMEN PROGRAM
+## 8. Manajemen Program / Kegiatan
 
-**Akses**: Dashboard → Menu **Program** atau URL `/admin/programs`
+**Akses:** Admin Panel → **Program** → URL: `/admin/programs`
 
-Program adalah kegiatan resmi organisasi alumni (seperti reuni, webinar, beasiswa, dll.).
+Program adalah kegiatan resmi organisasi alumni (reuni, webinar, beasiswa, pelatihan, dll.).
 
-### 8.1 Menambah Program Baru
+### Menambah Program Baru
 
-1. Klik **"+ Buat Program"**.
+1. Klik **"+ Buat Program"**
 2. Isi:
    - **Judul Program**
-   - **Deskripsi**
-   - **Tanggal Mulai & Selesai**
-   - **Status**: `Published` (aktif tampil) or `Draft` (arsip/tidak tampil)
-3. Klik **"Simpan"**.
-
-### 8.2 Menonaktifkan Program
-
-Ubah status program menjadi `inactive` agar tidak tampil di halaman publik.
+   - **Deskripsi** — Penjelasan lengkap kegiatan
+   - **Tanggal Mulai dan Selesai**
+   - **Status** — `Published` (tampil) atau `Draft` (arsip)
+3. Klik **"Simpan"**
 
 ---
 
-## 9. MANAJEMEN GALERI
+## 9. Manajemen Galeri
 
-**Akses**: Dashboard → Menu **Galeri** atau URL `/admin/gallery`
+**Akses:** Admin Panel → **Galeri** → URL: `/admin/gallery`
 
-### 9.1 Mengunggah Foto Baru
+### Mengunggah Foto atau Video
 
-1. Klik **"+ Unggah Media"**.
+1. Klik **"+ Unggah Media"**
 2. Isi:
-   - **Judul Foto/Video**
-   - **Tipe**: `photo` atau `video`
-   - **File**: Pilih file dari perangkat (Maks. 10MB)
-   - **Status**: `Published` (tampil di galeri) atau `Draft` (simpan sementara)
-3. Klik **"Unggah"**.
+   - **Judul** — Nama foto atau video
+   - **Tipe** — `photo` atau `video`
+   - **File** — Pilih file (maksimal 10 MB untuk foto)
+   - **Status** — `Published` (tampil di galeri) atau `Draft`
+3. Klik **"Unggah"**
 
-### 9.2 Menghapus Foto
-
-1. Klik ikon 🗑️ pada foto.
-2. Konfirmasi penghapusan.
+> Sistem secara otomatis mengkompresi dan mengoptimasi foto ke format WebP untuk performa lebih cepat.
 
 ---
 
-## 10. MANAJEMEN PESAN MASUK (INBOX)
+## 10. Pesan Masuk (Inbox)
 
-**Akses**: Dashboard → Menu **Inbox** atau URL `/admin/messages`
+**Akses:** Admin Panel → **Inbox** → URL: `/admin/messages`
 
-Pesan masuk berasal dari formulir kontak di halaman publik (`/kontak`).
+Pesan masuk berasal dari formulir kontak di halaman publik.
 
-### 10.1 Membaca Pesan
+### Membaca Pesan
 
-1. Klik pada baris pesan untuk membuka isinya.
-2. Pesan yang sudah dibaca akan ditandai secara otomatis.
+1. Klik pada baris pesan untuk membuka isi pesan
+2. Pesan yang sudah dibaca ditandai secara otomatis
 
-### 10.2 Membalas Pesan
+### Membalas Pesan
 
-1. Buka pesan yang ingin dibalas.
-2. Isi kolom **"Balasan"** di bagian bawah.
-3. Klik **"Kirim Balasan"**.
+1. Buka pesan yang ingin dibalas
+2. Isi kolom **"Balasan"** di bagian bawah
+3. Klik **"Kirim Balasan"**
 
-> [!NOTE]
-> Balasan akan dikirim ke email pengirim secara otomatis. Pastikan konfigurasi email (SMTP) sudah benar di halaman Settings.
-
-### 10.3 Menghapus Pesan
-
-1. Klik ikon 🗑️ pada pesan.
-2. Konfirmasi penghapusan.
+> Balasan dikirim otomatis ke email pengirim. Pastikan konfigurasi SMTP sudah benar di Settings.
 
 ---
 
-## 11. PENGATURAN SITUS (SETTINGS)
+## 11. Pengaturan Situs
 
-> [!IMPORTANT]
-> Fitur ini hanya bisa diakses oleh Admin (Superadmin).
+> Hanya bisa diakses oleh **Admin** (bukan Editor).
 
-**Akses**: Dashboard → Menu **Email & Situs** atau URL `/admin/settings`
+**Akses:** Admin Panel → **Settings** → URL: `/admin/settings`
 
-Halaman ini adalah **pusat kendali konten** situs. Semua teks dan gambar di halaman depan dapat diubah dari sini.
+Halaman ini adalah pusat kendali konten situs. Semua teks dan gambar di halaman depan dapat diubah dari sini.
 
-### 11.1 Identitas & Branding
+### Identitas dan Branding
 
 | Kolom | Keterangan |
-|-------|------------|
+|---|---|
 | Nama Situs | Nama organisasi (tampil di Navbar dan Footer) |
 | Nama Sekolah | Nama sekolah (tampil di halaman pendaftaran) |
 
-### 11.2 Profil & Visi Misi Organisasi
+### Banner Utama (Hero Section)
 
 | Kolom | Keterangan |
-|-------|------------|
-| **Visi Organisasi** | Teks visi yang tampil di halaman depan (Kotak Teks Besar) |
-| **Misi Utama** | Teks misi yang tampil di halaman depan (Kotak Teks Besar) |
-
-> [!TIP]
-> Untuk Misi Utama, gunakan baris baru untuk setiap poin misi. Contoh:
-> ```
-> 1. Menjalin komunikasi antar alumni.
-> 2. Memberikan beasiswa.
-> 3. Berkontribusi untuk almamater.
-> ```
-
-### 11.3 Banner Utama (Hero)
-
-| Kolom | Keterangan |
-|-------|------------|
+|---|---|
 | Judul Banner | Teks besar di bagian atas halaman utama |
 | Deskripsi Banner | Teks kecil di bawah judul |
-| **Gambar Latar (Hero Background)** | Upload foto untuk latar belakang banner utama |
+| Gambar Latar | Upload foto untuk latar belakang banner |
 
-### 11.4 Informasi Kontak
+### Profil Organisasi
 
 | Kolom | Keterangan |
-|-------|------------|
+|---|---|
+| Visi Organisasi | Teks visi tampil di halaman depan |
+| Misi Utama | Teks misi (pisahkan setiap poin dengan baris baru) |
+
+### Sambutan Ketua Umum
+
+| Kolom | Keterangan |
+|---|---|
+| Nama Ketua Umum | Nama lengkap |
+| Jabatan / Periode | Contoh: "Periode 2024–2028" |
+| Sambutan Singkat | Teks sambutan |
+| Foto Ketua Umum | Upload foto (disarankan 400×400 px) |
+
+### Informasi Kontak
+
+| Kolom | Keterangan |
+|---|---|
 | Alamat | Alamat sekretariat |
 | Email Kontak | Email resmi organisasi |
-| Nomor Telepon | Nomor telepon yang bisa dihubungi |
+| Nomor Telepon | Nomor yang bisa dihubungi |
 
-### 11.5 Sambutan Ketua Umum
+### Cara Menyimpan Perubahan
 
-| Kolom | Keterangan |
-|-------|------------|
-| Nama Ketua Umum | Nama lengkap |
-| Jabatan/Periode | Contoh: "Periode 2024-2028" |
-| Sambutan Singkat | Teks sambutan ketua |
-| **Foto Ketua Umum** | Upload foto (direkomendasikan 400×400px) |
-
-### 11.6 Sambutan Ketua Panitia
-
-Sama seperti Ketua Umum, diisi untuk acara/event khusus (misalnya Reuni Akbar).
-
-### 11.7 Cara Menyimpan Perubahan
-
-Setelah selesai mengisi semua kolom yang ingin diubah:
-1. Scroll ke bawah halaman.
-2. Klik tombol biru **"SIMPAN & UNGGAH PERUBAHAN"**.
-3. Tunggu beberapa detik hingga muncul notifikasi sukses ✅.
+1. Scroll ke bawah halaman Settings
+2. Klik tombol biru **"SIMPAN & UNGGAH PERUBAHAN"**
+3. Tunggu hingga muncul notifikasi sukses ✅
 
 ---
 
-## 12. EKSPOR DATA ALUMNI
+## 12. Ekspor Data Alumni
 
-**Akses**: `/admin/export`
+**Akses:** URL: `/admin/export`
 
-Fitur ini memungkinkan Admin mengunduh seluruh data alumni dalam format spreadsheet.
+1. Buka halaman ekspor
+2. File otomatis terunduh dalam format `.xlsx` (Excel)
 
-1. Buka URL `/admin/export` di browser Anda.
-2. File akan otomatis terunduh dalam format `.xlsx` (Excel).
-
-Data yang diekspor meliputi: Nama, Email, NISN, Jurusan, Tahun Lulus, Status, Lokasi.
+Data yang diekspor: Nama, Email, NISN, Jurusan, Tahun Lulus, Status, Lokasi Tempat Tinggal, Pekerjaan.
 
 ---
 
-## 13. BACKUP & RESTORE DATABASE
+## 13. Backup dan Restore Database
 
-> [!IMPORTANT]
-> Backup database adalah langkah paling penting untuk melindungi data alumni dari kehilangan akibat kesalahan sistem, serangan, atau kerusakan server. Lakukan backup secara rutin!
+> Backup adalah perlindungan terpenting data alumni. Lakukan backup sebelum melakukan perubahan besar!
 
-### 13.1 Sistem Backup Otomatis (Crontab)
+### Sistem Backup Otomatis
 
-Server sudah dikonfigurasi untuk melakukan backup otomatis **setiap hari pukul 02:00 dini hari**. Backup tersimpan di folder:
+Server sudah dikonfigurasi backup otomatis setiap hari pukul 02:00. File backup tersimpan di server dengan nama:
 ```
-/opt/steman-alumni/backups/database/
+backup_steman_YYYYMMDD_HHMMSS.sql.gz
 ```
 
-Setiap file backup diberi nama dengan format:
-```
-steman_alumni_YYYYMMDD_HHMMSS.sql.gz
-```
-Contoh: `steman_alumni_20260405_020000.sql.gz`
+### Backup Manual via SSH
 
-> [!NOTE]
-> Backup lama yang sudah lebih dari **30 hari** akan otomatis dihapus oleh sistem untuk menghemat ruang penyimpanan.
-
-### 13.2 Menjalankan Backup Manual
-
-Jika Anda ingin membuat backup kapan saja (di luar jadwal otomatis), jalankan perintah ini di terminal VPS:
+Hubungi Admin Teknis atau jalankan perintah berikut di server:
 
 ```bash
-cd /opt/steman-alumni
-
-# Jalankan backup manual
-bash scripts/db/backup-db.sh
+docker exec steman_db mysqldump -u app_user -pPASSWORD steman_alumni \
+  | gzip > /root/backup_steman_$(date +%Y%m%d_%H%M%S).sql.gz
 ```
 
-Output yang muncul jika backup berhasil:
-```
-[2026-04-05 14:30:00] ====================================================
-[2026-04-05 14:30:00]   MEMULAI PROSES BACKUP DATABASE: steman_alumni
-[2026-04-05 14:30:00] Menjalankan mysqldump...
-[2026-04-05 14:30:02] ✅ SUKSES: Backup tersimpan di /opt/.../steman_alumni_20260405_143000.sql.gz (Ukuran: 1.2M)
-[2026-04-05 14:30:02] BACKUP SELESAI
-```
+### Restore Database
 
-### 13.3 Melihat Daftar Backup yang Tersedia
+> ⚠️ Restore menghapus semua data saat ini. Hanya dilakukan oleh Admin Teknis!
 
 ```bash
-# Lihat semua file backup beserta ukurannya
-ls -lh /opt/steman-alumni/backups/database/
-
-# Lihat log aktivitas backup
-tail -50 /opt/steman-alumni/backups/backup.log
-```
-
-### 13.4 Cara Restore Database dari Backup
-
-> [!CAUTION]
-> **PERINGATAN KERAS**: Proses restore akan **MENGHAPUS SELURUH DATA SAAT INI** di database dan menggantinya dengan data dari file backup. Pastikan Anda yakin sebelum melanjutkan!
-
-**Langkah-langkah restore:**
-
-1. Pastikan Anda berada di folder project:
-```bash
-cd /opt/steman-alumni
-```
-
-2. Lihat daftar file backup yang tersedia:
-```bash
-ls -lh backups/database/
-```
-
-3. Jalankan perintah restore dengan nama file yang ingin dikembalikan:
-```bash
-bash scripts/db/restore-db.sh steman_alumni_20260405_020000.sql.gz
-```
-
-4. Sistem akan meminta konfirmasi. Ketik `YA` (huruf kapital) lalu tekan Enter:
-```
-⚠️  PERINGATAN: Proses ini akan MENGHAPUS semua data saat ini...
-Ketik 'YA' untuk melanjutkan: YA
-```
-
-5. Tunggu proses selesai. Output sukses:
-```
-[2026-04-05 15:00:00] ✅ SUKSES: Database berhasil di-restore.
-```
-
-### 13.5 Memeriksa Jadwal Backup Otomatis
-
-Untuk memastikan crontab backup berjalan dengan benar:
-
-```bash
-# Lihat jadwal crontab yang aktif
-crontab -l
-```
-
-Output yang diharapkan:
-```cron
-# Backup database Steman Alumni - setiap hari jam 02:00 dini hari
-0 2 * * * /bin/bash /var/www/steman-alumni/scripts/db/backup-db.sh >> /var/www/steman-alumni/backups/backup.log 2>&1
-
-# Backup mingguan ekstra - setiap Minggu jam 03:00
-0 3 * * 0 /bin/bash /var/www/steman-alumni/scripts/db/backup-db.sh >> /var/www/steman-alumni/backups/backup.log 2>&1
-```
-
-### 13.6 Ringkasan Jadwal Backup
-
-| Jadwal | Waktu | Keterangan |
-|--------|-------|------------|
-| 🔄 **Harian** | Setiap hari pukul 02:00 | Backup rutin harian |
-| 🔄 **Mingguan** | Setiap Minggu pukul 03:00 | Backup tambahan mingguan |
-| 👤 **Manual** | Kapan saja (by Admin) | Dijalankan manual via terminal |
-| 🗑️ **Penghapusan Otomatis** | Bersamaan dengan backup | File > 30 hari dihapus otomatis |
-
----
-
-## 14. KEAMANAN & PEMELIHARAAN
-
-### 13.1 Mengganti Password Admin
-
-1. Klik nama pengguna di sudut kanan atas.
-2. Pilih **"Profil"** atau **"Ubah Password"**.
-3. Masukkan password lama dan password baru.
-4. Klik **"Simpan"**.
-
-### 13.2 Pencatatan Aktivitas (Activity Log)
-
-Semua aktivitas perubahan data dicatat secara otomatis oleh sistem (waktu, pengguna, aksi). Log ini dapat dilihat oleh Superadmin.
-
-### 13.3 Batasan Keamanan Akses
-
-Sistem dilindungi dengan:
-- **Captcha Matematika** di halaman login dan daftar
-- **Rate Limiting**: Login dibatasi 20 kali per menit per IP
-- **Firewall VPS (UFW)**: Hanya port 80, 443, dan 22 yang terbuka
-- **HTTPS/SSL**: Seluruh akses menggunakan enkripsi
-
-### 13.4 Pemeliharaan Rutin (Disarankan Bulanan)
-
-Jalankan perintah ini di terminal VPS setiap bulan untuk membersihkan sistem:
-
-```bash
-cd /opt/steman-alumni
-
-# Bersihkan cache sistem
-docker compose -f docker-compose.prod.yml exec app php artisan cache:clear
-docker compose -f docker-compose.prod.yml exec app php artisan view:clear
-docker compose -f docker-compose.prod.yml exec app php artisan config:clear
-
-# Optimasi ulang
-docker compose -f docker-compose.prod.yml exec app php artisan optimize
-
-# Cek log error (opsional)
-docker compose -f docker-compose.prod.yml logs --tail 50 app
+gunzip < /root/NAMA_FILE_BACKUP.sql.gz | \
+  docker exec -i steman_db mysql -u app_user -pPASSWORD steman_alumni
 ```
 
 ---
 
-## 15. FAQ & PEMECAHAN MASALAH
+## 14. System Guard — Monitor Kesehatan Sistem
 
-### ❓ Saya lupa password admin. Apa yang harus dilakukan?
+System Guard adalah fitur otomatis yang memeriksa 21 titik kesehatan sistem setiap menit. Sistem ini akan:
+- Mendeteksi masalah (database mati, disk penuh, scheduler macet, dll.)
+- Mencoba memperbaiki otomatis jika memungkinkan
+- Mengirim notifikasi ke Telegram jika ada masalah yang butuh perhatian manual
 
-Hubungi developer atau jalankan perintah berikut di terminal VPS untuk mereset password:
-```bash
-docker compose -f docker-compose.prod.yml exec app php artisan tinker
-# Di dalam tinker, jalankan:
-# User::where('email', 'admin@steman.ac.id')->update(['password' => Hash::make('PasswordBaru123!')]);
-# exit
+### Cara Cek Status Sistem
+
+Sebagai Admin, Anda bisa melihat status sistem melalui:
+
+**Via URL (browser):**
+```
+https://admin.alumni-steman.my.id/system/guard
 ```
 
-### ❓ Foto yang saya unggah tidak muncul di website.
-
-1. Pastikan ukuran file tidak melebihi **50MB**.
-2. Pastikan format file adalah **JPG, PNG, atau WEBP**.
-3. Jalankan perintah berikut di VPS:
+**Via Terminal (SSH ke server):**
 ```bash
-docker compose -f docker-compose.prod.yml exec app php artisan storage:link
+docker exec steman_app php artisan system:guard
 ```
 
-### ❓ Perubahan di Settings tidak langsung terlihat di website.
+### Kirim Laporan ke Telegram
 
-Cache situs menyimpan tampilan selama 60 menit. Untuk memaksanya berubah seketika, jalankan:
 ```bash
-docker compose -f docker-compose.prod.yml exec app php artisan cache:clear
-docker compose -f docker-compose.prod.yml exec app php artisan view:clear
+docker exec steman_app php artisan system:guard --report
 ```
 
-### ❓ Website menampilkan error 500.
+### Konfigurasi Notifikasi Telegram
 
-1. Cek log error di VPS: `docker compose -f docker-compose.prod.yml logs --tail 50 app`
-2. Pastikan file `.env` sudah terisi dengan benar.
-3. Hubungi developer jika error berlanjut.
-
-### ❓ Muncul error "429 Too Many Requests" saat login.
-
-Ini berarti sistem mendeteksi terlalu banyak percobaan login. Tunggu **1-2 menit** sebelum mencoba lagi. Atau bersihkan cache rate limit di VPS:
-```bash
-docker compose -f docker-compose.prod.yml exec app php artisan cache:clear
+Agar notifikasi berfungsi, isi di `.env` server:
+```env
+TELEGRAM_BOT_TOKEN=token_bot_anda
+TELEGRAM_CHAT_ID=id_chat_anda
 ```
 
-### ❓ Mengakses Data API (Untuk Developer)
-
-Aplikasi memiliki Endpoint API versi 1 di `/api/v1/auth/login` (Untuk otentikasi) dan `/api/v1/alumni` untuk pengambilan data massal.
-Fitur API sepenuhnya dilindungi oleh Laravel Sanctum Token.
-
-### ❓ Apakah Data yang Dihapus Benar-benar Hilang? (Soft Deletes)
-
-Tidak. Sistem v4.1 ini dilengkapi dengan fitur *Soft Deletes*. Jika Anda secara tidak sengaja menghapus Alumni, Berita, Acara, Loker, maupun Pesan, maka data tersebut hanya **"disembunyikan"** dari tampilan dan pindah ke dalam ruang arsip (Sampah) di database (tidak hilang permanen). Hubungi tim administrator teknis bila ingin melakukan pemulihan *(Restore Data).*
+Lihat [Panduan Instalasi — Bagian 5](TUTORIAL_INSTALASI.md#5-konfigurasi-notifikasi-telegram) untuk cara mendapatkan token dan Chat ID.
 
 ---
 
-## 📞 KONTAK DUKUNGAN TEKNIS
+## 15. Keamanan Akun
 
-Untuk bantuan teknis lebih lanjut, hubungi:
-- **Developer**: Tim Teknis STEMAN
-- **Email**: `admin@steman.ac.id`
-- **Server VPS**: `103.175.219.57`
+### Mengganti Password Admin
+
+1. Klik nama pengguna di pojok kanan atas
+2. Pilih **"Profil"** atau **"Ubah Password"**
+3. Masukkan password lama dan password baru
+4. Klik **"Simpan"**
+
+> Gunakan password minimal 12 karakter kombinasi huruf besar, kecil, angka, dan simbol.
+
+### Fitur Keamanan Aktif
+
+| Fitur | Keterangan |
+|---|---|
+| Captcha Matematika | Wajib dijawab saat login dan daftar |
+| Rate Limiting | Login dibatasi 20 kali per menit per IP |
+| Session Aman | Cookie session hanya via HTTPS dengan domain `.alumni-steman.my.id` |
+| HTTPS/SSL | Seluruh akses terenkripsi, sertifikat diperbarui otomatis |
+| Firewall VPS | Hanya port 80, 443, dan 22 yang terbuka |
+| Audit Log | Semua aksi admin dicatat otomatis (waktu, pengguna, aksi) |
 
 ---
 
-*© 2026 Portal Alumni SMKN 2 Ternate. Seluruh hak cipta dilindungi.*
+## 16. FAQ dan Pemecahan Masalah
 
-*Dokumen ini bersifat RAHASIA dan hanya untuk kalangan Administrator yang berwenang.*
+### Saya lupa password Admin
+
+Hubungi Admin Teknis untuk reset password via server, atau jalankan:
+```bash
+docker exec steman_app php artisan tinker --execute \
+  "\$u = \App\Models\User::where('email','email_anda@gmail.com')->first(); \$u->password = Hash::make('PasswordBaru'); \$u->save(); echo 'OK';"
+```
+
+### Foto yang saya upload tidak muncul di website
+
+1. Pastikan ukuran file di bawah 10 MB
+2. Format file harus JPG, PNG, atau WEBP
+3. Jika masih tidak muncul, hubungi Admin Teknis untuk menjalankan:
+   ```bash
+   docker exec steman_app php artisan storage:link --force
+   ```
+
+### Perubahan di Settings tidak langsung tampil
+
+Cache situs disimpan selama beberapa menit. Hubungi Admin Teknis untuk bersihkan cache:
+```bash
+docker exec steman_app php artisan cache:clear
+docker exec steman_app php artisan view:clear
+```
+
+### Website menampilkan Error 500
+
+1. Coba refresh halaman
+2. Coba akses halaman lain
+3. Jika masih error, hubungi Admin Teknis dengan menyebutkan: halaman mana yang error, jam kejadian, dan tindakan apa yang dilakukan sebelum error
+
+### Muncul "429 Too Many Requests" saat login
+
+Sistem mendeteksi terlalu banyak percobaan login. Tunggu **1–2 menit** sebelum mencoba lagi.
+
+### Data alumni yang sudah dihapus bisa dipulihkan?
+
+Ya! Sistem menggunakan *Soft Deletes* — data yang dihapus dari panel admin hanya disembunyikan, tidak dihapus permanen. Hubungi Admin Teknis untuk memulihkan data.
+
+### Notifikasi Telegram tidak masuk
+
+1. Pastikan `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` sudah diisi di `.env` server
+2. Pastikan bot sudah pernah Anda kirimi pesan (chat harus aktif)
+3. Coba jalankan: `docker exec steman_app php artisan system:guard --report`
+
+---
+
+## Kontak Dukungan Teknis
+
+Untuk bantuan teknis lebih lanjut:
+- **Email:** `admin@steman.ac.id`
+- **Server VPS:** `103.175.219.57`
+- **Panel Admin:** `https://admin.alumni-steman.my.id`
+
+---
+
+*© 2026 Portal Alumni SMKN 2 Ternate. Dokumen ini bersifat internal dan hanya untuk Administrator yang berwenang.*
