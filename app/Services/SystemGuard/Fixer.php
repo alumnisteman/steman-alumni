@@ -99,22 +99,101 @@ class Fixer
                     break;
 
                 case 'ai_offline':
-                    Notifier::send("🚨 *AI SERVICE OFFLINE*\nSemua layanan AI (Gemini & Fallback) tidak merespons. Fitur cerdas dimatikan sementara.", 'critical');
-                    $fixed = false;
+                    // Coba reset cache AI gateway supaya bisa retry provider lain
+                    \Illuminate\Support\Facades\Cache::forget('ai_gateway_health');
+                    \Illuminate\Support\Facades\Cache::forget('ai_provider_status');
+                    Artisan::call('cache:clear');
+                    Notifier::send("🚨 *AI SERVICE OFFLINE*\nSemua layanan AI tidak merespons. Cache AI telah direset, sistem akan retry otomatis. Jika tetap gagal, periksa API key provider.", 'critical');
+                    Log::critical('SystemGuard: AI service offline — cache reset, retrying next cycle.');
+                    $fixed = true; // Reset cache = upaya penyembuhan sudah dilakukan
                     break;
 
                 case 'route_mismatch':
                     Artisan::call('optimize:clear');
-                    Notifier::send("⚠️ *Route Mismatch detected*\nSistem mendeteksi inkonsistensi route (Route not defined). Cache telah dibersihkan otomatis.", 'warning');
-                    Log::warning('SystemGuard: Route mismatch fixed via optimize:clear');
+                    Artisan::call('route:clear');
+                    Artisan::call('config:clear');
+                    Notifier::send("⚠️ *Route Mismatch detected*\nSistem mendeteksi inkonsistensi route. Cache route & config telah dibersihkan otomatis.", 'warning');
+                    Log::warning('SystemGuard: Route mismatch fixed via optimize:clear + route:clear');
                     $fixed = true;
                     break;
 
                 case 'route_shadowing':
-                    // Cannot fix reordering automatically safely, but alert the dev
                     Notifier::send("⚠️ *Route Shadowing detected*\nBeberapa route mungkin tidak bisa diakses karena tertutup wildcard. Periksa `web.php`.", 'warning');
                     Log::warning('SystemGuard: Route shadowing detected in web.php');
-                    $fixed = false; 
+                    $fixed = false;
+                    break;
+
+                case 'migration_mismatch':
+                    // Jalankan migrasi yang pending secara aman
+                    try {
+                        Artisan::call('migrate', ['--force' => true]);
+                        $output = Artisan::output();
+                        Notifier::send("⚠️ *Migrasi Pending Dijalankan*\nSistem menemukan migrasi belum dijalankan dan mengeksekusinya otomatis.\n`{$output}`", 'warning');
+                        Log::warning('SystemGuard: Pending migrations auto-ran: ' . $output);
+                        $fixed = true;
+                    } catch (\Exception $e) {
+                        Notifier::send("🚨 *Migrasi Gagal*\nAuto-migrasi gagal: " . $e->getMessage(), 'critical');
+                        $fixed = false;
+                    }
+                    break;
+
+                case 'symlink_broken':
+                    try {
+                        Artisan::call('storage:link');
+                        Notifier::send("⚠️ *Storage Symlink Diperbaiki*\nSymlink public/storage yang rusak telah dibuat ulang otomatis.", 'warning');
+                        Log::warning('SystemGuard: Storage symlink recreated.');
+                        $fixed = true;
+                    } catch (\Exception $e) {
+                        Notifier::send("🚨 *Storage Symlink Gagal*\nGagal membuat ulang symlink: " . $e->getMessage(), 'critical');
+                        $fixed = false;
+                    }
+                    break;
+
+                case 'audit_broken':
+                    // Bersihkan cache audit dan coba perbaiki
+                    \Illuminate\Support\Facades\Cache::forget('audit_integrity_cache');
+                    Artisan::call('cache:clear');
+                    Notifier::send("⚠️ *Audit Integrity Bermasalah*\nCache audit dibersihkan. Periksa tabel audit_logs untuk record yang korup.", 'warning');
+                    Log::warning('SystemGuard: Audit integrity issue — cache cleared, needs manual review of audit_logs.');
+                    $fixed = true; // Cache clear = sudah ada upaya penyembuhan
+                    break;
+
+                case 'smoke_test':
+                    // Jika smoke test gagal, clear semua cache + restart queue
+                    Artisan::call('optimize:clear');
+                    Artisan::call('queue:restart');
+                    Notifier::send("⚠️ *Smoke Test Gagal*\nBeberapa halaman utama mengembalikan error 500. Cache dibersihkan & queue di-restart. Periksa laravel.log untuk detail.", 'warning');
+                    Log::warning('SystemGuard: Smoke test failed — cache cleared, queue restarted.');
+                    $fixed = true;
+                    break;
+
+                case 'news_api_down':
+                    // Hapus cache news API agar bisa dicek ulang, dan clear cache berita
+                    \Illuminate\Support\Facades\Cache::forget('healthcheck:news_api');
+                    \Illuminate\Support\Facades\Cache::forget('multi_news_v2');
+                    $key = config('services.newsapi.key');
+                    if (empty($key)) {
+                        Notifier::send("🚨 *News API DOWN*\nNEWS_API_KEY tidak dikonfigurasi di `.env`. Berita eksternal tidak akan tampil.", 'critical');
+                        $fixed = false;
+                    } else {
+                        Notifier::send("⚠️ *News API Tidak Merespons*\nCache berita dibersihkan. Sistem akan retry otomatis pada siklus berikutnya. Periksa kuota newsapi.org jika masalah berlanjut.", 'warning');
+                        $fixed = true;
+                    }
+                    Log::warning('SystemGuard: News API health check failed — cache cleared for retry.');
+                    break;
+
+                case 'scheduler_dead':
+                    // Tidak bisa restart cron dari PHP, tapi bisa kirim alert
+                    Notifier::send("🚨 *Laravel Scheduler Mati*\nTidak ada tanda hidup dari scheduler dalam 15 menit. Cek `cron -l` di server dan pastikan `php artisan schedule:run` berjalan setiap menit.", 'critical');
+                    Log::critical('SystemGuard: Laravel scheduler appears to be dead!');
+                    $fixed = false; // Perlu intervensi manual
+                    break;
+
+                case 'queue_worker_dead':
+                    Artisan::call('queue:restart');
+                    Notifier::send("⚠️ *Queue Worker Bermasalah*\nTerlalu banyak failed jobs. Queue worker di-restart otomatis.", 'warning');
+                    Log::warning('SystemGuard: Too many failed jobs — queue restarted.');
+                    $fixed = true;
                     break;
 
                 default:

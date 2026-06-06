@@ -21,24 +21,27 @@ class HealthChecker
         $issues = [];
 
         $checks = [
-            'db_down'         => fn() => $this->checkDatabase(),
-            'redis_down'      => fn() => $this->checkRedis(),
-            'queue_overload'  => fn() => $this->checkQueue(),
-            'meili_down'      => fn() => $this->checkMeilisearch(),
-            'disk_low'        => fn() => $this->checkDisk(),
-            'storage_broken'  => fn() => $this->checkStorage(),
-            'log_bloated'     => fn() => $this->checkLogSize(),
-            'session_domain'  => fn() => $this->checkSessionDomain(),
-            'captcha_patch'   => fn() => $this->checkCaptchaPatch(),
-            'nginx_down'      => fn() => $this->checkNginx(),
-            'audit_broken'    => fn() => $this->checkAuditIntegrity(),
-            'route_mismatch'  => fn() => $this->checkRouteIntegrity(),
-            'route_shadowing' => fn() => $this->checkShadowedRoutes(),
-            'smoke_test'      => fn() => $this->runSmokeTests(),
+            'db_down'            => fn() => $this->checkDatabase(),
+            'redis_down'         => fn() => $this->checkRedis(),
+            'queue_overload'     => fn() => $this->checkQueue(),
+            'meili_down'         => fn() => $this->checkMeilisearch(),
+            'disk_low'           => fn() => $this->checkDisk(),
+            'storage_broken'     => fn() => $this->checkStorage(),
+            'log_bloated'        => fn() => $this->checkLogSize(),
+            'session_domain'     => fn() => $this->checkSessionDomain(),
+            'captcha_patch'      => fn() => $this->checkCaptchaPatch(),
+            'nginx_down'         => fn() => $this->checkNginx(),
+            'audit_broken'       => fn() => $this->checkAuditIntegrity(),
+            'route_mismatch'     => fn() => $this->checkRouteIntegrity(),
+            'route_shadowing'    => fn() => $this->checkShadowedRoutes(),
+            'smoke_test'         => fn() => $this->runSmokeTests(),
             'migration_mismatch' => fn() => $this->checkMigrations(),
-            'symlink_broken'  => fn() => $this->checkSymlink(),
-            'ai_offline'      => fn() => $this->checkAIService(),
-            'earth_data_mismatch' => fn() => $this->checkEarthData(),
+            'symlink_broken'     => fn() => $this->checkSymlink(),
+            'ai_offline'         => fn() => $this->checkAIService(),
+            'earth_data_mismatch'=> fn() => $this->checkEarthData(),
+            'news_api_down'      => fn() => $this->checkNewsApi(),
+            'scheduler_dead'     => fn() => $this->checkScheduler(),
+            'queue_worker_dead'  => fn() => $this->checkQueueWorker(),
         ];
 
         foreach ($checks as $issueKey => $checkFn) {
@@ -299,6 +302,68 @@ class HealthChecker
         }
 
         return true;
+    }
+
+    /**
+     * Cek apakah News API key dikonfigurasi DAN bisa melakukan request nyata.
+     * Menggunakan cache 15 menit agar tidak spam ke newsapi.org setiap 5 menit.
+     */
+    private function checkNewsApi(): bool
+    {
+        $key = config('services.newsapi.key');
+        if (empty($key)) {
+            Log::warning('SystemGuard: NEWS_API_KEY tidak dikonfigurasi.');
+            return false;
+        }
+
+        return \Illuminate\Support\Facades\Cache::remember('healthcheck:news_api', 900, function () use ($key) {
+            try {
+                $res = Http::timeout(5)->get('https://newsapi.org/v2/top-headlines', [
+                    'country' => 'id',
+                    'pageSize' => 1,
+                    'apiKey'  => $key,
+                ]);
+                if ($res->successful() && isset($res->json()['status']) && $res->json()['status'] === 'ok') {
+                    return true;
+                }
+                Log::warning('SystemGuard: News API merespons tapi status bukan ok — ' . ($res->json()['message'] ?? 'unknown'));
+                return false;
+            } catch (\Exception $e) {
+                Log::error('SystemGuard: News API tidak bisa dihubungi — ' . $e->getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Cek apakah Laravel Scheduler masih hidup dengan melihat cache heartbeat.
+     * Scheduler harus menulis heartbeat setiap menit melalui tugas di console.php.
+     */
+    private function checkScheduler(): bool
+    {
+        $lastRun = \Illuminate\Support\Facades\Cache::get('system_guard:scheduler_heartbeat', 0);
+        // Anggap mati jika tidak ada tanda hidup dalam 15 menit terakhir
+        return (time() - $lastRun) < 900;
+    }
+
+    /**
+     * Cek apakah Queue Worker masih memproses job (ada aktivitas dalam 10 menit terakhir).
+     */
+    private function checkQueueWorker(): bool
+    {
+        try {
+            $failed = \Illuminate\Support\Facades\DB::table('failed_jobs')
+                ->where('failed_at', '>=', now()->subMinutes(5))
+                ->count();
+            // Terlalu banyak failed jobs dalam 5 menit = queue worker bermasalah
+            if ($failed > 10) {
+                Log::warning("SystemGuard: {$failed} failed jobs dalam 5 menit terakhir!");
+                return false;
+            }
+            return true;
+        } catch (\Exception $e) {
+            return true; // Tabel belum ada = tidak kritis
+        }
     }
 
     private function isShadowed($uri, $wildcard): bool

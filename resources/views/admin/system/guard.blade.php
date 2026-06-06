@@ -53,6 +53,9 @@
             <div class="glass-card p-3 h-100 d-flex flex-column justify-content-between">
                 <div class="text-uppercase small fw-bold text-muted mb-2">Self-Healing Tools</div>
                 <div class="d-grid gap-2">
+                    <button class="btn btn-danger btn-sm rounded-pill fw-bold" onclick="executeAction('autofix')" id="btn-autofix">
+                        <i class="bi bi-magic me-1"></i> AUTO-FIX SEMUA
+                    </button>
                     <button class="btn btn-primary btn-sm rounded-pill fw-bold" onclick="executeAction('optimize')" id="btn-optimize">
                         <i class="bi bi-rocket-takeoff-fill me-1"></i> OPTIMIZE
                     </button>
@@ -204,6 +207,7 @@ function executeAction(action) {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> PROCESSING...';
 
     const urls = {
+        'autofix': "{{ route('admin.guard.autofix') }}",
         'optimize': "{{ route('admin.guard.optimize') }}",
         'clear-cache': "{{ route('admin.guard.clear-cache') }}",
         'maintenance': "{{ route('admin.guard.maintenance') }}"
