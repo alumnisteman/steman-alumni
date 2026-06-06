@@ -307,13 +307,14 @@ class HealthChecker
     /**
      * Cek apakah News API key dikonfigurasi DAN bisa melakukan request nyata.
      * Menggunakan cache 15 menit agar tidak spam ke newsapi.org setiap 5 menit.
+     * Jika key tidak dikonfigurasi, dianggap OK (fitur opsional) — hanya dicatat di log.
      */
     private function checkNewsApi(): bool
     {
         $key = config('services.newsapi.key');
         if (empty($key)) {
-            Log::warning('SystemGuard: NEWS_API_KEY tidak dikonfigurasi.');
-            return false;
+            Log::info('SystemGuard: NEWS_API_KEY tidak dikonfigurasi — fitur berita dilewati (opsional).');
+            return true;
         }
 
         return \Illuminate\Support\Facades\Cache::remember('healthcheck:news_api', 900, function () use ($key) {
@@ -337,13 +338,22 @@ class HealthChecker
 
     /**
      * Cek apakah Laravel Scheduler masih hidup dengan melihat cache heartbeat.
-     * Scheduler harus menulis heartbeat setiap menit melalui tugas di console.php.
+     * Scheduler menulis heartbeat setiap menit via SchedulerHeartbeat command.
+     * Toleransi 10 menit untuk menghindari false positive saat container baru restart.
      */
     private function checkScheduler(): bool
     {
         $lastRun = \Illuminate\Support\Facades\Cache::get('system_guard:scheduler_heartbeat', 0);
-        // Anggap mati jika tidak ada tanda hidup dalam 15 menit terakhir
-        return (time() - $lastRun) < 900;
+        if ($lastRun === 0) {
+            Log::info('SystemGuard: Scheduler heartbeat belum ada — mungkin baru saja restart, skip pengecekan.');
+            return true;
+        }
+        $elapsed = time() - $lastRun;
+        if ($elapsed >= 600) {
+            Log::warning("SystemGuard: Scheduler heartbeat terakhir {$elapsed} detik lalu — kemungkinan mati.");
+            return false;
+        }
+        return true;
     }
 
     /**

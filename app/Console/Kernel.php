@@ -26,9 +26,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Run system health check every 5 minutes
-        // Run system health check every 5 minutes
-        // $schedule->command('system:health')->everyFiveMinutes()->withoutOverlapping();
+        // Heartbeat setiap menit — dipakai SystemGuard untuk deteksi scheduler mati
+        $schedule->command('scheduler:heartbeat')->everyMinute();
         // Daily MySQL backup at 02:15
         $schedule->command('steman:backup')->dailyAt('02:15')->withoutOverlapping();
         // Clean old logs daily at 02:30
