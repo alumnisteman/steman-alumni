@@ -38,11 +38,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified_alumni' => \App\Http\Middleware\EnsureUserIsVerified::class,
             'cache_response' => \App\Http\Middleware\CacheResponse::class,
             'admin.domain' => \App\Http\Middleware\AdminDomainGuard::class,
+            'coming_soon' => \App\Http\Middleware\ComingSoon::class,
         ]);
         // Exempt /logout from CSRF: forcing a logout is not a harmful CSRF attack
         $middleware->validateCsrfTokens(except: ['/logout']);
         $middleware->appendToGroup('web', [
             'throttle:global',
+            \App\Http\Middleware\ComingSoon::class,
             \App\Http\Middleware\UpdateUserActivity::class,
             \App\Http\Middleware\EnsureAdminSubdomainAccess::class,
         ]);
