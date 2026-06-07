@@ -166,6 +166,10 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak bisa menghapus akun Anda sendiri.');
         }
 
+        if (Auth::user()->role === 'editor' && $user->role === 'admin') {
+            return back()->with('error', 'Editor tidak diperbolehkan menghapus akun Admin.');
+        }
+
         $name = $user->name;
         $user->delete();
 

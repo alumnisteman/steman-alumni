@@ -39,7 +39,7 @@ class ChatController extends Controller
             ->orWhere('receiver_id', $userId)
             ->whereNull('deleted_at')
             ->whereNull('target_year')
-            ->groupBy(DB::raw('CASE WHEN sender_id = ' . $userId . ' THEN receiver_id ELSE sender_id END'));
+            ->groupBy(DB::raw('CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END'), [$userId]);
 
         $conversations = Message::whereIn('id', $subquery)
             ->with(['sender', 'receiver'])
