@@ -45,7 +45,7 @@ class ImageOptimizerController extends Controller
                 }
 
                 return $image->encodeByExtension($format, $quality)->toString();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 return file_get_contents($fullPath);
             }
         });

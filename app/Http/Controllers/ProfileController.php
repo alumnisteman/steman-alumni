@@ -46,10 +46,15 @@ class ProfileController extends Controller
                     // Resize to standard 800px (Anti-Bloat)
                     $image->scale(width: 800);
                     
-                    // Convert to WebP with 80% quality
-                    $encoded = $image->toWebp(80);
+                    // Convert to WebP with 80% quality (fallback to JPEG if WebP not supported)
+                    if (function_exists("imagewebp")) {
+                        $encoded = $image->toWebp(80);
+                    } else {
+                        $encoded = $image->toJpeg(80);
+                        $path = "avatars/".time().".jpg";
+                    }
                     Storage::disk('public')->put($path, (string) $encoded);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     // Fallback to standard storage if processing fails
                     $path = $file->store('avatars', 'public');
                 }

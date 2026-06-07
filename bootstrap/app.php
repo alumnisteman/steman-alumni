@@ -48,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\UpdateUserActivity::class,
             \App\Http\Middleware\EnsureAdminSubdomainAccess::class,
         ]);
-        $middleware->trustProxies(at: '*');
+        // TrustProxies: handled by App\Http\Middleware\TrustProxies (Cloudflare + Docker IPs)
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -166,7 +166,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // 3. Garbage Collection & Disk Guard
         $schedule->command('steman:cleanup')->weeklyOn(0, '04:00')->onOneServer(); // Every Sunday
-        $schedule->command('steman:clean-temp')->dailyAt('05:00')->onOneServer();
+        $schedule->command('steman:cleanup')->dailyAt('05:00')->onOneServer();
         
         // 4. Log Guard (Hourly) - Prevent Disk Full
         $schedule->call(function() {

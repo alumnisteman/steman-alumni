@@ -66,9 +66,13 @@ class ChairmanController extends Controller
                         $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
                         $image = $manager->read($file);
                         $image->scale(width: 1000); // Leadership photos can be slightly larger for quality
+                        if (function_exists("imagewebp")) {
                         $encoded = $image->toWebp(85);
+                    } else {
+                        $encoded = $image->toJpeg(85);
+                    }
                         Storage::disk('public')->put($path, (string) $encoded);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $path = $file->store('uploads/chairman', 'public');
                     }
                 } else {
@@ -111,9 +115,13 @@ class ChairmanController extends Controller
                         $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
                         $image = $manager->read($file);
                         $image->scale(width: 800);
+                        if (function_exists("imagewebp")) {
                         $encoded = $image->toWebp(80);
+                    } else {
+                        $encoded = $image->toJpeg(80);
+                    }
                         Storage::disk('public')->put($path, (string) $encoded);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $path = $file->store('uploads/chairman', 'public');
                     }
                 } else {
@@ -156,9 +164,13 @@ class ChairmanController extends Controller
                         $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
                         $image = $manager->read($file);
                         $image->scale(width: 800);
+                        if (function_exists("imagewebp")) {
                         $encoded = $image->toWebp(80);
+                    } else {
+                        $encoded = $image->toJpeg(80);
+                    }
                         Storage::disk('public')->put($path, (string) $encoded);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $path = $file->store('uploads/chairman', 'public');
                     }
                 } else {
