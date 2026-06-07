@@ -57,36 +57,32 @@
                             </div>
                             <!-- Ketua Panitia -->
                             <div class="col-md-6">
-                                <div class="p-4 bg-light rounded-4 border-0 h-100 shadow-sm border-start border-4 border-primary">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
-                                             class="rounded-3 shadow-sm me-3" 
-                                             style="height: 60px; width: 60px; object-fit: cover;" alt="Ketua Panitia">
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-dark">{{ setting('event_chairman_name', 'Nama Ketua Panitia') }}</h6>
-                                            <small class="text-muted">Ketua Panitia Pelaksana</small>
-                                        </div>
+                                <div class="bg-light rounded-4 border-0 h-100 shadow-sm overflow-hidden border-top border-4 border-primary">
+                                    <img src="{{ setting('event_chairman_photo', 'https://ui-avatars.com/api/?name=Ketua+Panitia&background=007bff&color=fff&size=400') }}" 
+                                         class="w-100 rounded-top-4" 
+                                         style="height: 280px; object-fit: cover; object-position: top;" alt="Ketua Panitia">
+                                    <div class="p-4">
+                                        <span class="badge bg-primary mb-2">Ketua Panitia Pelaksana</span>
+                                        <h5 class="fw-bold text-dark mb-1">{{ setting('event_chairman_name', 'Nama Ketua Panitia') }}</h5>
+                                        <p class="small text-muted mb-0 lh-base fst-italic">
+                                            "{!! nl2br(e(setting('event_chairman_message', 'Bekerja bersama untuk menyukseskan agenda alumni.'))) !!}"
+                                        </p>
                                     </div>
-                                    <p class="small text-muted mb-0 lh-base italic">
-                                        "{!! nl2br(e(setting('event_chairman_message', 'Bekerja bersama untuk menyukseskan agenda alumni.'))) !!}"
-                                    </p>
                                 </div>
                             </div>
                             <!-- Sekretaris Panitia -->
                             <div class="col-md-6">
-                                <div class="p-4 bg-light rounded-4 border-0 h-100 shadow-sm border-start border-4 border-success">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="{{ setting('secretary_photo', 'https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400') }}" 
-                                             class="rounded-3 shadow-sm me-3" 
-                                             style="height: 60px; width: 60px; object-fit: cover;" alt="Sekretaris Panitia">
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-dark">{{ setting('secretary_name', 'Nama Sekretaris') }}</h6>
-                                            <small class="text-muted">Sekretaris Panitia</small>
-                                        </div>
+                                <div class="bg-light rounded-4 border-0 h-100 shadow-sm overflow-hidden border-top border-4 border-success">
+                                    <img src="{{ setting('secretary_photo', 'https://ui-avatars.com/api/?name=Sekretaris&background=28a745&color=fff&size=400') }}" 
+                                         class="w-100 rounded-top-4" 
+                                         style="height: 280px; object-fit: cover; object-position: top;" alt="Sekretaris Panitia">
+                                    <div class="p-4">
+                                        <span class="badge bg-success mb-2">Sekretaris Panitia</span>
+                                        <h5 class="fw-bold text-dark mb-1">{{ setting('secretary_name', 'Nama Sekretaris') }}</h5>
+                                        <p class="small text-muted mb-0 lh-base fst-italic">
+                                            "{!! nl2br(e(setting('secretary_message', 'Mengelola administrasi dan koordinasi kegiatan alumni.'))) !!}"
+                                        </p>
                                     </div>
-                                    <p class="small text-muted mb-0 lh-base italic">
-                                        "{!! nl2br(e(setting('secretary_message', 'Mengelola administrasi dan koordinasi kegiatan alumni.'))) !!}"
-                                    </p>
                                 </div>
                             </div>
                         </div>
