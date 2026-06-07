@@ -224,6 +224,10 @@ class AuthController extends Controller
             return redirect('/login')->with('error', 'Token QR tidak valid atau sudah kadaluarsa.');
         }
 
+        if ($user->qr_token_expires_at && $user->qr_token_expires_at->isPast()) {
+            return redirect('/login')->with('error', 'Token QR sudah kadaluarsa. Silakan minta kartu QR baru.');
+        }
+
         if (!$user->is_active) {
             return redirect('/login')->with('error', 'Akun Anda sedang dinonaktifkan. Silakan hubungi Admin.');
         }

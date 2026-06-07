@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-@php $currentUser = auth()->user(); @endphp
-<div style="margin-bottom:1rem; color:#555;">Logged in as: {{ $currentUser ? $currentUser->email : 'guest' }}</div>
 <style>
 .poll-hero {
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
@@ -209,12 +207,7 @@
     </div>
     @endif
 
-        @if(auth()->check())
-            <div id="debug-auth" style="color:#ff6600; margin-bottom:1rem;">Logged in as {{ auth()->user()->email }} (role: {{ auth()->user()->role }})</div>
-        @else
-            <div id="debug-auth" style="color:#ff6600; margin-bottom:1rem;">Not logged in</div>
-        @endif
-
+        <div class="row g-4">
         {{-- Active Polls --}}
         <div class="col-lg-8">
             <h5 class="fw-bold mb-4"><span class="active-badge me-2">● LIVE</span>Polling Aktif</h5>
@@ -240,20 +233,20 @@
                     </div>
                     <div class="d-flex flex-column align-items-end gap-2">
                         <span class="active-badge">● LIVE</span>
-    @if(auth()->check())
+    @can('manage-polls')
         <div class="poll-actions">
-            <a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit" style="display:inline-block;">
+            <a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit">
                 <i class="bi bi-pencil-fill"></i> Edit
             </a>
-            <form method="POST" action="{{ route('polls.destroy', $poll) }}" style="display:inline;" onsubmit="return confirm('Hapus polling \"{{ $poll->question ?? $poll->title }}\"?');">
+            <form method="POST" action="{{ route('polls.destroy', $poll) }}" style="display:inline;" onsubmit="return confirm('Hapus polling ini?');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-poll-delete" style="display:inline-block;">
+                <button type="submit" class="btn-poll-delete">
                     <i class="bi bi-trash-fill"></i> Hapus
                 </button>
             </form>
         </div>
-    @endif
+    @endcan
                     </div>
                 </div>
                 <div class="poll-body">
@@ -328,10 +321,17 @@
                     <div class="d-flex flex-column align-items-end gap-2">
                         <span class="closed-badge">✕ SELESAI</span>
                         @can('manage-polls')
-    <span id="debug-can" style="color:#0f0;">CAN OK</span>
-                        <div class="poll-actions" style="display:flex; gap:0.5rem;">
-                            <button class="btn-poll-edit" style="display:inline-block;background:#ffcc00;color:#000;padding:4px 8px;border-radius:4px;" onclick="openEditModal({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }}, {{ json_encode($poll->description) }}, {{ json_encode($poll->emoji ?? '🗳️') }}, {{ json_encode($poll->type ?? 'single') }}, {{ json_encode($poll->ends_at ? $poll->ends_at->format('Y-m-d\TH:i') : '') }}, {{ json_encode((bool)($poll->is_anonymous ?? false)) }}, {{ json_encode((bool)$poll->is_active) }}, {{ $poll->options->map(fn($o) => ['emoji' => $o->option_emoji ?? '', 'text' => $o->option_text])->toJson() }})"><i class="bi bi-pencil-fill"></i> Edit</button>
-                            <button class="btn-poll-delete" style="display:inline-block;background:#ff4444;color:#fff;padding:4px 8px;border-radius:4px;" onclick="confirmDelete({{ $poll->id }}, {{ json_encode($poll->question ?? $poll->title) }})"><i class="bi bi-trash-fill"></i> Hapus</button>
+                        <div class="poll-actions">
+                            <a href="{{ route('polls.edit', $poll) }}" class="btn-poll-edit">
+                                <i class="bi bi-pencil-fill"></i> Edit
+                            </a>
+                            <form method="POST" action="{{ route('polls.destroy', $poll) }}" style="display:inline;" onsubmit="return confirm('Hapus polling ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-poll-delete">
+                                    <i class="bi bi-trash-fill"></i> Hapus
+                                </button>
+                            </form>
                         </div>
                         @endcan
                     </div>

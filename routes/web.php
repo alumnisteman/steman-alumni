@@ -455,6 +455,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // =====================================================
     // VOTING & POLLING (public index, protected actions)
     Route::middleware(['auth'])->group(function () {
+        Route::get('/polls/create', [PollController::class, 'create'])->name('polls.create');
         Route::post('/polls', [PollController::class, 'store'])->name('polls.store');
         Route::get('/polls/{poll}/edit', [PollController::class, 'edit'])->name('polls.edit');
         Route::put('/polls/{poll}', [PollController::class, 'update'])->name('polls.update');

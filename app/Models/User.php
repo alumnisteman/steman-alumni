@@ -23,6 +23,7 @@ class User extends Authenticatable
         static::creating(function ($user) {
             if (!$user->qr_login_token) {
                 $user->qr_login_token = (string) \Illuminate\Support\Str::uuid();
+                $user->qr_token_expires_at = now()->addDays(365);
             }
         });
 
@@ -109,7 +110,7 @@ class User extends Authenticatable
         'mentoring', 'mentor_expertise', 'mentor_bio', 'points',
         'linkedin_url', 'instagram_url', 'twitter_url',
         'latitude', 'longitude',
-        'qr_login_token',
+        'qr_login_token', 'qr_token_expires_at',
         'city_name', 'is_active', 'last_active_at', 'show_social',
         'social_id', 'social_type',
         'birthday', 'birthday_public',
@@ -125,6 +126,7 @@ class User extends Authenticatable
             'longitude' => 'double',
             'points' => 'integer',
             'last_active_at' => 'datetime',
+            'qr_token_expires_at' => 'datetime',
             'is_active' => 'boolean',
             'birthday' => 'date',
             'birthday_public' => 'boolean',
