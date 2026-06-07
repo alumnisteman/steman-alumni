@@ -278,7 +278,9 @@
                 $rawDate = setting('launch_date');
                 $hasDate = !empty($rawDate) && strtotime($rawDate) > 0;
                 $launchDateStr = $hasDate ? $rawDate : now()->addDays(7)->format('Y-m-d H:i:s');
-                $launchFormatted = \Carbon\Carbon::parse($launchDateStr)->locale('id')->translatedFormat('d F Y, H:i') . ' WIT';
+                $bulanId = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                $ts = strtotime($launchDateStr);
+                $launchFormatted = date('d', $ts) . ' ' . $bulanId[(int)date('n', $ts)] . ' ' . date('Y, H:i', $ts) . ' WIT';
             @endphp
 
             <!-- Target Date Badge -->
