@@ -92,7 +92,8 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-                "laravel/pail"
+                "laravel/pail",
+                "laravel/sail"
             ]
         }
     },
