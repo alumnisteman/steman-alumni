@@ -111,7 +111,7 @@ class SystemMaintenanceCommand extends Command
         $tables = ['activity_logs', 'audit_logs', 'sessions'];
         foreach ($tables as $table) {
             try {
-                DB::statement("OPTIMIZE TABLE {$table}");
+                DB::statement("OPTIMIZE TABLE `{$table}`");
             } catch (\Exception $e) {}
         }
         $this->info('- Database tables optimized.');

@@ -54,7 +54,7 @@ class ForumController extends Controller
         );
 
         // AI Moderation (Background)
-        \App\Jobs\ModerateContentWithAI::dispatch($forum);
+        try { \App\Jobs\ModerateContentWithAI::dispatch($forum); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('ModerateContentWithAI dispatch failed: ' . $e->getMessage()); }
 
         return back()->with('success', 'Diskusi berhasil dibuat dan Anda mendapatkan 10 poin!');
     }
@@ -77,7 +77,7 @@ class ForumController extends Controller
         $forum->increment('comments_count');
 
         // AI Moderation
-        \App\Jobs\ModerateContentWithAI::dispatch($comment);
+        try { \App\Jobs\ModerateContentWithAI::dispatch($comment); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('ModerateContentWithAI comment dispatch failed: ' . $e->getMessage()); }
 
         // Award Points
         Auth::user()->awardPoints(10);

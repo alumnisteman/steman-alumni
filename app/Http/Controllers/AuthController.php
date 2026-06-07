@@ -188,7 +188,7 @@ class AuthController extends Controller
             );
 
             // Auto-follow batch mates for community engagement
-            \App\Jobs\AutoFollowBatchMates::dispatch($user->id);
+            try { \App\Jobs\AutoFollowBatchMates::dispatch($user->id); } catch (\Throwable $e) { Log::warning('AutoFollowBatchMates dispatch failed: ' . $e->getMessage()); }
 
             Auth::login($user);
             return redirect()->intended($user->dashboardUrl());

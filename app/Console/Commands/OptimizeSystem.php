@@ -37,8 +37,12 @@ class OptimizeSystem extends Command
 
         foreach ($tables as $table) {
             $tableName = $table->$property;
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
+                $this->warn(" - Skipping unsafe table name: {$tableName}");
+                continue;
+            }
             $this->line(" - Optimizing {$tableName}...");
-            DB::statement("OPTIMIZE TABLE {$tableName}");
+            DB::statement("OPTIMIZE TABLE `{$tableName}`");
         }
 
         // 2. Clean Up Old Logs (Activity Logs older than 30 days)

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -13,35 +12,35 @@ use Illuminate\Support\Facades\Log;
  */
 class TelegramNotifier
 {
-    /**
-     * Send a message via Telegram Bot API.
-     *
-     * @param string $message
-     * @return void
-     */
     public static function send(string $message): void
     {
-        $botToken = env('TELEGRAM_BOT_TOKEN');
-        $chatId   = env('TELEGRAM_CHAT_ID');
+        $botToken = config('services.telegram.bot_token') ?: env('TELEGRAM_BOT_TOKEN');
+        $chatId   = config('services.telegram.chat_id')   ?: env('TELEGRAM_CHAT_ID');
 
-        if (! $botToken || ! $chatId) {
+        if (!$botToken || !$chatId) {
             Log::warning('Telegram credentials missing – cannot send alert');
             return;
         }
 
         $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
-        $client = new Client(['timeout' => 5]);
+
         try {
-            $client->post($url, [
-                'form_params' => [
-                    'chat_id' => $chatId,
-                    'text' => $message,
-                    'parse_mode' => 'Markdown',
+            $ctx = stream_context_create([
+                'http' => [
+                    'method'  => 'POST',
+                    'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+                    'content' => http_build_query([
+                        'chat_id'    => $chatId,
+                        'text'       => substr($message, 0, 4096),
+                        'parse_mode' => 'Markdown',
+                    ]),
+                    'timeout' => 5,
+                    'ignore_errors' => true,
                 ],
             ]);
-        } catch (\Exception $e) {
-            Log::error('Failed to send Telegram notification: ' . $e->getMessage());
+            @file_get_contents($url, false, $ctx);
+        } catch (\Throwable $e) {
+            Log::error('TelegramNotifier::send failed: ' . $e->getMessage());
         }
     }
 }
-?>

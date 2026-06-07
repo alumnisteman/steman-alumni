@@ -35,7 +35,7 @@ class ContactMessageController extends Controller
             $message = ContactMessage::create($request->only(['name', 'email', 'subject', 'message']));
 
             // AI Auto-Reply Suggestion (Background)
-            GenerateAIAutoReply::dispatch($message);
+            try { GenerateAIAutoReply::dispatch($message); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('GenerateAIAutoReply dispatch failed: ' . $e->getMessage()); }
 
             // Send email notification to admin
             try {

@@ -91,7 +91,7 @@ class PostController extends Controller
         );
 
         // AI Moderation (Background)
-        ModerateContentWithAI::dispatch($post);
+        try { ModerateContentWithAI::dispatch($post); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('ModerateContentWithAI dispatch failed: ' . $e->getMessage()); }
 
         return back()->with('success', 'Postingan nostalgia berhasil dibagikan! +20 poin untuk Anda.');
     }
@@ -144,7 +144,7 @@ class PostController extends Controller
             app(\App\Services\InterestService::class)->recordInterest(Auth::user(), $post, 2);
 
             // Trigger feed regeneration
-            \App\Jobs\GenerateFeedJob::dispatch(Auth::id());
+            try { \App\Jobs\GenerateFeedJob::dispatch(Auth::id()); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('GenerateFeedJob dispatch failed: ' . $e->getMessage()); }
 
             // Award points for receiving a like (only if user exists and is not self)
             if ($post->user && $post->user->exists && $post->user->id !== Auth::id()) {
@@ -179,10 +179,10 @@ class PostController extends Controller
         app(\App\Services\InterestService::class)->recordInterest(Auth::user(), $post, 3);
 
         // Trigger feed regeneration
-        \App\Jobs\GenerateFeedJob::dispatch(Auth::id());
+        try { \App\Jobs\GenerateFeedJob::dispatch(Auth::id()); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('GenerateFeedJob dispatch failed: ' . $e->getMessage()); }
 
         // AI Moderation
-        \App\Jobs\ModerateContentWithAI::dispatch($comment);
+        try { \App\Jobs\ModerateContentWithAI::dispatch($comment); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('ModerateContentWithAI comment dispatch failed: ' . $e->getMessage()); }
 
         // Award Points
         Auth::user()->awardPoints(5);
