@@ -44,9 +44,37 @@
                                 <h4 class="fw-black mb-1 text-dark">LAUNCH CONTROL CENTER</h4>
                                 <p class="text-muted mb-0">Status: <span class="badge bg-{{ $launchInfo['mode'] === 'on' ? 'warning text-dark' : 'success' }} px-3 py-2 rounded-pill">{{ $launchInfo['mode'] === 'on' ? 'COMING SOON ACTIVE' : 'PORTAL IS LIVE' }}</span></p>
                                 @if($launchInfo['mode'] === 'on')
+                                    @php
+                                        $launchTimestamp = !empty($launchInfo['date']) ? strtotime($launchInfo['date']) : null;
+                                        $launchDateFormatted = $launchTimestamp ? date('d M Y, H:i', $launchTimestamp) : null;
+                                        $launchDiffHumans = $launchTimestamp ? \Carbon\Carbon::createFromTimestamp($launchTimestamp)->diffForHumans() : null;
+                                        $launchDatetimeLocal = $launchTimestamp ? date('Y-m-d\TH:i', $launchTimestamp) : '';
+                                    @endphp
                                     <div class="mt-3 small text-dark fw-bold">
-                                        <i class="bi bi-calendar-event me-2"></i> Target Launch: {{ date('d M Y, H:i', strtotime($launchInfo['date'])) }}
-                                        <span class="ms-3 text-primary"><i class="bi bi-stopwatch me-1"></i> {{ \Carbon\Carbon::parse($launchInfo['date'])->diffForHumans() }}</span>
+                                        @if($launchDateFormatted)
+                                            <i class="bi bi-calendar-event me-2"></i> Target Launch: {{ $launchDateFormatted }}
+                                            <span class="ms-3 text-primary"><i class="bi bi-stopwatch me-1"></i> {{ $launchDiffHumans }}</span>
+                                        @else
+                                            <span class="text-warning"><i class="bi bi-exclamation-triangle me-2"></i> Tanggal launch belum diatur</span>
+                                        @endif
+                                    </div>
+                                    <div class="mt-2">
+                                        <form action="{{ route('admin.settings.update') }}" method="POST" class="d-inline-flex align-items-center gap-2 flex-wrap">
+                                            @csrf
+                                            @method('PUT')
+                                            <label class="small text-muted fw-semibold mb-0">
+                                                <i class="bi bi-calendar2-event me-1"></i> Ubah tanggal:
+                                            </label>
+                                            <input type="datetime-local"
+                                                   name="launch_date"
+                                                   class="form-control form-control-sm d-inline-block"
+                                                   style="width: auto; border-radius: 8px;"
+                                                   value="{{ $launchDatetimeLocal }}"
+                                                   min="{{ date('Y-m-d\TH:i') }}">
+                                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
+                                                <i class="bi bi-check2 me-1"></i> Simpan
+                                            </button>
+                                        </form>
                                     </div>
                                 @endif
                             </div>
