@@ -31,6 +31,7 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProgramRegistrationController;
 use App\Http\Controllers\Admin\AdController;
+use App\Http\Controllers\Admin\EventThemeController;
 use App\Http\Controllers\PublicVerificationController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\MuseumController;
@@ -198,6 +199,17 @@ Route::domain('admin.alumni-steman.my.id')->middleware(['admin.domain', 'auth', 
             // AI Job Importer
             Route::post('/jobs/import-ai', [JobController::class, 'importAI'])->name('admin.jobs.import-ai');
             Route::post('/ai/generate-content', [AIChatController::class, 'generateContent'])->name('admin.ai.generate-content');
+
+            // Event Themes Management
+            Route::get('/event-themes', [EventThemeController::class, 'index'])->name('admin.event-themes.index');
+            Route::get('/event-themes/create', [EventThemeController::class, 'create'])->name('admin.event-themes.create');
+            Route::post('/event-themes', [EventThemeController::class, 'store'])->name('admin.event-themes.store');
+            Route::get('/event-themes/simulator', [EventThemeController::class, 'simulator'])->name('admin.event-themes.simulator');
+            Route::post('/event-themes/simulator/preview', [EventThemeController::class, 'simulatorPreview'])->name('admin.event-themes.simulator.preview');
+            Route::get('/event-themes/{eventTheme}/edit', [EventThemeController::class, 'edit'])->name('admin.event-themes.edit');
+            Route::put('/event-themes/{eventTheme}', [EventThemeController::class, 'update'])->name('admin.event-themes.update');
+            Route::delete('/event-themes/{eventTheme}', [EventThemeController::class, 'destroy'])->name('admin.event-themes.destroy');
+            Route::post('/event-themes/{eventTheme}/toggle', [EventThemeController::class, 'toggle'])->name('admin.event-themes.toggle');
         });
 
 
@@ -448,8 +460,12 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // DIGITAL MUSEUM — Arsip Sejarah STEMAN
     // =====================================================
     Route::get('/museum', [MuseumController::class, 'index'])->name('museum.index');
-    Route::get('/museum/{museumItem}', [MuseumController::class, 'show'])->name('museum.show');
+    Route::get('/museum/create', [MuseumController::class, 'create'])->name('museum.create');
     Route::post('/museum', [MuseumController::class, 'store'])->name('museum.store');
+    Route::get('/museum/{museumItem}', [MuseumController::class, 'show'])->name('museum.show');
+    Route::get('/museum/{museumItem}/edit', [MuseumController::class, 'edit'])->name('museum.edit');
+    Route::put('/museum/{museumItem}', [MuseumController::class, 'update'])->name('museum.update');
+    Route::delete('/museum/{museumItem}', [MuseumController::class, 'destroy'])->name('museum.destroy');
     Route::post('/museum/{museumItem}/like', [MuseumController::class, 'toggleLike'])->name('museum.like');
 
     // =====================================================

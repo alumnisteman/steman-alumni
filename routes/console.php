@@ -11,9 +11,10 @@ Artisan::command('inspire', function () {
 Schedule::command('ai:generate-news')->weeklyOn(1, '08:00');
 
 // AI Feed & Auto Viral Engine (Trending & NewsAPI Aggregator)
+// Dikurangi dari setiap 10 menit (144x/hari) ke 2x/hari agar tidak habiskan kuota AI
 Schedule::call(function () {
     app(\App\Services\NewsAggregator::class)->get();
-})->everyTenMinutes()->name('ai:news-aggregator');
+})->twiceDaily(8, 20)->name('ai:news-aggregator');
 
 // Advertisement Cleanup: Remove orphaned images weekly on Sunday at 1 AM
 Schedule::command('ads:prune')->weeklyOn(0, '01:00');

@@ -4,7 +4,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <h2 class="section-title mb-0">Kelola Berita & Cerita</h2>
-        <a href="/admin/news/create" class="btn btn-alumni_smkn2 shadow-sm rounded-0 px-4">
+        <a href="{{ route('admin.news.create') }}" class="btn btn-alumni_smkn2 shadow-sm rounded-0 px-4">
             <i class="bi bi-plus-lg me-2"></i>Tulis Berita
         </a>
     </div>
@@ -62,7 +62,7 @@
                                     </button>
                                 </form>
 
-                                <a href="/news/{{ $item->slug }}" target="_blank" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Lihat">
+                                <a href="{{ config('app.url') }}/news/{{ $item->slug }}" target="_blank" class="btn btn-sm btn-light border shadow-sm rounded-circle" title="Lihat">
                                     <i class="bi bi-box-arrow-up-right text-dark"></i>
                                 </a>
                             </div>

@@ -51,7 +51,7 @@
                         </td>
                         <td class="text-muted small">{{ $msg->created_at->diffForHumans() }}</td>
                         <td class="text-center">
-                            <a href="/admin/messages/{{ $msg->id }}" class="btn btn-sm btn-primary rounded-pill px-3 me-1">
+                            <a href="{{ route('admin.messages.show', $msg->id) }}" class="btn btn-sm btn-primary rounded-pill px-3 me-1">
                                 <i class="bi bi-eye"></i>
                             </a>
                             <form id="delete-msg-{{ $msg->id }}" method="POST" action="{{ route('admin.messages.destroy', $msg->id) }}" class="d-inline">

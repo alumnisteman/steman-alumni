@@ -35,22 +35,17 @@ Route::domain('api.alumni-steman.my.id')->group(function () {
         $report = json_decode($request->getContent(), true);
         if ($report) {
             \Illuminate\Support\Facades\Log::warning('CSP Violation:', $report);
+
+            // FIX MEDIUM: Kirim notifikasi Telegram via queue (asinkron)
+            // Sebelumnya menggunakan @file_get_contents sinkron yang menambah latency response
             if (config('app.env') === 'production') {
-                $telegramToken = config('services.telegram.bot_token');
-                $telegramChatId = config('services.telegram.chat_id');
-                if ($telegramToken && $telegramChatId) {
-                    $blockedUri = $report['csp-report']['blocked-uri'] ?? 'Unknown';
-                    $violatedDirective = $report['csp-report']['violated-directive'] ?? 'Unknown';
-                    $documentUri = $report['csp-report']['document-uri'] ?? 'Unknown';
-                    
-                    $teleMsg = "🛡️ *CSP VIOLATION* 🛡️\n\n*Blocked URI:* $blockedUri\n*Directive:* $violatedDirective\n*Page:* $documentUri";
-                    $ctx = stream_context_create(['http' => ['timeout' => 2]]);
-                    @file_get_contents("https://api.telegram.org/bot{$telegramToken}/sendMessage?" . http_build_query([
-                        'chat_id' => $telegramChatId,
-                        'text' => $teleMsg,
-                        'parse_mode' => 'Markdown'
-                    ]), false, $ctx);
-                }
+                $blockedUri        = $report['csp-report']['blocked-uri'] ?? 'Unknown';
+                $violatedDirective = $report['csp-report']['violated-directive'] ?? 'Unknown';
+                $documentUri       = $report['csp-report']['document-uri'] ?? 'Unknown';
+
+                $teleMsg = "🛡️ *CSP VIOLATION* 🛡️\n\n*Blocked URI:* {$blockedUri}\n*Directive:* {$violatedDirective}\n*Page:* {$documentUri}";
+
+                \App\Jobs\SendTelegramNotification::dispatch($teleMsg);
             }
         }
         return response()->json(['success' => true]);

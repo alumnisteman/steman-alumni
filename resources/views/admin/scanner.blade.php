@@ -142,7 +142,7 @@
         document.getElementById('resYear').textContent = user.graduation_year;
         document.getElementById('resPoints').textContent = user.points;
         document.getElementById('resJob').textContent = user.current_job;
-        document.getElementById('resProfileLink').href = '/admin/users/' + user.id + '/edit';
+        document.getElementById('resProfileLink').href = '/users/' + user.id;
         
         if (user.profile_picture) {
             document.getElementById('resImage').src = '/storage/' + user.profile_picture;

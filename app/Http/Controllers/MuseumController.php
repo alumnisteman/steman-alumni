@@ -68,7 +68,7 @@ class MuseumController extends Controller
             'title'       => 'required|string|max:200',
             'description' => 'nullable|string|max:2000',
             'category'    => 'required|in:' . implode(',', array_keys(MuseumItem::$categoryLabels)),
-            'image'       => 'nullable|image|max:3072', // max 3 MB
+            'image'       => 'nullable|image|max:3072',
             'video_url'   => 'nullable|url',
             'era_year'    => 'nullable|integer|min:1950|max:' . date('Y'),
             'donated_by'  => 'nullable|string|max:100',
@@ -104,12 +104,75 @@ class MuseumController extends Controller
             'era_year'    => $request->era_year,
             'donated_by'  => $request->donated_by,
             'uploaded_by' => auth()->id(),
-            'status'      => 'pending', // admin must approve
+            'status'      => 'pending',
         ]);
 
         Cache::forget('museum_stats');
 
         return back()->with('success', 'Arsip berhasil dikirim! Menunggu persetujuan admin. Terima kasih telah berkontribusi 🏛️');
+    }
+
+    public function edit(MuseumItem $museumItem)
+    {
+        $this->authorizeMuseumAction($museumItem);
+        $categories = MuseumItem::$categoryLabels;
+        return view('museum.edit', compact('museumItem', 'categories'));
+    }
+
+    public function update(Request $request, MuseumItem $museumItem)
+    {
+        $this->authorizeMuseumAction($museumItem);
+
+        $request->validate([
+            'title'       => 'required|string|max:200',
+            'description' => 'nullable|string|max:2000',
+            'category'    => 'required|in:' . implode(',', array_keys(MuseumItem::$categoryLabels)),
+            'image'       => 'nullable|image|max:3072',
+            'video_url'   => 'nullable|url',
+            'era_year'    => 'nullable|integer|min:1950|max:' . date('Y'),
+            'donated_by'  => 'nullable|string|max:100',
+        ]);
+
+        $imagePath = $museumItem->image_url;
+        if ($request->hasFile('image')) {
+            if ($imagePath && !str_starts_with($imagePath, 'http')) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $imagePath));
+            }
+
+            $image = $request->file('image');
+            $imgRes = imagecreatefromstring(file_get_contents($image->getRealPath()));
+
+            ob_start();
+            if (function_exists('imagewebp')) {
+                imagewebp($imgRes, null, 80);
+                $ext = 'webp';
+            } else {
+                imagejpeg($imgRes, null, 80);
+                $ext = 'jpg';
+            }
+            $imgData = ob_get_clean();
+            imagedestroy($imgRes);
+
+            $filename = 'museum/' . uniqid() . '.' . $ext;
+            Storage::disk('public')->put($filename, $imgData);
+            $imagePath = Storage::url($filename);
+        }
+
+        $museumItem->update([
+            'title'       => $request->title,
+            'description' => $request->description,
+            'category'    => $request->category,
+            'image_url'   => $imagePath,
+            'video_url'   => $request->video_url,
+            'era_year'    => $request->era_year,
+            'donated_by'  => $request->donated_by,
+            'status'      => 'pending',
+        ]);
+
+        Cache::forget('museum_stats');
+
+        return redirect()->route('museum.show', $museumItem)
+            ->with('success', 'Arsip diperbarui! Menunggu persetujuan ulang admin.');
     }
 
     public function toggleLike(MuseumItem $museumItem)
@@ -133,7 +196,6 @@ class MuseumController extends Controller
         return response()->json(['liked' => $liked, 'total' => $museumItem->likes]);
     }
 
-    // Admin: list pending items for approval
     public function adminIndex()
     {
         $items = MuseumItem::with('uploader')
@@ -159,11 +221,26 @@ class MuseumController extends Controller
 
     public function destroy(MuseumItem $museumItem)
     {
+        $this->authorizeMuseumAction($museumItem);
+
         if ($museumItem->image_url && !str_starts_with($museumItem->image_url, 'http')) {
             Storage::disk('public')->delete(str_replace('/storage/', '', $museumItem->image_url));
         }
         $museumItem->delete();
         Cache::forget('museum_stats');
-        return back()->with('success', 'Arsip dihapus.');
+        return redirect()->route('museum.index')->with('success', 'Arsip dihapus.');
+    }
+
+    private function authorizeMuseumAction(MuseumItem $museumItem): void
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403, 'Login diperlukan.');
+        }
+        $isOwner = (int) $museumItem->uploaded_by === (int) $user->id;
+        $isAdmin = in_array($user->role, ['admin', 'editor']);
+        if (!$isOwner && !$isAdmin) {
+            abort(403, 'Anda tidak berhak mengubah arsip ini.');
+        }
     }
 }

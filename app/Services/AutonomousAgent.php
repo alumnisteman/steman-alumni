@@ -171,6 +171,13 @@ Do not wrap the JSON in markdown blocks like ```json.";
         }
 
         if ($instruction['type'] === 'file_edit' && isset($instruction['search'], $instruction['replace'])) {
+            // PRODUCTION SAFETY GUARD: file_edit dinonaktifkan di production
+            // AI tidak boleh menulis kode langsung ke production tanpa review manusia
+            if (config('app.env') === 'production') {
+                Log::warning('AutonomousAgent: file_edit DIBLOKIR di production. Gunakan staging untuk self-healing kode.');
+                return false;
+            }
+
             if (!File::exists($filePath)) return false;
 
             $content = File::get($filePath);

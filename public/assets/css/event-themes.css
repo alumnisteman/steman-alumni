@@ -1,0 +1,480 @@
+/* ============================================================
+   STEMAN ALUMNI — Event Themes CSS
+   Diload HANYA saat ada event aktif (kondisi di app.blade.php).
+   Setiap tema menggunakan body.{css_class} sebagai selector.
+   CATATAN: @import HARUS di baris pertama.
+   ============================================================ */
+
+/* Google Fonts — Fredoka (Doodle/Youth), Nunito (Elegan), Plus Jakarta Sans */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+/* ============================================================
+   BASE: Event Banner Bar
+   ============================================================ */
+.event-banner-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(90deg, #1a3a5c 0%, #2d5a8e 100%);
+    position: relative;
+    z-index: 1030;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    flex-wrap: wrap;
+    min-height: 42px;
+}
+
+.event-banner-bar .event-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
+}
+
+.event-banner-bar .event-countdown {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 800;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.18);
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+}
+
+.event-banner-bar .event-banner-close {
+    background: rgba(0,0,0,0.2);
+    border: none;
+    color: rgba(255,255,255,0.85);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.2s;
+    margin-left: auto;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+}
+.event-banner-bar .event-banner-close:hover {
+    background: rgba(0,0,0,0.4);
+    transform: scale(1.1);
+}
+
+@media (max-width: 767px) {
+    .event-banner-bar {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.78rem;
+    }
+    .event-banner-bar .event-countdown {
+        font-size: 0.7rem;
+    }
+}
+
+/* ============================================================
+   CSS VARIABLES PER TEMA — diterapkan ke body.{css-class}
+   ============================================================ */
+
+/* ===========================================================
+   ★  1. HUT STEMAN — DOODLE STYLE  ★
+   Font: Fredoka (playful-elegan, ala Google Doodle)
+   Palette: Orange · Gold · Teal · Purple · Pink
+   =========================================================== */
+body.theme-hut-steman {
+    --et-primary:   #FF5733;
+    --et-secondary: #FFC300;
+    --et-accent:    #00D4AA;
+    --et-purple:    #7C3AED;
+    --et-pink:      #EC4899;
+}
+
+/* Banner Bar — animasi pelangi Doodle */
+body.theme-hut-steman .event-banner-bar {
+    background: linear-gradient(
+        270deg,
+        #FF5733 0%,
+        #FFC300 20%,
+        #00D4AA 40%,
+        #7C3AED 60%,
+        #EC4899 80%,
+        #FF5733 100%
+    );
+    background-size: 400% 400%;
+    animation: et-doodle-shift 7s ease infinite;
+    border-bottom: 3px solid rgba(255,255,255,0.45);
+    box-shadow:
+        0 4px 20px rgba(255,87,51,0.35),
+        0 0 0 1px rgba(255,255,255,0.1) inset;
+    padding: 0.85rem 1.5rem;
+    min-height: 58px;
+    font-family: 'Fredoka', 'Nunito', 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+}
+
+/* Teks utama (banner_text) — Doodle: besar, tebal, sedikit shadow */
+body.theme-hut-steman .event-banner-bar strong {
+    font-family: 'Fredoka', 'Nunito', sans-serif;
+    font-size: 1.22rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+    text-shadow:
+        2px 3px 0px rgba(0,0,0,0.22),
+        0 0 28px rgba(255,255,255,0.35);
+    line-height: 1.2;
+}
+
+/* Teks subtext (Bersatu, Berkarya, Berprestasi...) */
+body.theme-hut-steman .event-banner-bar span {
+    font-family: 'Nunito', 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+/* Icon — bounce animation */
+body.theme-hut-steman .event-banner-bar .event-icon {
+    font-size: 1.6rem;
+    animation: et-doodle-bounce 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+}
+
+/* Countdown pill */
+body.theme-hut-steman .event-banner-bar .event-countdown {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.82rem;
+    background: rgba(0,0,0,0.22);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(4px);
+}
+
+/* Tombol tutup */
+body.theme-hut-steman .event-banner-bar .event-banner-close {
+    background: rgba(0,0,0,0.2);
+    border: 1.5px solid rgba(255,255,255,0.3);
+}
+body.theme-hut-steman .event-banner-bar .event-banner-close:hover {
+    background: rgba(0,0,0,0.4);
+    border-color: rgba(255,255,255,0.6);
+}
+
+/* Mobile — sedikit mengecil tapi tetap proporsional */
+@media (max-width: 767px) {
+    body.theme-hut-steman .event-banner-bar {
+        padding: 0.7rem 1rem;
+        min-height: 50px;
+        font-size: 0.9rem;
+    }
+    body.theme-hut-steman .event-banner-bar strong {
+        font-size: 1.05rem;
+    }
+    body.theme-hut-steman .event-banner-bar .event-icon {
+        font-size: 1.35rem;
+    }
+}
+
+/* Animasi gradien bergeser (Doodle shimmer) */
+@keyframes et-doodle-shift {
+    0%   { background-position: 0%   50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0%   50%; }
+}
+
+/* Animasi ikon bouncing */
+@keyframes et-doodle-bounce {
+    0%, 100% { transform: translateY(0)    rotate(-3deg); }
+    25%       { transform: translateY(-5px) rotate(4deg);  }
+    50%       { transform: translateY(-8px) rotate(-2deg); }
+    75%       { transform: translateY(-3px) rotate(3deg);  }
+}
+
+/* ---- 2. ULANG TAHUN ADMIN ---- */
+body.theme-birthday-admin {
+    --et-primary:   #e91e8c;
+    --et-secondary: #7c3aed;
+    --et-accent:    #fbbf24;
+}
+body.theme-birthday-admin .event-banner-bar {
+    background: linear-gradient(90deg, #7c3aed 0%, #e91e8c 50%, #7c3aed 100%);
+    border-bottom-color: #fbbf24;
+    animation: et-pulse-bg 3s ease-in-out infinite;
+}
+@keyframes et-pulse-bg {
+    0%,100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+/* ---- 3. IDUL FITRI ---- */
+body.theme-idul-fitri {
+    --et-primary:   #145a32;
+    --et-secondary: #f7c948;
+    --et-accent:    #ffffff;
+}
+body.theme-idul-fitri .event-banner-bar {
+    background: linear-gradient(90deg, #0b3d22 0%, #1e7a45 50%, #0b3d22 100%);
+    border-bottom-color: #f7c948;
+}
+body.theme-idul-fitri .event-banner-bar strong { color: #f7c948; }
+
+/* ---- 4. IDUL ADHA ---- */
+body.theme-idul-adha {
+    --et-primary:   #7b2d00;
+    --et-secondary: #d4a017;
+    --et-accent:    #fff8e7;
+}
+body.theme-idul-adha .event-banner-bar {
+    background: linear-gradient(90deg, #4a1a00 0%, #9b3900 50%, #4a1a00 100%);
+    border-bottom-color: #d4a017;
+}
+body.theme-idul-adha .event-banner-bar strong { color: #d4a017; }
+
+/* ---- 5. HUT PROVINSI MALUKU UTARA ---- */
+body.theme-hut-malut {
+    --et-primary:   #1a6b3a;
+    --et-secondary: #c0392b;
+    --et-accent:    #f39c12;
+}
+body.theme-hut-malut .event-banner-bar {
+    background: linear-gradient(90deg, #1a6b3a 0%, #c0392b 50%, #1a6b3a 100%);
+    border-bottom-color: #f39c12;
+}
+
+/* ---- 6. HUT PEMERINTAH KOTA TERNATE ---- */
+body.theme-hut-ternate {
+    --et-primary:   #0d6efd;
+    --et-secondary: #198754;
+    --et-accent:    #ffc107;
+}
+body.theme-hut-ternate .event-banner-bar {
+    background: linear-gradient(90deg, #0a4fc4 0%, #198754 50%, #0a4fc4 100%);
+    border-bottom-color: #ffc107;
+}
+body.theme-hut-ternate .event-banner-bar strong { color: #ffc107; }
+
+/* ---- 7. HAJAT TERNATE ---- */
+body.theme-hajat-ternate {
+    --et-primary:   #7b2d8b;
+    --et-secondary: #f39c12;
+    --et-accent:    #e74c3c;
+}
+body.theme-hajat-ternate .event-banner-bar {
+    background: linear-gradient(90deg, #5a1f67 0%, #8e3399 50%, #5a1f67 100%);
+    border-bottom-color: #f39c12;
+}
+body.theme-hajat-ternate .event-banner-bar strong { color: #f39c12; }
+
+/* ---- 8. NUZULUL QURAN ---- */
+body.theme-nuzulul-quran {
+    --et-primary:   #0d2137;
+    --et-secondary: #d4af37;
+    --et-accent:    #a8d8a8;
+}
+body.theme-nuzulul-quran .event-banner-bar {
+    background: linear-gradient(90deg, #071626 0%, #143352 50%, #071626 100%);
+    border-bottom-color: #d4af37;
+}
+body.theme-nuzulul-quran .event-banner-bar strong { color: #d4af37; }
+
+/* ---- 9. ISRA MI'RAJ ---- */
+body.theme-isra-miraj {
+    --et-primary:   #1a4a7a;
+    --et-secondary: #f0c040;
+    --et-accent:    #ffffff;
+}
+body.theme-isra-miraj .event-banner-bar {
+    background: linear-gradient(90deg, #0f2d50 0%, #1e5490 50%, #0f2d50 100%);
+    border-bottom-color: #f0c040;
+}
+body.theme-isra-miraj .event-banner-bar strong { color: #f0c040; }
+
+/* ---- 10. MAULID NABI MUHAMMAD SAW ---- */
+body.theme-maulid-nabi {
+    --et-primary:   #0b4d2e;
+    --et-secondary: #c9a44c;
+    --et-accent:    #f5f0e8;
+}
+body.theme-maulid-nabi .event-banner-bar {
+    background: linear-gradient(90deg, #073320 0%, #0e6038 50%, #073320 100%);
+    border-bottom-color: #c9a44c;
+}
+body.theme-maulid-nabi .event-banner-bar strong { color: #c9a44c; }
+
+/* ---- 11. TAHUN BARU ISLAM ---- */
+body.theme-tahun-baru-islam {
+    --et-primary:   #2c3e50;
+    --et-secondary: #c0a060;
+    --et-accent:    #e8d9b5;
+}
+body.theme-tahun-baru-islam .event-banner-bar {
+    background: linear-gradient(90deg, #1a2636 0%, #2e4158 50%, #1a2636 100%);
+    border-bottom-color: #c0a060;
+}
+body.theme-tahun-baru-islam .event-banner-bar strong { color: #c0a060; }
+
+/* ---- 12. BULAN RAMADAN ---- */
+body.theme-ramadan {
+    --et-primary:   #1a3a5c;
+    --et-secondary: #c8a84b;
+    --et-accent:    #f9f3e3;
+}
+body.theme-ramadan .event-banner-bar {
+    background: linear-gradient(90deg, #0e253d 0%, #1e4470 50%, #0e253d 100%);
+    border-bottom-color: #c8a84b;
+}
+body.theme-ramadan .event-banner-bar strong { color: #c8a84b; }
+
+/* ---- 13. HUT KEMERDEKAAN RI ---- */
+body.theme-kemerdekaan {
+    --et-primary:   #dc3545;
+    --et-secondary: #ffffff;
+    --et-accent:    #dc3545;
+}
+body.theme-kemerdekaan .event-banner-bar {
+    background: linear-gradient(90deg, #b02a37 0%, #dc3545 40%, #cc0000 60%, #b02a37 100%);
+    border-bottom-color: #ffffff;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* ---- 14. HARI PAHLAWAN ---- */
+body.theme-pahlawan {
+    --et-primary:   #7b341e;
+    --et-secondary: #f6ad55;
+    --et-accent:    #e53e3e;
+}
+body.theme-pahlawan .event-banner-bar {
+    background: linear-gradient(90deg, #521d0e 0%, #8b3a20 50%, #521d0e 100%);
+    border-bottom-color: #f6ad55;
+}
+body.theme-pahlawan .event-banner-bar strong { color: #f6ad55; }
+
+/* ---- 15. HARI SUMPAH PEMUDA ---- */
+body.theme-sumpah-pemuda {
+    --et-primary:   #1a56db;
+    --et-secondary: #e74c3c;
+    --et-accent:    #ffffff;
+}
+body.theme-sumpah-pemuda .event-banner-bar {
+    background: linear-gradient(90deg, #1a56db 0%, #c0392b 50%, #1a56db 100%);
+    border-bottom-color: rgba(255,255,255,0.5);
+}
+
+/* ---- 16. HARI LAHIR PANCASILA ---- */
+body.theme-pancasila {
+    --et-primary:   #dc3545;
+    --et-secondary: #ffc107;
+    --et-accent:    #198754;
+}
+body.theme-pancasila .event-banner-bar {
+    background: linear-gradient(90deg, #b02a37 0%, #d39e00 50%, #146c43 100%);
+    border-bottom-color: rgba(255,255,255,0.3);
+}
+
+/* ---- 17. HARI KEBANGKITAN NASIONAL ---- */
+body.theme-harkitnas {
+    --et-primary:   #198754;
+    --et-secondary: #ffffff;
+    --et-accent:    #ffc107;
+}
+body.theme-harkitnas .event-banner-bar {
+    background: linear-gradient(90deg, #146c43 0%, #198754 50%, #146c43 100%);
+    border-bottom-color: #ffc107;
+}
+body.theme-harkitnas .event-banner-bar strong { color: #ffc107; }
+
+/* ---- 18. TAHUN BARU ---- */
+body.theme-tahun-baru {
+    --et-primary:   #7c3aed;
+    --et-secondary: #f59e0b;
+    --et-accent:    #ec4899;
+}
+body.theme-tahun-baru .event-banner-bar {
+    background: linear-gradient(270deg, #7c3aed, #ec4899, #f59e0b, #7c3aed);
+    background-size: 400% 400%;
+    animation: et-rainbow 5s ease infinite;
+    border-bottom-color: rgba(255,255,255,0.4);
+}
+@keyframes et-rainbow {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ---- 19. HARI NATAL ---- */
+body.theme-natal {
+    --et-primary:   #166534;
+    --et-secondary: #dc2626;
+    --et-accent:    #fbbf24;
+}
+body.theme-natal .event-banner-bar {
+    background: linear-gradient(90deg, #166534 0%, #dc2626 50%, #166534 100%);
+    border-bottom-color: #fbbf24;
+}
+body.theme-natal .event-banner-bar strong { color: #fbbf24; }
+
+/* ---- 20. HARI BURUH ---- */
+body.theme-hari-buruh {
+    --et-primary:   #dc2626;
+    --et-secondary: #ffffff;
+    --et-accent:    #fbbf24;
+}
+body.theme-hari-buruh .event-banner-bar {
+    background: linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #991b1b 100%);
+    border-bottom-color: #fbbf24;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+body.theme-hari-buruh .event-banner-bar strong { color: #fbbf24; }
+
+/* ============================================================
+   TEMA-LEVEL OVERRIDES — efek ke seluruh portal frontend
+   Menggunakan CSS variables yang sudah di-set per tema di atas.
+   ============================================================ */
+
+/* Navbar accent — garis bawah tipis penanda event */
+body[class*="theme-"] .navbar,
+body[class*="theme-"] .mobile-header {
+    border-bottom: 3px solid var(--et-primary, #0d6efd) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12) !important;
+}
+
+/* Tombol primary ikut warna tema */
+body[class*="theme-"] .btn-primary {
+    background-color: var(--et-primary, #0d6efd) !important;
+    border-color: var(--et-primary, #0d6efd) !important;
+}
+body[class*="theme-"] .btn-primary:hover {
+    filter: brightness(0.88);
+}
+
+/* Mobile bottom nav active state */
+body[class*="theme-"] .mobile-bottom-nav .nav-item.active {
+    color: var(--et-primary, #0d6efd) !important;
+}
+body[class*="theme-"] .mobile-bottom-nav .nav-item.active::after {
+    background: var(--et-primary, #0d6efd) !important;
+}
+body[class*="theme-"] .mobile-bottom-nav .plus-icon {
+    background: linear-gradient(135deg, var(--et-primary, #059669) 0%, var(--et-secondary, #10b981) 100%) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25) !important;
+}
+
+/* Khusus tema terang (background putih): pastikan teks tetap putih */
+body.theme-kemerdekaan .event-banner-bar,
+body.theme-harkitnas .event-banner-bar,
+body.theme-sumpah-pemuda .event-banner-bar {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}

@@ -220,10 +220,67 @@
                             <span class="text-muted small">Mencintai ini</span>
                         </div>
                     </div>
+
+                    <!-- Tombol Edit & Hapus (hanya untuk pemilik atau admin) -->
+                    @if($canManage)
+                    <div class="mt-3 pt-3 border-top border-secondary">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="{{ route('museum.edit', $museumItem) }}"
+                               class="btn btn-sm fw-semibold rounded-pill px-3"
+                               style="background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.4); color: #d4a017;">
+                                <i class="bi bi-pencil-square me-1"></i>Edit Arsip
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm fw-semibold rounded-pill px-3"
+                                    style="background: rgba(225,29,72,0.1); border: 1px solid rgba(225,29,72,0.3); color: #f43f5e;"
+                                    data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                                <i class="bi bi-trash me-1"></i>Hapus
+                            </button>
+                        </div>
+                        @unless(auth()->user()->hasRole(['admin','editor']))
+                        <div class="mt-2" style="font-size: 0.72rem; color: rgba(255,255,255,0.4);">
+                            <i class="bi bi-info-circle me-1"></i>Setelah diedit, arsip akan direview ulang oleh admin.
+                        </div>
+                        @endunless
+                    </div>
+                    @endif
                 </div>
             </div>
 
         </div>
+
+        <!-- Modal Konfirmasi Hapus -->
+        @if($canManage)
+        <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header border-0" style="background: #b91c1c;">
+                        <h5 class="modal-title fw-bold text-white"><i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div style="font-size: 4rem;">🗑️</div>
+                        <h5 class="fw-bold mt-3">Hapus arsip ini?</h5>
+                        <p class="text-muted mb-0">
+                            <strong>"{{ $museumItem->title }}"</strong> akan dihapus permanen beserta fotonya.<br>
+                            Tindakan ini <strong class="text-danger">tidak bisa dibatalkan</strong>.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pb-4 gap-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+                            <i class="bi bi-x me-1"></i>Batal
+                        </button>
+                        <form action="{{ route('museum.destroy', $museumItem) }}" method="POST" class="d-inline">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger fw-bold rounded-pill px-4">
+                                <i class="bi bi-trash me-2"></i>Ya, Hapus Sekarang
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- Related Section -->
         @if ($related->isNotEmpty())

@@ -4,20 +4,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
-if (!function_exists('redirect')) {
-    function redirect($to = null, $status = 302, $headers = [], $secure = null) {
-        if (is_null($to)) {
-            return app('redirect');
-        }
-        return app('redirect')->to($to, $status, $headers, $secure);
-    }
-}
-
-if (!function_exists('back')) {
-    function back($status = 302, $headers = [], $fallback = false) {
-        return app('redirect')->back($status, $headers, $fallback);
-    }
-}
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -48,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\UpdateUserActivity::class,
             \App\Http\Middleware\EnsureAdminSubdomainAccess::class,
         ]);
-        // TrustProxies: handled by App\Http\Middleware\TrustProxies (Cloudflare + Docker IPs)
+        $middleware->trustProxies(at: '*');
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -166,7 +152,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // 3. Garbage Collection & Disk Guard
         $schedule->command('steman:cleanup')->weeklyOn(0, '04:00')->onOneServer(); // Every Sunday
-        $schedule->command('steman:cleanup')->dailyAt('05:00')->onOneServer();
+        $schedule->command('steman:clean-temp')->dailyAt('05:00')->onOneServer();
         
         // 4. Log Guard (Hourly) - Prevent Disk Full
         $schedule->call(function() {

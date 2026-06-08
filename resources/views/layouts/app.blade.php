@@ -40,6 +40,9 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <link rel="preload" as="style" href="{{ asset('assets/css/modern-v5.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/modern-v5.css') }}" media="print" onload="this.media='all'">
+    @if(isset($activeEventTheme) && $activeEventTheme)
+    <link rel="stylesheet" href="{{ asset('assets/css/event-themes.css') }}">
+    @endif
 @stack('styles')
     <style>
         @font-face {
@@ -92,10 +95,11 @@
 }:root{--billboard-height:250px;--ad-wrapper-padding:2.5rem;--total-ad-offset:calc(var(--billboard-height) + var(--ad-wrapper-padding))}.header-ad-wrapper{position:relative;z-index:100;background:#fff;border-bottom:2px solid #ffcc00;transition:all .3s ease}.navbar.sticky-top{top:0;z-index:1050;box-shadow:0 4px 10px rgba(0,0,0,0.1)}.ad-close-btn{position:absolute;top:5px;right:10px;background:rgba(0,0,0,0.1);color:#666;border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;transition:all .2s}.ad-close-btn:hover{background:#ffcc00;color:#000}.ad-slot-container{width:100%;height:var(--billboard-height);display:flex;align-items:center;justify-content:center;background:#f8f9fa;overflow:hidden;border-radius:8px;border:1px solid rgba(0,0,0,0.05)}.ad-slot-container img{width:100%;height:100%;object-fit:contain;object-position:center;transition:transform .3s ease}.ad-slot-container:hover img{transform:scale(1.02)}@media (max-width:767px){:root{--billboard-height:150px;--ad-wrapper-padding:1rem}.navbar.sticky-top{top:0}.top-bar{display:none}}.header-ad-wrapper:empty{display:none}.bg-gradient-story{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)}.mobile-bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;align-items:center;height:70px;padding-bottom:env(safe-area-inset-bottom);z-index:2000;border-top:1px solid rgba(0,0,0,0.08);box-shadow:0 -5px 25px rgba(0,0,0,0.05)}.mobile-bottom-nav .nav-item{text-decoration:none;color:#94a3b8;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;font-size:.65rem;font-weight:700;transition:all .2s cubic-bezier(0.4,0,0.2,1);position:relative}.mobile-bottom-nav .nav-item i{font-size:1.4rem;margin-bottom:2px}.mobile-bottom-nav .nav-item.active{color:#059669;transform:translateY(-2px)}.mobile-bottom-nav .nav-item.active::after{content:'';position:absolute;top:0;width:20px;height:3px;background:#059669;border-radius:0 0 10px 10px}.mobile-bottom-nav .action-btn{position:relative;top:-20px;z-index:2001}.mobile-bottom-nav .plus-icon{width:56px;height:56px;background:linear-gradient(135deg,#059669 0%,#10b981 100%);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(5,150,105,0.35);border:5px solid #fff;transition:transform .2s}.mobile-bottom-nav .plus-icon:active{transform:scale(0.9)}.mobile-bottom-nav .plus-icon i{margin-bottom:0;font-size:1.6rem}.mobile-header{display:none;background:#fff;padding:12px 15px;border-bottom:1px solid rgba(0,0,0,0.05);position:sticky;top:0;z-index:1050}@media (min-width:992px){.mobile-bottom-nav,.mobile-header{display:none!important}body{padding-bottom:0}}@media (max-width:991px){body{padding-bottom:calc(70px + env(safe-area-inset-bottom))}.navbar{display:none!important}.mobile-header{display:flex;justify-content:space-between;align-items:center}.top-bar{display:none!important}.header-ad-wrapper{border-bottom:none}.container{padding-left:12px;padding-right:12px}h1{font-size:1.75rem!important}h2{font-size:1.5rem!important}h5{font-size:1.1rem!important}.btn-lg-mobile{padding:12px 20px;font-size:1.1rem;font-weight:700;border-radius:12px}}.dark .mobile-bottom-nav,.dark .mobile-header{background:#1e293b;border-color:rgba(255,255,255,0.1)}.dark .mobile-bottom-nav .plus-icon{border-color:#1e293b}.dark .mobile-bottom-nav .nav-item{color:#64748b}.dark .mobile-bottom-nav .nav-item.active{color:#10b981}.text-muted{color:#475569!important}.footer-link{color:#cbd5e1!important;transition:color .2s}.footer-link:hover{color:#fff!important}
     </style>
 </head>
-<body>
+<body class="{{ isset($activeEventTheme) && $activeEventTheme ? $activeEventTheme->css_class : '' }}">
 @php
     $runningText = setting('running_text', 'Selamat Datang di Portal Resmi Forum Silaturahmi Alumni Steman Ternate - Jalin Silaturahmi, Bangun Kontribusi!');
 @endphp
+    <x-event-banner />
     <div class="header-ad-wrapper shadow-sm" id="main-header-ad">
         <button class="ad-close-btn" onclick="document.getElementById('main-header-ad').remove()" title="Tutup Iklan">
             <i class="bi bi-x"></i>
@@ -712,6 +716,40 @@
         };
     </script>
     @stack('scripts')
+    <script>
+    // ── CSRF Guard: perbarui token otomatis setiap 90 menit ──────────────────
+    (function() {
+        function refreshCsrfToken() {
+            fetch('/csrf-refresh', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (!data || !data.token) return;
+                    var meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta) meta.setAttribute('content', data.token);
+                    document.querySelectorAll('input[name="_token"]').forEach(function(el) { el.value = data.token; });
+                }).catch(function() {});
+        }
+        // Perbarui token tiap 90 menit (sesi = 120 menit, refresh lebih awal untuk aman)
+        setInterval(refreshCsrfToken, 90 * 60 * 1000);
+
+        // Intersepsi fetch: tangkap respons 419 dan perbarui token + tampilkan notifikasi
+        var _origFetch = window.fetch;
+        window.fetch = function() {
+            var args = arguments;
+            return _origFetch.apply(this, args).then(function(resp) {
+                if (resp.status === 419) {
+                    refreshCsrfToken();
+                    if (window.Swal) {
+                        Swal.fire({ icon: 'warning', title: 'Sesi Formulir Kedaluwarsa',
+                            text: 'Token keamanan telah diperbarui. Silakan kirim ulang formulir.',
+                            confirmButtonText: 'Oke', timer: 6000, timerProgressBar: true });
+                    }
+                }
+                return resp;
+            });
+        };
+    })();
+    </script>
     @include('components.ai-chat-bubble')
     @include('components.global-modals')
 </body>

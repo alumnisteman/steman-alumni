@@ -8,6 +8,7 @@ use App\Http\Resources\AuthResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -20,8 +21,16 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // FIX HIGH: Rate limiting untuk API login (cegah brute force)
+        $rateLimitKey = 'api_login:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
+            return response()->json([
+                'message' => 'Terlalu banyak percobaan login. Silakan tunggu beberapa saat.'
+            ], 429);
+        }
+
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
@@ -31,42 +40,59 @@ class AuthController extends Controller
 
         if ($this->authService->login($request->only('email', 'password'))) {
             $user = Auth::user();
-            
-            // To use Sanctum:
-            // $token = $this->authService->generateApiToken($user);
-            // $this is a fallback token generator if sanctum is missing
-            $token = method_exists($user, 'createToken') ? $this->authService->generateApiToken($user) : 'fallback_api_token_here_if_sanctum_is_not_installed';
+
+            // FIX CRITICAL: Hapus hardcoded fallback token — jika Sanctum tidak tersedia,
+            // kembalikan error yang jelas daripada token palsu yang bisa disalahgunakan
+            if (!method_exists($user, 'createToken')) {
+                return response()->json([
+                    'message' => 'Server tidak mendukung token otentikasi. Hubungi administrator.'
+                ], 503);
+            }
+
+            $token = $this->authService->generateApiToken($user);
+
+            RateLimiter::clear($rateLimitKey);
 
             return new AuthResource([
-                'user' => $user,
-                'token' => $token
+                'user'  => $user,
+                'token' => $token,
             ]);
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        RateLimiter::hit($rateLimitKey, 60);
+        return response()->json(['message' => 'Kredensial tidak valid.'], 401);
     }
-    
-    public function register(Request $request) 
+
+    public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:4|confirmed',
+            'name'                  => 'required|string|max:255',
+            'email'                 => 'required|string|email|max:255|unique:users',
+            // FIX MEDIUM: Password minimal 8 karakter sesuai standar keamanan
+            'password'              => 'required|string|min:8|confirmed',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-        
-        $data = $request->only('name', 'email', 'password');
-        $data['role'] = 'alumni';
-        
+
+        $data           = $request->only('name', 'email', 'password');
+        $data['role']   = 'alumni';
+
         $user = $this->authService->register($data);
-        $token = method_exists($user, 'createToken') ? $this->authService->generateApiToken($user) : 'fallback_api_token_missing_sanctum';
-        
+
+        // FIX CRITICAL: Tidak ada fallback token palsu
+        if (!method_exists($user, 'createToken')) {
+            return response()->json([
+                'message' => 'Akun berhasil dibuat, namun server tidak mendukung token otentikasi. Hubungi administrator.'
+            ], 503);
+        }
+
+        $token = $this->authService->generateApiToken($user);
+
         return new AuthResource([
-            'user' => $user,
-            'token' => $token
+            'user'  => $user,
+            'token' => $token,
         ]);
     }
 }

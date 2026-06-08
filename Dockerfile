@@ -9,12 +9,9 @@ RUN npm run build
 # --- Stage 2: Build PHP Dependencies (Composer) ---
 FROM composer:latest AS composer-builder
 WORKDIR /app
-# Set composer environment to be more resilient
-# Force composer to build for PHP 8.2 so platform_check.php passes on the runtime container
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV COMPOSER_MEMORY_LIMIT=-1
 COPY composer*.json ./
-# Run composer with extreme parameters to avoid timeouts/memory issues
 RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 COPY . .
@@ -24,39 +21,14 @@ RUN composer dump-autoload --optimize --no-dev --no-scripts && ls -la /app/vendo
 FROM php:8.2-fpm-alpine
 LABEL maintainer="Forum Silaturahmi Alumni Steman Ternate"
 
-# Install runtime system dependencies
-RUN apk add --no-cache \
-    libpng-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    libzip-dev \
-    icu-dev \
-    linux-headers \
-    netcat-openbsd \
-    unzip \
-    libjpeg-turbo-dev \
-    freetype-dev
+# Install runtime system dependencies (including WebP + AVIF support)
+RUN apk add --no-cache     libpng-dev     oniguruma-dev     libxml2-dev     libzip-dev     icu-dev     linux-headers     netcat-openbsd     unzip     libjpeg-turbo-dev     freetype-dev     libwebp-dev     libavif-dev
 
 # Add Composer binary for runtime usage (if needed in Dev)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install PHP extensions
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip \
-    intl \
-    sockets \
-    opcache \
-    && apk del .build-deps
+# Install PHP extensions (GD with WebP + AVIF support)
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS     && pecl install redis     && docker-php-ext-enable redis     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-avif     && docker-php-ext-install     pdo_mysql     mbstring     exif     pcntl     bcmath     gd     zip     intl     sockets     opcache     && apk del .build-deps
 
 # Setting up application directory
 WORKDIR /var/www
@@ -79,11 +51,7 @@ COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Optimize Permissions
-RUN chmod -R 755 /var/www \
-    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Build-time Laravel Optimization (Production ready) has been moved to docker-entrypoint.sh
+RUN chmod -R 755 /var/www     && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Environment configuration
 ENV APP_ENV=production

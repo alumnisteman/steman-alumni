@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             MajorSeeder::class,
             JobVacancySeeder::class,
+            EventThemeSeeder::class,
         ]);
 
         // 1.5. Master License Seeder

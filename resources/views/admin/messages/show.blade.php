@@ -3,7 +3,7 @@
 @section('admin-content')
 <div class="container py-4">
     <div class="mb-4">
-        <a href="/admin/messages" class="btn btn-light rounded-pill px-4 mb-3">
+        <a href="{{ route('admin.messages.index') }}" class="btn btn-light rounded-pill px-4 mb-3">
             <i class="bi bi-arrow-left me-2"></i>Kembali ke Pesan Masuk
         </a>
     </div>

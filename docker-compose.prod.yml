@@ -301,6 +301,44 @@ services:
         max-size: 5m
         max-file: 2
 
+  scheduler:
+    container_name: steman_scheduler
+    image: steman-alumni-app:latest
+    restart: always
+    env_file: .env
+    command: >
+      sh -c "while true; do php artisan schedule:run --no-interaction >> /var/www/storage/logs/scheduler.log 2>&1; sleep 60; done"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 128M
+    volumes:
+      - ./.env:/var/www/.env
+      - ./storage:/var/www/storage
+      - ./bootstrap:/var/www/bootstrap
+      - ./artisan:/var/www/artisan
+      - ./app:/var/www/app
+      - ./routes:/var/www/routes
+      - ./config:/var/www/config
+      - ./database:/var/www/database
+      - ./vendor:/var/www/vendor
+    networks:
+      - steman-network
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: 2
+    depends_on:
+      - app
+      - redis
+      - db
+
+
 networks:
   steman-network:
     driver: bridge

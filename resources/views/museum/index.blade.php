@@ -148,6 +148,20 @@
 .dark .filter-pill:hover, .dark .filter-pill.active {
     background: #d4a017; color: #1a0f00; border-color: #d4a017;
 }
+
+/* Tombol Edit/Hapus untuk arsip milik sendiri */
+.museum-card.museum-card-owned .card-img-wrap { position: relative; }
+.owner-actions {
+    position: absolute;
+    top: 8px; left: 8px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+.museum-card.museum-card-owned:hover .owner-actions { opacity: 1; }
+.owner-actions .btn { box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
 </style>
 
 {{-- HERO --}}
@@ -252,8 +266,14 @@
         @else
         <div class="row g-4">
             @foreach ($items as $item)
+            @php
+                $isOwner = auth()->check() && (
+                    $item->uploaded_by === auth()->id() ||
+                    auth()->user()->hasRole(['admin','editor'])
+                );
+            @endphp
             <div class="col-6 col-md-4 col-lg-3">
-                <div class="museum-card h-100" onclick="window.location='{{ route('museum.show', $item) }}'">
+                <div class="museum-card h-100 {{ $isOwner ? 'museum-card-owned' : '' }}" onclick="window.location='{{ route('museum.show', $item) }}'">
                     <div class="card-img-wrap">
                         @if ($item->image_url)
                             <img src="{{ $item->image_url }}" alt="{{ $item->title }}" loading="lazy">
@@ -270,6 +290,23 @@
                         <div class="category-badge" title="{{ $item->category_label }}">
                             {{ $item->category_icon }}
                         </div>
+
+                        {{-- Overlay tombol edit/hapus untuk arsip milik sendiri --}}
+                        @if($isOwner)
+                        <div class="owner-actions" onclick="event.stopPropagation()">
+                            <a href="{{ route('museum.edit', $item) }}"
+                               class="btn btn-sm btn-warning rounded-pill px-2 py-1"
+                               title="Edit Arsip" style="font-size: 0.7rem;">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm btn-danger rounded-pill px-2 py-1"
+                                    title="Hapus Arsip" style="font-size: 0.7rem;"
+                                    onclick="confirmDelete({{ $item->id }}, '{{ addslashes($item->title) }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        @endif
                     </div>
                     <div class="card-body">
                         <h6 class="fw-bold mb-1 text-truncate">{{ $item->title }}</h6>
@@ -300,6 +337,36 @@
             </div>
             @endforeach
         </div>
+
+        {{-- Modal hapus dari grid --}}
+        @auth
+        <div class="modal fade" id="gridDeleteModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header border-0" style="background: #b91c1c;">
+                        <h5 class="modal-title fw-bold text-white"><i class="bi bi-exclamation-triangle me-2"></i>Hapus Arsip</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div style="font-size: 4rem;">🗑️</div>
+                        <h5 class="fw-bold mt-3">Hapus arsip ini?</h5>
+                        <p class="text-muted mb-0" id="deleteModalDesc">
+                            Arsip akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pb-4 gap-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                        <form id="deleteForm" method="POST" class="d-inline">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger fw-bold rounded-pill px-4">
+                                <i class="bi bi-trash me-2"></i>Ya, Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endauth
 
         {{-- Pagination --}}
         <div class="mt-5 d-flex justify-content-center">
@@ -377,6 +444,14 @@
 
 @push('scripts')
 <script>
+function confirmDelete(id, title) {
+    document.getElementById('deleteModalDesc').innerHTML =
+        'Arsip <strong>"' + title + '"</strong> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.';
+    document.getElementById('deleteForm').action = '/museum/' + id;
+    var modal = new bootstrap.Modal(document.getElementById('gridDeleteModal'));
+    modal.show();
+}
+
 function toggleLike(id, btn) {
     fetch(`/museum/${id}/like`, {
         method: 'POST',

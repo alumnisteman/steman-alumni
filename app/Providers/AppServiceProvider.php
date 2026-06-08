@@ -91,5 +91,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Use dedicated Composer class for ads
         // View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);
+
+        // Share active event theme with all views
+        View::composer('*', \App\Http\ViewComposers\EventThemeComposer::class);
     }
 }

@@ -48,6 +48,10 @@
         <a href="{{ route('admin.ads.index') }}" class="nav-link-mobile {{ request()->routeIs('admin.ads.*') ? 'active' : '' }}">
             <i class="bi bi-megaphone me-3 text-danger"></i> Manajemen Iklan
         </a>
+        <a href="{{ route('admin.event-themes.index') }}" class="nav-link-mobile {{ request()->routeIs('admin.event-themes.*') ? 'active' : '' }} d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-calendar-event-fill me-3 text-warning"></i> Tema Event Otomatis</span>
+            <span class="badge bg-warning text-dark rounded-pill" style="font-size:0.6rem">AUTO</span>
+        </a>
         <a href="{{ route('admin.gallery.index') }}" class="nav-link-mobile {{ request()->routeIs('admin.gallery.*') ? 'active' : '' }}">
             <i class="bi bi-images me-3 text-success"></i> Galeri Foto
         </a>
@@ -267,6 +271,10 @@
         </a>
         <a href="{{ route('admin.ads.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.ads.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-megaphone me-3 text-danger"></i> Manajemen Iklan
+        </a>
+        <a href="{{ route('admin.event-themes.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 d-flex justify-content-between align-items-center {{ request()->routeIs('admin.event-themes.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
+            <span><i class="bi bi-calendar-event-fill me-3 text-warning"></i> Tema Event Otomatis</span>
+            <span class="badge bg-warning text-dark rounded-pill" style="font-size:0.6rem">AUTO</span>
         </a>
         <a href="{{ route('admin.gallery.index') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.gallery.*') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-images me-3 text-success"></i> Galeri Foto

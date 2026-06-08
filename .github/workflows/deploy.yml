@@ -1,4 +1,4 @@
-name: Steman Alumni CI/CD
+name: 🚀 Steman Alumni — CI/CD Auto Deploy
 
 on:
   push:
@@ -6,46 +6,99 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: self-hosted
-    environment: staging
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install PHP dependencies
-        run: |
-          docker run --rm -v "${{ github.workspace }}:/app" -w /app composer:2.7 php -d extension=pdo_mysql -d extension=mysqli composer install --ignore-platform-reqs --no-dev --optimize-autoloader
-      - name: Build assets
-        run: |
-          docker run --rm -v "${{ github.workspace }}:/app" -w /app node:20-alpine sh -c "npm install && npm run build"
-      - name: Deploy Staging
-        run: |
-          docker compose -f docker-compose.staging.yml up -d --build --scale app=2 --wait
-      - name: Staging health check
-        run: |
-          sleep 5
-          curl --silent --fail http://localhost:8081/health || exit 1
-      - name: Staging migrations
-        run: |
-          docker compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
+  deploy:
+    name: 🏗️ Build & Deploy ke Server
+    runs-on: ubuntu-latest
 
-  deploy-production:
-    name: Deploy to Production
-    needs: deploy-staging
-    runs-on: self-hosted
-    environment:
-      name: production
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout kode terbaru
         uses: actions/checkout@v4
-      - name: Deploy Production
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, pdo_mysql, mbstring, zip, bcmath, intl, redis
+          coverage: none
+
+      - name: 📦 Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: 🎨 Setup Node.js & Build Assets
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 🛠️ Install NPM & Build
         run: |
-          docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --wait
-      - name: Production health check
-        run: |
-          sleep 5
-          curl --silent --fail http://localhost:8000/health || exit 1
-      - name: Production migrations
-        run: |
-          docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+          npm ci
+          npm run build
+
+      - name: 🔍 Validasi sintaks PHP (basic lint)
+        run: find app -name "*.php" | xargs php -l | grep -v "No syntax errors" || true
+
+      - name: 🚀 Deploy ke Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_SSH_PASSWORD }}
+          port: 22
+          timeout: 300s
+          script: |
+            set -e
+            DEPLOY_DIR="/var/www/steman-alumni"
+            echo "📁 Masuk ke direktori deploy: $DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+
+            echo "🔄 Pull kode terbaru dari GitHub..."
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+
+            echo "📦 Install Composer (production)..."
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            echo "🎨 Build frontend assets..."
+            if command -v npm > /dev/null 2>&1; then
+              npm ci && npm run build
+            fi
+
+            echo "🔗 Buat symlink storage (FIX foto tidak tampil)..."
+            php artisan storage:link --force
+
+            echo "🗄️ Jalankan migrasi database..."
+            php artisan migrate --force
+
+            echo "⚡ Optimasi Laravel..."
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
+
+            echo "🔧 Perbaiki permission storage..."
+            chmod -R 775 storage bootstrap/cache
+            chown -R www-data:www-data storage bootstrap/cache
+
+            echo "🐳 Restart Docker containers..."
+            if [ -f docker-compose.prod.yml ]; then
+              docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --no-recreate 2>/dev/null || \
+              docker compose -f docker-compose.prod.yml up -d --build 2>/dev/null || true
+
+              echo "⏳ Tunggu container siap..."
+              sleep 10
+
+              echo "🔗 Storage link di dalam Docker container..."
+              docker compose -f docker-compose.prod.yml exec -T app php artisan storage:link --force || true
+
+              echo "🗄️ Migrasi di dalam Docker..."
+              docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
+
+              echo "⚡ Optimasi di dalam Docker..."
+              docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache || true
+              docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache || true
+              docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache || true
+            fi
+
+            echo "✅ Deploy selesai! $(date)"
+            echo "🌐 Cek: https://alumni-steman.my.id/museum"

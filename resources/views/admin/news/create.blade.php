@@ -4,7 +4,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="mb-4">
-                <a href="/admin/news" class="text-decoration-none text-muted"><i class="bi bi-arrow-left me-2"></i>Kembali</a>
+                <a href="{{ route('admin.news.index') }}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left me-2"></i>Kembali</a>
                 <h2 class="section-title mt-2">Buat Berita Baru</h2>
             </div>
             @if ($errors->any())
