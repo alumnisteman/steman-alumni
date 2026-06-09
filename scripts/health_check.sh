@@ -190,15 +190,15 @@ main() {
         fi
     done
     
-    # Check websites
+    # Check websites — format: "URL|EXPECTED_CODE" (pakai | bukan : agar tidak konflik dengan https://)
     local websites=(
-        "https://alumni-steman.my.id:200"
-        "https://admin.alumni-steman.my.id:302"
+        "https://alumni-steman.my.id|200"
+        "https://admin.alumni-steman.my.id|302"
     )
     
     for website in "${websites[@]}"; do
-        local url=$(echo "$website" | cut -d: -f1)
-        local expected_code=$(echo "$website" | cut -d: -f2)
+        local url="${website%%|*}"
+        local expected_code="${website##*|}"
         
         if ! check_website "$url" "$expected_code"; then
             log "CRITICAL: Website $url is not accessible"
