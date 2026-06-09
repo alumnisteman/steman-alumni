@@ -190,6 +190,25 @@ class AuthController extends Controller
             // Auto-follow batch mates for community engagement
             try { \App\Jobs\AutoFollowBatchMates::dispatch($user->id); } catch (\Throwable $e) { Log::warning('AutoFollowBatchMates dispatch failed: ' . $e->getMessage()); }
 
+            // Notifikasi Telegram ke admin saat alumni baru mendaftar
+            try {
+                $major    = $data['major'] ?? '-';
+                $gradYear = $data['graduation_year'] ?? '-';
+                $ip       = $request->ip();
+                $time     = now()->format('d M Y, H:i');
+                \App\Services\TelegramNotifier::send(
+                    "🎓 *Alumni Baru Mendaftar!*\n\n" .
+                    "👤 *Nama:* {$user->name}\n" .
+                    "📧 *Email:* {$user->email}\n" .
+                    "🏫 *Jurusan:* {$major}\n" .
+                    "📅 *Tahun Lulus:* {$gradYear}\n" .
+                    "🌐 *IP:* {$ip}\n" .
+                    "🕐 *Waktu:* {$time}"
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Telegram new alumni notification failed: ' . $e->getMessage());
+            }
+
             Auth::login($user);
             return redirect()->intended($user->dashboardUrl());
         } catch (\Exception $e) {
