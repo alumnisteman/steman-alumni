@@ -25,20 +25,27 @@ class TelegramNotifier
         $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
 
         try {
-            $ctx = stream_context_create([
-                'http' => [
-                    'method'  => 'POST',
-                    'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
-                    'content' => http_build_query([
-                        'chat_id'    => $chatId,
-                        'text'       => substr($message, 0, 4096),
-                        'parse_mode' => 'Markdown',
-                    ]),
-                    'timeout' => 5,
-                    'ignore_errors' => true,
-                ],
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => http_build_query([
+                    'chat_id'    => $chatId,
+                    'text'       => substr($message, 0, 4096),
+                    'parse_mode' => 'Markdown',
+                ]),
+                CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
+                CURLOPT_TIMEOUT        => 10,
+                CURLOPT_CONNECTTIMEOUT => 5,
             ]);
-            @file_get_contents($url, false, $ctx);
+            $response = curl_exec($ch);
+            $errNo    = curl_errno($ch);
+            $errMsg   = curl_error($ch);
+            curl_close($ch);
+
+            if ($errNo) {
+                Log::error('TelegramNotifier curl error: ' . $errMsg);
+            }
         } catch (\Throwable $e) {
             Log::error('TelegramNotifier::send failed: ' . $e->getMessage());
         }
