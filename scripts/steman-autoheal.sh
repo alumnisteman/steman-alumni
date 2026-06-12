@@ -42,6 +42,8 @@ echo "[5/5] Running Integrity Audit..."
 docker exec steman_app php artisan steman:check-integrity --fix > /dev/null 2>&1 || echo "Integrity Check: Issues found and attempted to fix."
 
 echo "==========================================="
+# COMING SOON GUARD: Site sudah live, paksa mode off
+docker exec steman_app php artisan tinker --execute="AppModelsSetting::where(key,coming_soon_mode)->update([value=>off]);" > /dev/null 2>&1
 echo "   SYSTEM PERFECTED & GUARDIAN ACTIVE! 🛡️  "
 echo "==========================================="
 

@@ -49,9 +49,18 @@ COPY docker/php/fpm-pool.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Copy ALL files (including locally built vendor and public/build)
 COPY . /var/www/
+
 # Install Composer and PHP dependencies
 RUN apk add --no-cache composer
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-scripts \
+    && composer dump-autoload --optimize --no-dev --no-scripts
+
+# -----------------------------------------------------------------------
+# SNAPSHOT PUBLIC: Simpan salinan public/ di luar mount point volume.
+# Volume app_public akan di-mount ke /var/www/public dan menimpa isinya.
+# Entrypoint akan copy dari snapshot ini ke volume saat container start.
+# -----------------------------------------------------------------------
+RUN cp -r /var/www/public /var/www/public_snapshot
 
 # Copy custom entrypoint
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

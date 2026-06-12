@@ -66,6 +66,23 @@ class AIService
             return $p !== 'gateway' || $gatewayEnabled;
         });
 
+        // Circuit breaker global: jika semua provider dalam cooldown, langsung return null
+        // Mencegah blocking PHP-FPM worker ratusan detik saat semua API gagal
+        $allInCooldown = true;
+        foreach ($providers as $p) {
+            if (!\Illuminate\Support\Facades\Cache::has("ai_provider_fail_{$p}")) {
+                $allInCooldown = false;
+                break;
+            }
+        }
+        if ($allInCooldown) {
+            if (!\Illuminate\Support\Facades\Cache::has('ai_all_providers_cooldown')) {
+                \Illuminate\Support\Facades\Cache::put('ai_all_providers_cooldown', true, 180);
+                Log::warning('AIService: Semua provider dalam cooldown — AI dinonaktifkan 3 menit.');
+            }
+            return null;
+        }
+
         foreach ($providers as $provider) {
             // Skip provider if it failed recently (cooldown)
             if (\Illuminate\Support\Facades\Cache::has("ai_provider_fail_{$provider}")) {

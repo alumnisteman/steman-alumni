@@ -89,16 +89,18 @@ class SystemDeepAuditCommand extends Command
 
     private function auditAuditLogs()
     {
-        $this->comment('Checking audit log integrity (all entries)...');
+        $this->comment('Checking audit log integrity (chunked untuk hemat memori)...');
         $auditService = new AuditService();
-        $logs = AuditLog::all(); // Warning: could be large, but necessary for "Deep Audit"
-        
+
         $broken = 0;
-        foreach ($logs as $log) {
-            if (!$auditService->verifyIntegrity($log)) {
-                $broken++;
+        // Chunk 500 rows sekaligus — mencegah memory exhaustion saat data besar
+        AuditLog::orderBy('id')->chunk(500, function($logs) use ($auditService, &$broken) {
+            foreach ($logs as $log) {
+                if (!$auditService->verifyIntegrity($log)) {
+                    $broken++;
+                }
             }
-        }
+        });
 
         if ($broken > 0) {
             $this->error("- Found {$broken} broken/tampered audit logs.");

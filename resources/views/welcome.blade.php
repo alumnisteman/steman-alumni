@@ -334,13 +334,23 @@
         <div class="container hero-content">
             <div>
                 <h6 class="text-violet fw-bold text-uppercase tracking-widest mb-3">STEMAN Connect</h6>
-                <h1 class="hero-title fw-black tracking-tighter text-white mb-2 glitch-text" data-text="WELCOME BACK, ALUMNI!">
-                    WELCOME <span class="text-gradient-neon">BACK, ALUMNI!</span><br>CONNECT, GROW & REUNITE
+                @php
+                    $displayTitle = $hero_title ?? 'SELAMAT DATANG DI WEBSITE RESMI ALUMNI SMKN 2 TERNATE';
+                    $displayTitle = str_replace('\n', "\n", $displayTitle);
+                    $titleLines = array_filter(array_map('trim', explode("\n", $displayTitle)));
+                    $titleMain = $titleLines[0] ?? $displayTitle;
+                    $titleSub  = $titleLines[1] ?? '';
+                    $displaySubtitle = $hero_subtitle ?? 'Wadah komunikasi, informasi dan silaturahmi bagi seluruh keluarga besar alumni lintas angkatan.';
+                @endphp
+                <h1 class="hero-title fw-black tracking-tighter text-white mb-2 glitch-text" data-text="{{ $titleMain }}">
+                    <span class="text-gradient-neon">{{ $titleMain }}</span>
+                    @if($titleSub)
+                        <br>{{ $titleSub }}
+                    @endif
                 </h1>
                 
                 <div class="my-4 text-white-50">
-                    <p class="h4 fw-bold text-white mb-1">Ribuan alumni. Satu jaringan tanpa batas.</p>
-                    <p class="lead mb-4">Tempat koneksi berubah jadi kolaborasi,<br>pengalaman menjadi inspirasi,<br>dan alumni tumbuh bersama membangun masa depan.</p>
+                    <p class="h4 fw-bold text-white mb-1">{{ $displaySubtitle }}</p>
                     <div class="badge-neon mb-4 d-inline-block">
                         YOUR DIGITAL HUB NOW ....!!
                     </div>

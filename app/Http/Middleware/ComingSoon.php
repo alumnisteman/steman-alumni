@@ -10,6 +10,11 @@ class ComingSoon
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // ENV variable takes precedence — set COMING_SOON_OVERRIDE=off to force bypass
+        if (env('COMING_SOON_OVERRIDE') === 'off') {
+            return $next($request);
+        }
+
         try {
             $mode = setting('coming_soon_mode', 'off');
         } catch (\Throwable $e) {

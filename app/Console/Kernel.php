@@ -28,10 +28,8 @@ class Kernel extends ConsoleKernel
     {
         // Heartbeat setiap menit — dipakai SystemGuard untuk deteksi scheduler mati
         $schedule->command('scheduler:heartbeat')->everyMinute();
-        // Daily MySQL backup at 02:15
-        $schedule->command('steman:backup')->dailyAt('02:15')->withoutOverlapping();
-        // Clean old logs daily at 02:30
-        $schedule->command('logs:clean')->dailyAt('02:30');
+        // Clean old logs daily at 02:30 (backup sudah ada di bootstrap/app.php 02:00)
+        $schedule->command('logs:clean')->dailyAt('02:30')->withoutOverlapping();
     }
 
     /**

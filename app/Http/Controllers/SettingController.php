@@ -57,15 +57,25 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        // Kunci sistem yang TIDAK BOLEH diubah via form — diproteksi ENV
+        $protectedKeys = [
+            'coming_soon_mode', // Dikontrol via COMING_SOON_OVERRIDE di .env
+        ];
+
         $settings = $request->except('_token', '_method');
-        
+
         foreach ($settings as $key => $value) {
+            // Lewati kunci yang diproteksi
+            if (in_array($key, $protectedKeys)) {
+                continue;
+            }
+
             // Only process files if a file was actually uploaded and valid
             if ($request->hasFile($key) && $request->file($key)->isValid()) {
                 $path = $request->file($key)->store('uploads/settings', 'public');
                 $value = '/storage/' . $path;
             }
-            
+
             // Use updateOrCreate for better resilience (Self-Healing)
             Setting::updateOrCreate(
                 ['key' => $key],

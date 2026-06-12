@@ -78,8 +78,8 @@ class SentinelService
     {
         // 1. Ensure Launch / Maintenance Settings Exist
         $launchSettings = [
-            ['key' => 'coming_soon_mode', 'label' => 'Mode Launching Soon (Aktifkan Halaman Penahan)', 'value' => 'on', 'group' => 'launch'],
-            ['key' => 'launch_date', 'label' => 'Tanggal & Waktu Launching', 'value' => now()->addDays(5)->format('Y-m-d\TH:i'), 'group' => 'launch'],
+            ['key' => 'coming_soon_mode', 'label' => 'Mode Launching Soon (Aktifkan Halaman Penahan)', 'value' => 'off', 'group' => 'launch'],
+            ['key' => 'launch_date', 'label' => 'Tanggal & Waktu Launching', 'value' => now()->subDays(1)->format('Y-m-d\TH:i'), 'group' => 'launch'],
             ['key' => 'launch_title', 'label' => 'Judul Halaman Launching', 'value' => 'THE NEW STEMAN PORTAL', 'group' => 'launch'],
         ];
 

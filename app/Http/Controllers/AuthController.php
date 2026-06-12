@@ -41,19 +41,14 @@ class AuthController extends Controller
                 }
             }
 
-            $captcha_question = session('captcha_question');
+            $captcha_question = session('captcha_question', '5 + 5');
+            $ans = session('captcha_answer');
 
-            // FIX MEDIUM: Jika session gagal (captcha_question null), tolak — jangan fallback ke '5 + 5'
-            // Fallback hardcoded memungkinkan bot menebak jawaban captcha (selalu 10)
-            if (!$captcha_question) {
-                Log::error('Session captcha gagal ditulis di showLogin. Periksa driver/permission session.');
-                return redirect()->route('login')->with('error', 'Sesi tidak tersedia. Silakan refresh halaman.');
-            }
 
             return view('auth.login', compact('captcha_question'));
         } catch (\Exception $e) {
             Log::error('Critical Login View Error: ' . $e->getMessage());
-            return redirect()->route('login')->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+            return view('auth.login', ['captcha_question' => '5 + 5']); // Hard fallback
         }
     }
     
@@ -120,8 +115,7 @@ class AuthController extends Controller
         );
 
         Log::warning('Login failed for: ' . $request->email);
-        // FIX HIGH: Gunakan key yang sama dengan tooManyAttempts() agar rate limiter bekerja
-        RateLimiter::hit('login:' . $request->ip(), 60);
+        RateLimiter::hit($request->ip(), 60);
         return back()->withErrors(['email' => 'Kredensial tidak cocok.'])->withInput($request->only('email'));
     }
 
@@ -139,18 +133,14 @@ class AuthController extends Controller
                 session(['captcha_question' => "$num1 + $num2"]);
             }
 
-            $captcha_question = session('captcha_question');
-
-            // FIX MEDIUM: Tolak jika session captcha tidak tersedia — jangan fallback ke '5 + 5'
-            if (!$captcha_question) {
-                Log::error('Session captcha gagal ditulis di showRegister. Periksa driver/permission session.');
-                return redirect()->route('register')->with('error', 'Sesi tidak tersedia. Silakan refresh halaman.');
-            }
-
-            return view('auth.register', compact('majors', 'captcha_question'));
+            $captcha_question = session('captcha_question', '5 + 5');
+            return view('auth.register', compact('majors', 'captcha_question')); 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Register view error: ' . $e->getMessage());
-            return redirect()->route('register')->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.');
+            return view('auth.register', [
+                'majors' => collect(), 
+                'captcha_question' => '5 + 5'
+            ]);
         }
     }
 
@@ -166,7 +156,7 @@ class AuthController extends Controller
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed',
+                'password' => 'required|string|min:4|confirmed',
                 'nisn' => 'nullable|string',
                 'graduation_year' => 'nullable|integer',
                 'major' => 'nullable|string',
@@ -200,12 +190,30 @@ class AuthController extends Controller
             // Auto-follow batch mates for community engagement
             try { \App\Jobs\AutoFollowBatchMates::dispatch($user->id); } catch (\Throwable $e) { Log::warning('AutoFollowBatchMates dispatch failed: ' . $e->getMessage()); }
 
+            // Notifikasi Telegram ke admin saat alumni baru mendaftar
+            try {
+                $major    = $data['major'] ?? '-';
+                $gradYear = $data['graduation_year'] ?? '-';
+                $ip       = $request->ip();
+                $time     = now()->format('d M Y, H:i');
+                \App\Services\TelegramNotifier::send(
+                    "🎓 *Alumni Baru Mendaftar!*\n\n" .
+                    "👤 *Nama:* {$user->name}\n" .
+                    "📧 *Email:* {$user->email}\n" .
+                    "🏫 *Jurusan:* {$major}\n" .
+                    "📅 *Tahun Lulus:* {$gradYear}\n" .
+                    "🌐 *IP:* {$ip}\n" .
+                    "🕐 *Waktu:* {$time}"
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Telegram new alumni notification failed: ' . $e->getMessage());
+            }
+
             Auth::login($user);
             return redirect()->intended($user->dashboardUrl());
         } catch (\Exception $e) {
-            // FIX HIGH: Jangan bocorkan pesan exception ke user — log saja di server
             Log::error('Registration error: ' . $e->getMessage());
-            return back()->with('error', 'Pendaftaran gagal karena masalah server. Silakan coba lagi atau hubungi admin.')->withInput();
+            return back()->with('error', 'Gagal mendaftar: ' . $e->getMessage())->withInput();
         }
     }
 

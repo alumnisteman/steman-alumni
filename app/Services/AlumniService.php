@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 
 class AlumniService
@@ -194,6 +195,8 @@ class AlumniService
             $mapAnalytics = User::getMapAnalytics();
 
             return [
+                'hero_title'    => Setting::get('hero_title', "SELAMAT DATANG DI WEBSITE RESMI\nALUMNI SMKN 2 TERNATE"),
+                'hero_subtitle' => Setting::get('hero_subtitle', 'Wadah komunikasi, informasi dan silaturahmi bagi seluruh keluarga besar alumni lintas angkatan.'),
                 'latestNews' => \App\Models\News::published()->latest()->take(3)->get(),
                 'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->published()->latest()->take(4)->get(),
                 'latestVideos' => \App\Models\Gallery::whereIn('type', ['youtube', 'video'])->published()->latest()->take(2)->get(),

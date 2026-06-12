@@ -226,31 +226,50 @@ class HealthChecker
     }
 
     /**
-     * Active Probes: Try to visit key pages and ensure they don't return 500
+     * Active Probes: Cek halaman kritis via koneksi INTERNAL (nginx container)
+     * PENTING: Gunakan nama container Docker (steman_nginx), BUKAN domain publik —
+     * request dari PHP-FPM ke Cloudflare → nginx → PHP-FPM = deadlock worker!
      */
     private function runSmokeTests(): bool
     {
-        $baseUrl = config('app.url', 'http://127.0.0.1');
-        $pages = ['/', '/login', '/alumni', '/global-network', '/jejak-sukses'];
-        
+        // URL internal Docker — steman_nginx selalu bisa di-resolve antar container
+        $internalUrl = 'http://steman_nginx';
+        $host        = parse_url(config('app.url'), PHP_URL_HOST) ?: 'alumni-steman.my.id';
+
+        // Hanya cek 2 halaman paling kritis, timeout 3s (internal harusnya cepat)
+        $pages = ['/', '/login'];
+
         $failCount = 0;
         foreach ($pages as $page) {
             try {
-                // We use internal networking if possible, or public URL
-                $response = Http::timeout(5)->get($baseUrl . $page);
-                if ($response->serverError()) {
-                    Log::warning("SystemGuard SmokeTest WARNING: [{$page}] returned 500");
+                $ch = curl_init($internalUrl . $page);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPHEADER     => ["Host: {$host}"],
+                    CURLOPT_TIMEOUT        => 3,
+                    CURLOPT_CONNECTTIMEOUT => 2,
+                    CURLOPT_FOLLOWLOCATION => false,
+                ]);
+                curl_exec($ch);
+                $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlErr  = curl_error($ch);
+                curl_close($ch);
+
+                if ($curlErr) {
+                    Log::info("SystemGuard SmokeTest: [{$page}] curl error: {$curlErr}");
+                    $failCount++;
+                } elseif ($httpCode >= 500) {
+                    Log::warning("SystemGuard SmokeTest: [{$page}] returned HTTP {$httpCode}");
                     $failCount++;
                 }
-            } catch (\Exception $e) {
-                // If we can't reach it, it might be a DNS issue or container networking,
-                // but we don't necessarily flag as 500 error unless we get a 500 response.
-                Log::warning("SystemGuard SmokeTest WARNING: [{$page}] unreachable: " . $e->getMessage());
+                // 200, 301, 302, 404 = OK (bukan error server)
+            } catch (\Throwable $e) {
+                Log::info("SystemGuard SmokeTest: [{$page}] exception: " . $e->getMessage());
                 $failCount++;
             }
         }
-        // Allow up to 2 failures before marking as failed (more lenient)
-        return $failCount <= 2;
+
+        return $failCount === 0;
     }
 
     private function checkMigrations(): bool

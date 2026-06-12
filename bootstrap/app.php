@@ -4,6 +4,20 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+if (!function_exists('redirect')) {
+    function redirect($to = null, $status = 302, $headers = [], $secure = null) {
+        if (is_null($to)) {
+            return app('redirect');
+        }
+        return app('redirect')->to($to, $status, $headers, $secure);
+    }
+}
+
+if (!function_exists('back')) {
+    function back($status = 302, $headers = [], $fallback = false) {
+        return app('redirect')->back($status, $headers, $fallback);
+    }
+}
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -151,11 +165,21 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('system:autofix', ['--force' => true])->weeklyOn(1, '04:00')->onOneServer(); // Every Monday
 
         // 3. Garbage Collection & Disk Guard
-        $schedule->command('steman:cleanup')->weeklyOn(0, '04:00')->onOneServer(); // Every Sunday
+        // steman:cleanup sudah di routes/console.php — tidak perlu duplikasi
         $schedule->command('steman:clean-temp')->dailyAt('05:00')->onOneServer();
         
-        // 4. Log Guard (Hourly) - Prevent Disk Full
+        // 4. Log Guard (Hourly) - Truncate log files >50MB tanpa menjalankan autofix penuh
         $schedule->call(function() {
-            \Illuminate\Support\Facades\Artisan::call('system:autofix', ['--force' => true]);
-        })->hourly();
+            $logFiles = \Illuminate\Support\Facades\File::glob(storage_path('logs/*.log'));
+            foreach ($logFiles as $logFile) {
+                if (\Illuminate\Support\Facades\File::exists($logFile) && \Illuminate\Support\Facades\File::size($logFile) > 50 * 1024 * 1024) {
+                    \Illuminate\Support\Facades\File::put($logFile, '[Log dipangkas otomatis oleh scheduler - ' . now()->toIso8601String() . "]\n");
+                }
+            }
+        })->hourly()->name('log-guard-hourly')->withoutOverlapping();
+
+        // 5. Note: system:guard sudah terjadwal setiap 5 menit di routes/console.php
+        // steman:cleanup sudah terjadwal Minggu 04:00 di routes/console.php
+        // system:autofix sudah terjadwal 01:30 setiap hari di routes/console.php
+        // Tidak perlu duplikasi di sini
     })->create();

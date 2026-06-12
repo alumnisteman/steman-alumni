@@ -58,16 +58,13 @@ class SystemAutoFix extends Command
             $this->info("  [OK] Garbage cleanup complete. Total handled: {$deletedCount} items.");
         });
 
-        // 2. Fix Database Issues (Migrations & Cache)
+        // 2. Fix Database Issues (Cache Only — migrate TIDAK dijalankan otomatis untuk mencegah kerusakan data)
         $this->performAction("Optimizing Database & Cache", function() {
             Artisan::call('config:clear');
             Artisan::call('route:clear');
             Artisan::call('view:clear');
             $this->info("  [FIXED] Application caches cleared.");
-            
-            // Check for pending migrations
-            Artisan::call('migrate', ['--force' => true]);
-            $this->info("  [OK] Database migrations synchronized.");
+            $this->info("  [INFO] Untuk run migrate, gunakan: php artisan migrate --force (manual).");
         });
 
         // 3. Verify Critical DB Columns
@@ -143,29 +140,43 @@ class SystemAutoFix extends Command
                 ->update(['major' => 'Umum']);
             if ($fixed2 > 0) $this->info("  [FIXED] {$fixed2} alumni with missing major.");
 
-            // PRUNING ORPHANED RECORDS (Data Mismatch Prevention)
-            // 1. Delete posts whose users no longer exist
-            $orphanedPosts = DB::table('posts')
-                ->whereNotExists(function($query) {
-                    $query->select(DB::raw(1))
-                          ->from('users')
-                          ->whereRaw('users.id = posts.user_id');
-                })->delete();
-            if ($orphanedPosts > 0) $this->info("  [CLEANED] {$orphanedPosts} orphaned post(s) removed.");
+            // PRUNING ORPHANED RECORDS — dibungkus transaksi untuk keamanan
+            DB::transaction(function() {
+                // 1. Hitung dulu sebelum delete (safety check)
+                $orphanedPostsCount = DB::table('posts')
+                    ->whereNotExists(function($query) {
+                        $query->select(DB::raw(1))->from('users')->whereRaw('users.id = posts.user_id');
+                    })->count();
 
-            // 2. Delete messages where sender/receiver are missing
-            $orphanedMsgs = DB::table('messages')
-                ->whereNotExists(function($query) {
-                    $query->select(DB::raw(1))
-                          ->from('users')
-                          ->whereRaw('users.id = messages.sender_id');
-                })
-                ->orWhereNotExists(function($query) {
-                    $query->select(DB::raw(1))
-                          ->from('users')
-                          ->whereRaw('users.id = messages.receiver_id');
-                })->delete();
-            if ($orphanedMsgs > 0) $this->info("  [CLEANED] {$orphanedMsgs} orphaned message(s) removed.");
+                // Hanya hapus jika jumlah wajar (< 500) untuk cegah mass delete akibat DB error sementara
+                if ($orphanedPostsCount > 0 && $orphanedPostsCount < 500) {
+                    $deleted = DB::table('posts')
+                        ->whereNotExists(function($query) {
+                            $query->select(DB::raw(1))->from('users')->whereRaw('users.id = posts.user_id');
+                        })->delete();
+                    $this->info("  [CLEANED] {$deleted} orphaned post(s) removed.");
+                } elseif ($orphanedPostsCount >= 500) {
+                    $this->warn("  [SKIP] {$orphanedPostsCount} orphaned posts ditemukan — terlalu banyak, perlu review manual.");
+                    Log::warning("SystemAutoFix: {$orphanedPostsCount} orphaned posts found, skipped auto-delete (threshold 500).");
+                }
+
+                // 2. Orphaned messages — hanya cek sender (lebih aman, tidak pakai orWhereNotExists)
+                $orphanedMsgsCount = DB::table('messages')
+                    ->whereNotExists(function($query) {
+                        $query->select(DB::raw(1))->from('users')->whereRaw('users.id = messages.sender_id');
+                    })->count();
+
+                if ($orphanedMsgsCount > 0 && $orphanedMsgsCount < 500) {
+                    $deleted = DB::table('messages')
+                        ->whereNotExists(function($query) {
+                            $query->select(DB::raw(1))->from('users')->whereRaw('users.id = messages.sender_id');
+                        })->delete();
+                    $this->info("  [CLEANED] {$deleted} orphaned message(s) removed.");
+                } elseif ($orphanedMsgsCount >= 500) {
+                    $this->warn("  [SKIP] {$orphanedMsgsCount} orphaned messages — perlu review manual.");
+                    Log::warning("SystemAutoFix: {$orphanedMsgsCount} orphaned messages found, skipped auto-delete.");
+                }
+            });
 
             $this->info("  [OK] Data mismatch guard finished.");
         });

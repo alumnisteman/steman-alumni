@@ -47,7 +47,7 @@ fi
 
 if [ "$NEED_REPAIR" = true ]; then
     log "REPAIR: Merestart container app, queue, reverb, nginx..."
-    docker compose restart app queue reverb nginx
+    docker compose -f /var/www/steman-alumni/docker-compose.prod.yml restart app queue reverb webserver
 
     log "REPAIR: Menunggu 30 detik..."
     sleep 30
@@ -57,9 +57,9 @@ if [ "$NEED_REPAIR" = true ]; then
 
     if [ "$APP_STATUS" != "healthy" ] || [ "$NGINX_STATUS" != "healthy" ]; then
         log "REPAIR GAGAL: Melakukan full rebuild..."
-        docker compose down
+        docker compose -f /var/www/steman-alumni/docker-compose.prod.yml down
         sleep 5
-        docker compose up -d
+        docker compose -f /var/www/steman-alumni/docker-compose.prod.yml up -d
 
         sleep 60
 
@@ -77,12 +77,12 @@ else
     HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$HEALTH_URL" --max-time 10)
     if [ "$HTTP_STATUS" != "200" ]; then
         log "PERINGATAN: HTTP health check gagal (status: $HTTP_STATUS). Merestart nginx..."
-        docker compose restart nginx
+        docker compose -f /var/www/steman-alumni/docker-compose.prod.yml restart webserver
         sleep 10
         HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$HEALTH_URL" --max-time 10)
         if [ "$HTTP_STATUS" != "200" ]; then
             log "PERINGATAN: Nginx restart gagal. Merestart semua container..."
-            docker compose restart
+            docker compose -f /var/www/steman-alumni/docker-compose.prod.yml restart
         else
             log "SUKSES: Nginx restart berhasil."
         fi
