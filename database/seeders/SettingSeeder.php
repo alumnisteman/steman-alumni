@@ -191,6 +191,20 @@ class SettingSeeder extends Seeder
                 'label' => 'Logo Situs',
                 'group' => 'general'
             ],
+
+            // Event Year & Tag (Dinamis)
+            [
+                'key'   => 'event_year',
+                'value' => '2029',
+                'label' => 'Tahun Acara / Event (Dinamis)',
+                'group' => 'event_chairman',
+            ],
+            [
+                'key'   => 'event_tag',
+                'value' => 'REUNI AKBAR 2029',
+                'label' => 'Tag Event (Tampil di Hero & Badge)',
+                'group' => 'event_chairman',
+            ],
         ];
 
         foreach ($settings as $setting) {

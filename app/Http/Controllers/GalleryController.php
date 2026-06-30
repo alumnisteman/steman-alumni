@@ -54,16 +54,15 @@ class GalleryController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'type'        => 'required|in:photo,video,tiktok',
-            'file'        => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,mp4,webm,ogg|max:102400',
+            'files'       => 'nullable|array|max:20',
+            'files.*'     => 'file|mimes:jpeg,png,jpg,gif,webp|max:102400',
             'youtube_url' => 'nullable|url',
             'tiktok_url'  => 'nullable|url',
             'description' => 'nullable|string',
             'status'      => 'required|in:draft,published',
         ]);
 
-        $fileUrl    = null;
         $youtubeUrl = null;
-
         $tiktokUrl  = null;
 
         if ($request->type == 'video' && $request->youtube_url && strpos($request->youtube_url, 'tiktok') !== false) {
@@ -71,18 +70,47 @@ class GalleryController extends Controller
         }
 
         if ($request->type == 'photo') {
-            if (!$request->hasFile('file')) return back()->with('error', 'Foto wajib diunggah.');
-            $file = $request->file('file');
-            
-            try {
-                $path = $this->optimizeAndStoreImage($file, 'gallery', 'public', 80, 1200);
-            } catch (\Exception $e) {
-                // Fallback
-                $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('gallery', $fileName, 'public');
+            if (!$request->hasFile('files')) return back()->with('error', 'Foto wajib diunggah minimal satu.');
+
+            $uploadedFiles = $request->file('files');
+            $count = 0;
+
+            foreach ($uploadedFiles as $index => $file) {
+                try {
+                    $path = $this->optimizeAndStoreImage($file, 'gallery', 'public', 80, 1200);
+                } catch (\Exception $e) {
+                    $fileName = time() . '_' . $index . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('gallery', $fileName, 'public');
+                }
+
+                $title = count($uploadedFiles) > 1
+                    ? $request->title . ' (' . ($index + 1) . ')'
+                    : $request->title;
+
+                $gallery = new Gallery();
+                $gallery->user_id     = auth()->id();
+                $gallery->title       = $title;
+                $gallery->type        = Gallery::normalizeType($request->type);
+                $gallery->file_path   = '/storage/' . $path;
+                $gallery->youtube_url = null;
+                $gallery->tiktok_url  = null;
+                $gallery->description = $request->description;
+                $gallery->status      = $request->status ?? 'published';
+                $gallery->save();
+                $count++;
             }
 
-            $fileUrl = '/storage/' . $path;
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'Create Gallery Item',
+                'description' => 'Added ' . $count . ' photo(s): ' . $request->title,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+            ]);
+            WelcomeCache::forget();
+
+            return back()->with('success', $count . ' foto berhasil diunggah ke galeri.');
+
         } elseif ($request->type == 'tiktok') {
             if (!$request->tiktok_url) return back()->with('error', 'Wajib menyertakan link TikTok.');
             $tiktokUrl = $this->cleanTiktokUrl($request->tiktok_url);
@@ -103,7 +131,7 @@ class GalleryController extends Controller
         $gallery->user_id     = auth()->id();
         $gallery->title       = $request->title;
         $gallery->type        = Gallery::normalizeType($request->type);
-        $gallery->file_path   = $fileUrl;
+        $gallery->file_path   = null;
         $gallery->youtube_url = $youtubeUrl;
         $gallery->tiktok_url  = ($request->type === 'tiktok') ? $tiktokUrl : null;
         $gallery->description = $request->description;
@@ -120,6 +148,36 @@ class GalleryController extends Controller
         WelcomeCache::forget();
 
         return back()->with('success', 'Media berhasil ditambahkan.');
+    }
+
+    public function destroyBulk(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'Pilih minimal satu item untuk dihapus.');
+        }
+
+        $items = Gallery::whereIn('id', $ids)->get();
+        $count = 0;
+        foreach ($items as $item) {
+            if ($item->file_path) {
+                $relativePath = ltrim(str_replace('/storage/', '', $item->file_path), '/');
+                Storage::disk('public')->delete($relativePath);
+            }
+            $item->delete();
+            $count++;
+        }
+
+        LogActivity::dispatch(
+            Auth::id(),
+            'Bulk Delete Gallery',
+            'Deleted ' . $count . ' gallery items (IDs: ' . implode(',', $ids) . ')',
+            request()->ip(),
+            request()->header('User-Agent')
+        );
+        WelcomeCache::forget();
+
+        return back()->with('success', $count . ' item galeri berhasil dihapus.');
     }
 
     public function destroy(Gallery $gallery)

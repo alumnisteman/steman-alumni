@@ -247,4 +247,14 @@ class UserController extends Controller
         $users = User::where('status', 'pending')->where('role', 'alumni')->latest()->paginate(20);
         return view('admin.users.verification', compact('users'));
     }
+
+    public function autoApproved()
+    {
+        $users = User::where('auto_approved', true)
+            ->where('role', 'alumni')
+            ->latest()
+            ->paginate(20);
+        $total = User::where('auto_approved', true)->where('role', 'alumni')->count();
+        return view('admin.users.auto-approved', compact('users', 'total'));
+    }
 }

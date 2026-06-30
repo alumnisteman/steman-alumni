@@ -197,6 +197,31 @@ class AlumniService
             return [
                 'hero_title'    => Setting::get('hero_title', "SELAMAT DATANG DI WEBSITE RESMI\nALUMNI SMKN 2 TERNATE"),
                 'hero_subtitle' => Setting::get('hero_subtitle', 'Wadah komunikasi, informasi dan silaturahmi bagi seluruh keluarga besar alumni lintas angkatan.'),
+                'event_year'    => Setting::get('event_year', '2029'),
+                'event_tag'     => Setting::get('event_tag', 'REUNI AKBAR 2029'),
+
+                // === STATISTIK WRAPPED ===
+                'totalAlumni'      => \App\Models\User::where('role', 'alumni')->count(),
+                'distinctAngkatan' => \App\Models\User::where('role', 'alumni')
+                    ->whereNotNull('graduation_year')
+                    ->distinct('graduation_year')->count('graduation_year'),
+                'distinctKota'     => \App\Models\User::where('role', 'alumni')
+                    ->whereNotNull('city_name')->where('city_name', '!=', '')
+                    ->distinct('city_name')->count('city_name'),
+                'mostActiveAlumni' => \App\Models\User::where('role', 'alumni')
+                    ->orderBy('points', 'desc')->first(),
+                'legendaryClass'   => \App\Models\User::where('role', 'alumni')
+                    ->whereNotNull('major')->where('major', '!=', '')
+                    ->whereNotNull('graduation_year')
+                    ->select('major', 'graduation_year',
+                        \Illuminate\Support\Facades\DB::raw('count(*) as member_count'),
+                        \Illuminate\Support\Facades\DB::raw('SUM(points) as total_pts'))
+                    ->groupBy('major', 'graduation_year')
+                    ->orderBy('total_pts', 'desc')
+                    ->first(),
+                'topMemory'        => \App\Models\Gallery::where('type', 'photo')
+                    ->published()->latest()->first(),
+
                 'latestNews' => \App\Models\News::published()->latest()->take(3)->get(),
                 'latestPhotos' => \App\Models\Gallery::where('type', 'photo')->published()->latest()->take(4)->get(),
                 'latestVideos' => \App\Models\Gallery::whereIn('type', ['youtube', 'video'])->published()->latest()->take(2)->get(),

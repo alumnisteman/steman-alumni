@@ -74,24 +74,6 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        // Cache settings globally
-        /*
-        View::composer(['layouts.app', 'welcome'], function ($view) {
-            try {
-                $settings = \Illuminate\Support\Facades\Cache::remember('site_settings', 3600, function () {
-                    return \App\Models\Setting::pluck('value', 'key')->toArray();
-                });
-                $view->with('settings', $settings);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Provider Settings Error: ' . $e->getMessage());
-                $view->with('settings', []);
-            }
-        });
-        */
-
-        // Use dedicated Composer class for ads
-        // View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);
-
         // Share active event theme with all views
         View::composer('*', \App\Http\ViewComposers\EventThemeComposer::class);
     }

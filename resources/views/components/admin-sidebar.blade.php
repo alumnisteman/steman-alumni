@@ -98,6 +98,9 @@
         <a href="{{ route('admin.users.verification') }}" class="nav-link-mobile {{ request()->routeIs('admin.users.verification') ? 'active' : '' }}">
             <i class="bi bi-patch-check me-3 text-success"></i> Verifikasi Data
         </a>
+        <a href="{{ route('admin.users.auto-approved') }}" class="nav-link-mobile {{ request()->routeIs('admin.users.auto-approved') ? 'active' : '' }}">
+            <i class="bi bi-lightning-charge me-3 text-warning"></i> Auto-Approved
+        </a>
 
         <p class="text-muted small fw-bold mb-2 ps-2 opacity-50 mt-3 nav-section-label">MONITORING</p>
         <a href="{{ route('admin.ai.dashboard') }}" class="nav-link-mobile {{ request()->routeIs('admin.ai.*') ? 'active' : '' }}">
@@ -326,6 +329,9 @@
         </a>
         <a href="{{ route('admin.users.verification') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.users.verification') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
             <i class="bi bi-patch-check me-3 text-success"></i> Verifikasi Data
+        </a>
+        <a href="{{ route('admin.users.auto-approved') }}" class="nav-link py-3 px-4 rounded-3 mb-2 {{ request()->routeIs('admin.users.auto-approved') ? 'active bg-warning bg-opacity-10 text-dark fw-bold' : 'text-dark' }}">
+            <i class="bi bi-lightning-charge me-3 text-warning"></i> Auto-Approved
         </a>
 
         <p class="text-muted small fw-bold mb-2 ps-3 opacity-50 mt-4">SISTEM & CMS</p>

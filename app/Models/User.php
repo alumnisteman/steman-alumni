@@ -114,6 +114,7 @@ class User extends Authenticatable
         'city_name', 'is_active', 'last_active_at', 'show_social',
         'social_id', 'social_type',
         'birthday', 'birthday_public',
+        'auto_approved',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -128,6 +129,7 @@ class User extends Authenticatable
             'last_active_at' => 'datetime',
             'qr_token_expires_at' => 'datetime',
             'is_active' => 'boolean',
+            'auto_approved' => 'boolean',
             'birthday' => 'date',
             'birthday_public' => 'boolean',
         ];

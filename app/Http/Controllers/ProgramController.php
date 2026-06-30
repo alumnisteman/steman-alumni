@@ -134,6 +134,12 @@ class ProgramController extends Controller
     public function show($slug)
     {
         $program = Program::where('slug', $slug)->where('status', 'published')->firstOrFail();
-        return view('programs.show', compact('program'));
+        $relatedPrograms = Cache::remember('related_programs_' . $program->id, 600, function () use ($program) {
+            return Program::where('status', 'active')
+                ->where('id', '!=', $program->id)
+                ->take(3)
+                ->get(['id', 'title', 'slug', 'description', 'icon']);
+        });
+        return view('programs.show', compact('program', 'relatedPrograms'));
     }
 }

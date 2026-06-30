@@ -80,6 +80,7 @@ Route::domain('admin.alumni-steman.my.id')->middleware(['admin.domain', 'auth', 
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
             Route::get('/users/verification', [UserController::class, 'verification'])->name('admin.users.verification');
+            Route::get('/users/auto-approved', [UserController::class, 'autoApproved'])->name('admin.users.auto-approved');
             Route::resource('/success-stories', \App\Http\Controllers\Admin\SuccessStoryController::class)->except(['show'])->names('admin.success-stories');
             Route::get('/export', [\App\Http\Controllers\Admin\AlumniExportController::class, 'export'])->name('admin.export');
 
@@ -105,6 +106,7 @@ Route::domain('admin.alumni-steman.my.id')->middleware(['admin.domain', 'auth', 
             Route::get('/gallery', [GalleryController::class, 'adminIndex'])->name('admin.gallery.index');
             Route::post('/gallery', [GalleryController::class, 'store'])->name('admin.gallery.store');
             Route::delete('/gallery/{gallery}', [GalleryController::class, 'destroy'])->name('admin.gallery.destroy');
+            Route::delete('/gallery', [GalleryController::class, 'destroyBulk'])->name('admin.gallery.destroyBulk');
             Route::get('/gallery/{gallery}/edit', [GalleryController::class, 'edit'])->name('admin.gallery.edit');
             Route::put('/gallery/{gallery}', [GalleryController::class, 'update'])->name('admin.gallery.update');
 
@@ -183,6 +185,20 @@ Route::domain('admin.alumni-steman.my.id')->middleware(['admin.domain', 'auth', 
             Route::post('/system/guard/optimize', [\App\Http\Controllers\Admin\SystemGuardController::class, 'optimize'])->name('admin.guard.optimize');
             Route::post('/system/guard/clear-cache', [\App\Http\Controllers\Admin\SystemGuardController::class, 'clearCache'])->name('admin.guard.clear-cache');
             Route::post('/system/guard/autofix', [\App\Http\Controllers\Admin\SystemGuardController::class, 'autofix'])->name('admin.guard.autofix');
+            // Security & Firewall Monitor
+            Route::get('/security/firewall', [\App\Http\Controllers\Admin\SecurityController::class, 'firewall'])->name('admin.security.firewall');
+            Route::get('/security/firewall-api', [\App\Http\Controllers\Admin\SecurityController::class, 'firewallApi'])->name('admin.security.firewall-api');
+            Route::post('/security/unblock', [\App\Http\Controllers\Admin\SecurityController::class, 'unblock'])->name('admin.security.unblock');
+            Route::post('/security/unblock-all', [\App\Http\Controllers\Admin\SecurityController::class, 'unblockAll'])->name('admin.security.unblock-all');
+            Route::post('/security/run-geocode', function() {
+                \Illuminate\Support\Facades\Artisan::call('app:geocode-alumni');
+                return response()->json(['success' => true, 'message' => 'Geocoding job dijalankan.']);
+            })->name('admin.security.run-geocode');
+
+            // Geocoding Dashboard
+            Route::get('/geocoding', [\App\Http\Controllers\Admin\GeocodingController::class, 'index'])->name('admin.geocoding.index');
+            Route::post('/geocoding/retry-all', [\App\Http\Controllers\Admin\GeocodingController::class, 'retryAll'])->name('admin.geocoding.retry-all');
+            Route::post('/geocoding/{user}/retry', [\App\Http\Controllers\Admin\GeocodingController::class, 'retry'])->name('admin.geocoding.retry');
 
             // Donation & Fund Management
             Route::get('/donations', [DonationController::class, 'adminIndex'])->name('admin.donations.index');

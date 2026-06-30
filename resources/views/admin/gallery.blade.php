@@ -2,11 +2,15 @@
 
 @section('admin-content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-
         <h2 class="section-title mb-0">Kelola Galeri</h2>
-        <button class="btn btn-alumni_smkn2" data-bs-toggle="modal" data-bs-target="#uploadModal">
-            <i class="bi bi-plus-lg me-2"></i>Tambah Media
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-danger d-none" id="bulkDeleteBtn" onclick="confirmBulkDelete()">
+                <i class="bi bi-trash3 me-1"></i>Hapus Terpilih (<span id="selectedCount">0</span>)
+            </button>
+            <button class="btn btn-alumni_smkn2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="bi bi-plus-lg me-2"></i>Tambah Media
+            </button>
+        </div>
     </div>
 
     @if(session('success')) <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div> @endif
@@ -22,11 +26,20 @@
         </div>
     @endif
 
+    {{-- Form Bulk Delete (tersembunyi) --}}
+    <form id="bulkDeleteForm" action="{{ route('admin.gallery.destroyBulk') }}" method="POST" class="d-none">
+        @csrf @method('DELETE')
+        <div id="bulkIdsContainer"></div>
+    </form>
+
     <div class="card border-0 shadow-sm" style="border-radius: 15px;">
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead class="bg-light">
                     <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="checkAll" class="form-check-input" title="Pilih semua">
+                        </th>
                         <th style="width: 50px;">#</th>
                         <th style="width: 100px;">AKSI</th>
                         <th style="width: 100px;">PREVIEW</th>
@@ -38,7 +51,10 @@
                 </thead>
                 <tbody>
                     @forelse($media as $item)
-                    <tr>
+                    <tr class="gallery-row" data-id="{{ $item->id }}">
+                        <td>
+                            <input type="checkbox" class="form-check-input gallery-check" value="{{ $item->id }}" onchange="updateBulkUI()">
+                        </td>
                         <td>{{ $loop->iteration + ($media->currentPage() - 1) * $media->perPage() }}</td>
                         <td>
                             <div class="d-flex gap-2">
@@ -99,7 +115,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="8" class="text-center py-5 text-muted">
                             <i class="bi bi-images d-block fs-3 mb-2"></i> Belum ada media di galeri.
                         </td>
                     </tr>
@@ -212,8 +228,12 @@
                     </div>
                     
                     <div class="col-12" id="fileGroup">
-                        <label class="form-label small fw-bold">File Foto (Max 5MB)</label>
-                        <input type="file" name="file" class="form-control">
+                        <label class="form-label small fw-bold">File Foto <span class="text-muted">(bisa pilih beberapa sekaligus, Max 5MB/foto)</span></label>
+                        <input type="file" name="files[]" class="form-control" multiple accept="image/*">
+                        <div id="filePreviewArea" class="mt-2 d-flex flex-wrap gap-2"></div>
+                        <div id="fileCountBadge" class="mt-1 d-none">
+                            <span class="badge bg-primary rounded-pill" id="fileCountText"></span>
+                        </div>
                     </div>
 
                     <div class="col-12 d-none" id="youtubeGroup">
@@ -249,27 +269,98 @@
 </div>
 
 <script>
+    // Preview multiple foto yang dipilih
+    document.querySelector('input[name="files[]"]').addEventListener('change', function() {
+        const previewArea = document.getElementById('filePreviewArea');
+        const badge = document.getElementById('fileCountBadge');
+        const badgeText = document.getElementById('fileCountText');
+        previewArea.innerHTML = '';
+        const files = Array.from(this.files);
+        if (files.length === 0) { badge.classList.add('d-none'); return; }
+        badge.classList.remove('d-none');
+        badgeText.textContent = files.length + ' foto dipilih';
+        files.forEach(function(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'position:relative; width:70px; height:70px;';
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width:70px; height:70px; object-fit:cover; border-radius:8px; border:2px solid #dee2e6;';
+                wrapper.appendChild(img);
+                previewArea.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
     document.getElementById('typeSelect').addEventListener('change', function() {
         const type = this.value;
         const youtubeGroup = document.getElementById('youtubeGroup');
         const tiktokGroup = document.getElementById('tiktokGroup');
         const fileGroup = document.getElementById('fileGroup');
-        const fileLabel = fileGroup.querySelector('label');
 
         // Reset
         youtubeGroup.classList.add('d-none');
         tiktokGroup.classList.add('d-none');
         fileGroup.classList.remove('d-none');
-        fileLabel.innerText = 'File Foto (Max 5MB)';
 
         if (type === 'video') {
             youtubeGroup.classList.remove('d-none');
             fileGroup.classList.add('d-none');
         } else if (type === 'tiktok') {
             tiktokGroup.classList.remove('d-none');
-            fileGroup.classList.add('d-none');  // No file for TikTok
+            fileGroup.classList.add('d-none');
         }
     });
+
+    // ===== BULK DELETE =====
+    function updateBulkUI() {
+        const checked = document.querySelectorAll('.gallery-check:checked');
+        const btn = document.getElementById('bulkDeleteBtn');
+        const countEl = document.getElementById('selectedCount');
+        countEl.textContent = checked.length;
+        if (checked.length > 0) {
+            btn.classList.remove('d-none');
+        } else {
+            btn.classList.add('d-none');
+        }
+    }
+
+    document.getElementById('checkAll').addEventListener('change', function() {
+        document.querySelectorAll('.gallery-check').forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateBulkUI();
+    });
+
+    function confirmBulkDelete() {
+        const checked = document.querySelectorAll('.gallery-check:checked');
+        if (checked.length === 0) return;
+        Swal.fire({
+            title: 'Hapus ' + checked.length + ' item?',
+            text: 'Semua item yang dipilih akan dihapus permanen!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const container = document.getElementById('bulkIdsContainer');
+                container.innerHTML = '';
+                checked.forEach(cb => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = cb.value;
+                    container.appendChild(input);
+                });
+                document.getElementById('bulkDeleteForm').submit();
+            }
+        });
+    }
 
     document.querySelectorAll('.edit-type-select').forEach(select => {
         select.addEventListener('change', function() {

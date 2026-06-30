@@ -96,7 +96,7 @@ class StoryController extends Controller
 
             // Notify followers (Gen-Z Alert System)
             try {
-                $user = auth()->user();
+                $user = auth()->user()->load('followers');
                 $followers = $user->followers;
                 if ($followers->count() > 0) {
                     \Illuminate\Support\Facades\Notification::send($followers, new \App\Notifications\NewStoryNotification($user, $type));
@@ -134,7 +134,7 @@ class StoryController extends Controller
 
             // Notify followers (Mood Update Alert)
             try {
-                $user = auth()->user();
+                $user = auth()->user()->load('followers');
                 $followers = $user->followers;
                 if ($followers->count() > 0) {
                     \Illuminate\Support\Facades\Notification::send($followers, new \App\Notifications\NewStoryNotification($user, 'note'));

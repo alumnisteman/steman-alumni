@@ -55,7 +55,59 @@
                                 $isBackground = strpos($key, 'background') !== false;
                             @endphp
 
-                            @if($isLongText)
+                            @if($item->key == 'site_font')
+                                @php
+                                    $availableFonts = [
+                                        'Inter'              => ['label' => 'Inter',              'desc' => 'Modern & bersih (default)'],
+                                        'Poppins'            => ['label' => 'Poppins',            'desc' => 'Geometris & ramah'],
+                                        'Roboto'             => ['label' => 'Roboto',             'desc' => 'Netral & profesional'],
+                                        'Nunito'             => ['label' => 'Nunito',             'desc' => 'Bulat & bersahabat'],
+                                        'Lato'               => ['label' => 'Lato',               'desc' => 'Humanis & elegan'],
+                                        'Montserrat'         => ['label' => 'Montserrat',         'desc' => 'Tebal & berkarakter'],
+                                        'Plus Jakarta Sans'  => ['label' => 'Plus Jakarta Sans',  'desc' => 'Modern Indonesia'],
+                                        'Raleway'            => ['label' => 'Raleway',            'desc' => 'Elegan & stylish'],
+                                        'Oswald'             => ['label' => 'Oswald',             'desc' => 'Bold & impactful'],
+                                        'Ubuntu'             => ['label' => 'Ubuntu',             'desc' => 'Bersih & tegas'],
+                                        'Quicksand'          => ['label' => 'Quicksand',          'desc' => 'Santai & friendly'],
+                                        'Playfair Display'   => ['label' => 'Playfair Display',   'desc' => 'Mewah & klasik'],
+                                        'Dancing Script'     => ['label' => 'Dancing Script',     'desc' => 'Tulisan tangan indah'],
+                                        'Bebas Neue'         => ['label' => 'Bebas Neue',         'desc' => 'Display bold dramatis'],
+                                        'Exo 2'              => ['label' => 'Exo 2',              'desc' => 'Futuristik & tegas'],
+                                    ];
+                                    $currentFont = $item->value ?: 'Inter';
+                                @endphp
+                                {{-- Live preview box --}}
+                                <div id="font-preview-box" class="mb-3 p-4 rounded-4 border bg-white shadow-sm" style="transition: font-family 0.3s ease;">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="badge bg-success rounded-pill x-small px-2">PREVIEW LANGSUNG</span>
+                                        <span class="x-small text-muted" id="font-preview-name">{{ $currentFont }}</span>
+                                    </div>
+                                    <div id="font-preview-heading" class="fw-bold text-dark mb-1" style="font-size: 1.4rem;">Forum Silaturahmi Alumni STEMAN</div>
+                                    <div id="font-preview-body" class="text-muted" style="font-size: 0.9rem; line-height: 1.6;">Koneksi Abadi, Kontribusi Tanpa Henti. Bergabunglah dengan ribuan alumni SMKN 2 Ternate yang telah terhubung dan berkontribusi bersama.</div>
+                                    <div id="font-preview-misc" class="mt-2 small" style="color: #6366f1;">Aa Bb Cc — 1 2 3 — &amp; % @ # ! ?</div>
+                                </div>
+
+                                <div class="row g-2 mb-2" id="font-picker">
+                                    @foreach($availableFonts as $fontKey => $fontData)
+                                    <div class="col-6 col-md-4">
+                                        <label class="font-card d-block p-3 rounded-3 border {{ $currentFont === $fontKey ? 'border-primary bg-primary bg-opacity-10' : 'border-light bg-light' }}"
+                                               style="cursor:pointer; transition: all 0.2s;"
+                                               onclick="selectFont('{{ $fontKey }}')">
+                                            <input type="radio" name="{{ $item->key }}" value="{{ $fontKey }}" class="d-none font-radio" {{ $currentFont === $fontKey ? 'checked' : '' }}>
+                                            <div class="fw-bold small {{ $currentFont === $fontKey ? 'text-primary' : 'text-dark' }}" id="font-label-{{ Str::slug($fontKey) }}">
+                                                {{ $fontData['label'] }}
+                                            </div>
+                                            <div class="x-small text-muted mt-1 font-sample" data-font="{{ $fontKey }}">Aa Bb Cc 123</div>
+                                            <div class="x-small opacity-60 mt-1">{{ $fontData['desc'] }}</div>
+                                            @if($currentFont === $fontKey)
+                                            <span class="badge bg-primary rounded-pill x-small mt-1 font-active-badge">✓ Aktif</span>
+                                            @endif
+                                        </label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                <div class="small text-muted"><i class="bi bi-info-circle me-1"></i>Klik kartu untuk pratinjau langsung. Font berlaku di seluruh situs setelah disimpan.</div>
+                            @elseif($isLongText)
                                 <textarea name="{{ $item->key }}" class="form-control shadow-sm" rows="4" style="border-radius: 10px;">{{ $item->value }}</textarea>
                             @elseif($item->key == 'launch_date')
                                 @php $launchTs = !empty($item->value) ? strtotime($item->value) : false; @endphp
@@ -259,6 +311,93 @@
 
 @push('scripts')
 <script>
+// Peta font → Google Fonts URL query
+const _fontMap = {
+    'Inter':             'Inter:wght@400;500;700;900',
+    'Poppins':           'Poppins:wght@400;500;700;900',
+    'Roboto':            'Roboto:wght@400;500;700;900',
+    'Nunito':            'Nunito:wght@400;500;700;900',
+    'Lato':              'Lato:wght@400;700;900',
+    'Montserrat':        'Montserrat:wght@400;500;700;900',
+    'Plus Jakarta Sans': 'Plus+Jakarta+Sans:wght@400;500;700;800',
+    'Raleway':           'Raleway:wght@400;500;700;900',
+    'Oswald':            'Oswald:wght@400;500;700',
+    'Ubuntu':            'Ubuntu:wght@400;500;700',
+    'Quicksand':         'Quicksand:wght@400;500;700',
+    'Playfair Display':  'Playfair+Display:wght@400;700;900',
+    'Dancing Script':    'Dancing+Script:wght@400;700',
+    'Bebas Neue':        'Bebas+Neue:wght@400',
+    'Exo 2':             'Exo+2:wght@400;500;700;900',
+};
+
+// Muat font dari Google Fonts secara dinamis (hanya sekali per font)
+const _loadedFonts = {};
+function loadGoogleFont(fontKey) {
+    if (_loadedFonts[fontKey]) return;
+    const query = _fontMap[fontKey];
+    if (!query) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=' + query + '&display=swap';
+    document.head.appendChild(link);
+    _loadedFonts[fontKey] = true;
+}
+
+// Praload semua font saat halaman dibuka agar preview instan
+Object.keys(_fontMap).forEach(function(k) { loadGoogleFont(k); });
+
+// Terapkan preview langsung ke kotak pratinjau
+function applyFontPreview(fontKey) {
+    const previewBox  = document.getElementById('font-preview-box');
+    const previewName = document.getElementById('font-preview-name');
+    if (!previewBox) return;
+    previewBox.style.fontFamily = "'" + fontKey + "', system-ui, sans-serif";
+    ['font-preview-heading','font-preview-body','font-preview-misc'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.fontFamily = "'" + fontKey + "', system-ui, sans-serif";
+    });
+    if (previewName) previewName.textContent = fontKey;
+}
+
+// Font picker — pilih font dengan klik kartu
+function selectFont(fontKey) {
+    loadGoogleFont(fontKey);
+    applyFontPreview(fontKey);
+
+    document.querySelectorAll('.font-card').forEach(function(card) {
+        card.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10');
+        card.classList.add('border-light', 'bg-light');
+        const title = card.querySelector('.fw-bold.small');
+        if (title) { title.classList.remove('text-primary'); title.classList.add('text-dark'); }
+        const badge = card.querySelector('.font-active-badge');
+        if (badge) badge.remove();
+        const radio = card.querySelector('.font-radio');
+        if (radio) radio.checked = false;
+    });
+    const selected = document.querySelector('.font-card input[value="' + fontKey + '"]');
+    if (selected) {
+        const card = selected.closest('.font-card');
+        card.classList.add('border-primary', 'bg-primary', 'bg-opacity-10');
+        card.classList.remove('border-light', 'bg-light');
+        const title = card.querySelector('.fw-bold.small');
+        if (title) { title.classList.add('text-primary'); title.classList.remove('text-dark'); }
+        selected.checked = true;
+        if (!card.querySelector('.font-active-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary rounded-pill x-small mt-1 font-active-badge';
+            badge.textContent = '✓ Aktif';
+            card.appendChild(badge);
+        }
+    }
+}
+
+// Pasang font-family ke font-sample cards setelah fonts dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.font-sample[data-font]').forEach(function(el) {
+        el.style.fontFamily = "'" + el.dataset.font + "', sans-serif";
+    });
+});
+
 function formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';

@@ -22,9 +22,14 @@ rm -f /var/www/steman-alumni/scratch/*.sql 2>/dev/null
 
 # 3. PERFORMANCE LOCKDOWN
 echo "[3/5] Optimizing Production Performance..."
-docker exec steman_app php artisan optimize:clear > /dev/null 2>&1
-docker exec steman_app php artisan optimize > /dev/null 2>&1
+# PENTING: Rebuild cache ATOMIK — jangan pakai optimize:clear tanpa rebuild langsung
+# karena ada race condition: request masuk saat routes-v7.php sudah dihapus tapi belum dibuat ulang = 500
+docker exec steman_app php artisan config:clear > /dev/null 2>&1
+docker exec steman_app php artisan view:clear > /dev/null 2>&1
+docker exec steman_app php artisan config:cache > /dev/null 2>&1
+docker exec steman_app php artisan route:cache > /dev/null 2>&1
 docker exec steman_app php artisan view:cache > /dev/null 2>&1
+docker exec steman_app php artisan event:cache > /dev/null 2>&1
 
 # 4. INFRASTRUCTURE HEALTH
 echo "[4/5] Checking Infrastructure..."

@@ -84,10 +84,13 @@ class SettingController extends Controller
         }
 
         // Clear all caches so settings reflect immediately
-        try { 
-            Artisan::call('optimize:clear'); 
-            \Illuminate\Support\Facades\Cache::flush();
+        try {
+            // Hapus cache halaman utama secara eksplisit (Redis-safe)
+            \Illuminate\Support\Facades\Cache::forget('welcome_data_static');
+            \Illuminate\Support\Facades\Cache::forget('welcome_data');
             \Illuminate\Support\Facades\Cache::forget('admin_dashboard_stats');
+            \Illuminate\Support\Facades\Cache::flush();
+            Artisan::call('optimize:clear');
         } catch (\Exception $e) {}
 
         // Log the activity

@@ -119,7 +119,7 @@
             <div class="sticky-top" style="top: 100px;">
                 <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 20px;">
                     <h5 class="fw-bold mb-4">Program Lainnya</h5>
-                    @foreach(App\Models\Program::where('status', 'active')->where('id', '!=', $program->id)->take(3)->get() as $p)
+                    @foreach($relatedPrograms as $p)
                         <a href="{{ route('programs.show', $p->slug) }}" class="text-decoration-none text-dark d-flex mb-4 group h-100">
                             <div class="bg-light p-2 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                 <i class="bi {{ $p->icon }} fs-4 text-muted"></i>

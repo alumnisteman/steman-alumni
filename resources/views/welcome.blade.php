@@ -214,21 +214,45 @@
 
     .bento-card > * { position: relative; z-index: 1; }
 
-    /* Grid System */
+    /* Grid System — tidak bentrok dengan Bootstrap */
     .bento-grid-wrapper {
-        display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; padding: 3rem 0;
-        font-family: 'Inter', sans-serif; /* Keep reading text legible */
-    }
-    @media (max-width: 991px) {
-        .bento-grid-wrapper { display: flex; flex-direction: column; gap: 1rem; }
-        .span-8, .span-6, .span-4, .span-3 { grid-column: span 12 !important; width: 100%; }
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+        padding: 3rem 0;
+        font-family: 'Inter', sans-serif;
     }
 
-    .span-12 { grid-column: span 12; }
-    .span-8 { grid-column: span 8; }
-    .span-6 { grid-column: span 6; }
-    .span-4 { grid-column: span 4; }
-    .span-3 { grid-column: span 3; }
+    .bento-span-12 { grid-column: span 12; }
+    .bento-span-8  { grid-column: span 8; }
+    .bento-span-6  { grid-column: span 6; }
+    .bento-span-4  { grid-column: span 4; }
+    .bento-span-3  { grid-column: span 3; }
+
+    /* Tablet (768px – 991px): dua kolom */
+    @media (max-width: 991px) and (min-width: 768px) {
+        .bento-grid-wrapper { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .bento-span-12 { grid-column: span 2; }
+        .bento-span-8  { grid-column: span 2; }
+        .bento-span-6  { grid-column: span 1; }
+        .bento-span-4  { grid-column: span 1; }
+        .bento-span-3  { grid-column: span 1; }
+    }
+
+    /* Mobile (< 768px): satu kolom */
+    @media (max-width: 767px) {
+        .bento-grid-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem 0;
+        }
+        .bento-span-12,
+        .bento-span-8,
+        .bento-span-6,
+        .bento-span-4,
+        .bento-span-3 { width: 100%; }
+    }
 
     .fw-black { font-weight: 900; }
     .tracking-tighter { letter-spacing: -0.05em; }
@@ -352,7 +376,7 @@
                 <div class="my-4 text-white-50">
                     <p class="h4 fw-bold text-white mb-1">{{ $displaySubtitle }}</p>
                     <div class="badge-neon mb-4 d-inline-block">
-                        YOUR DIGITAL HUB NOW ....!!
+                        {{ $event_tag ?? 'REUNI AKBAR 2029' }} &mdash; {{ $event_year ?? '2029' }}
                     </div>
                 </div>
                 
@@ -381,11 +405,143 @@
         </div>
     </section>
 
+    <!-- ===== STATISTIK WRAPPED ===== -->
+    <section class="py-5 position-relative" style="background: linear-gradient(180deg, #000 0%, #050510 50%, #000 100%); border-top: 1px solid rgba(0,255,255,0.15); border-bottom: 1px solid rgba(0,255,255,0.15);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="badge-neon d-inline-block mb-3">ALUMNI RECAP</span>
+                <h2 class="fw-black text-white" style="font-size: clamp(1.8rem,5vw,3rem); font-family:'Inter',sans-serif;">
+                    STATISTIK <span class="text-gradient-neon">WRAPPED</span>
+                </h2>
+            </div>
+
+            <!-- Counter Stats Row -->
+            <div class="row g-3 justify-content-center mb-4">
+                @php
+                    $wrappedStats = [
+                        ['val' => $totalAlumni ?? 14,       'label' => 'ALUMNI',    'color' => '#0ff',  'suffix' => '+'],
+                        ['val' => $distinctAngkatan ?? 5,   'label' => 'ANGKATAN',  'color' => '#f0f',  'suffix' => '+'],
+                        ['val' => $distinctKota ?? 6,       'label' => 'KOTA',      'color' => '#ff0',  'suffix' => '+'],
+                        ['val' => 100,                      'label' => 'NOSTALGIA', 'color' => '#fff',  'suffix' => '%'],
+                    ];
+                @endphp
+                @foreach($wrappedStats as $stat)
+                <div class="col-6 col-md-3">
+                    <div class="bento-card text-center py-4 px-3 h-100" style="border-color: {{ $stat['color'] }}33;">
+                        <div class="fw-black mb-0 wrapped-counter" data-target="{{ $stat['val'] }}"
+                             style="font-size: clamp(2.5rem,6vw,3.5rem); color: {{ $stat['color'] }}; text-shadow: 0 0 15px {{ $stat['color'] }}; font-family:'Inter',sans-serif; line-height:1;">
+                            0
+                        </div>
+                        <div class="fw-black" style="color:{{ $stat['color'] }}; font-size:1.4rem;">{{ $stat['suffix'] }}</div>
+                        <div class="text-white-50 small tracking-widest mt-1" style="font-family:'Fira Code',monospace; font-size:0.7rem;">{{ $stat['label'] }}</div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <!-- Feature Cards Row -->
+            <div class="row g-3">
+
+                <!-- MOST ACTIVE -->
+                <div class="col-12 col-md-4">
+                    <a href="{{ route('leaderboard') }}" class="text-decoration-none d-block h-100">
+                        <div class="bento-card h-100 p-4" style="border-color: #0ff; cursor: pointer;">
+                            <div class="extra-small fw-bold tracking-widest text-neon-cyan mb-3" style="font-family:'Fira Code',monospace;">
+                                <i class="bi bi-lightning-charge-fill me-1"></i>MOST ACTIVE
+                            </div>
+                            @if($mostActiveAlumni ?? null)
+                            <div class="d-flex align-items-center gap-3 mt-2">
+                                <div class="position-relative">
+                                    <img src="{{ $mostActiveAlumni->profile_picture_url }}"
+                                         width="60" height="60"
+                                         style="object-fit:cover; border:2px solid #0ff; clip-path:polygon(20% 0%,80% 0%,100% 20%,100% 80%,80% 100%,20% 100%,0% 80%,0% 20%);"
+                                         alt="{{ $mostActiveAlumni->name }}">
+                                    <span class="position-absolute bottom-0 end-0 bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-black"
+                                          style="width:20px;height:20px;font-size:10px;">1</span>
+                                </div>
+                                <div>
+                                    <h5 class="text-neon-cyan fw-black mb-0">{{ $mostActiveAlumni->name }}</h5>
+                                    <div class="text-gold fw-bold" style="font-family:'Fira Code',monospace;">
+                                        <i class="bi bi-star-fill me-1"></i>{{ number_format($mostActiveAlumni->points) }} pts
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            <p class="text-white-50 small mb-0 mt-2">Data belum tersedia.</p>
+                            @endif
+                            <div class="mt-3 text-white-50 extra-small">
+                                <i class="bi bi-arrow-right-circle me-1"></i>Lihat Leaderboard Lengkap
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- MOST LEGENDARY CLASS -->
+                <div class="col-12 col-md-4">
+                    @php
+                        $legMajor     = $legendaryClass->major ?? null;
+                        $legYear      = $legendaryClass->graduation_year ?? null;
+                        $legLabel     = $legMajor ? 'XII ' . strtoupper($legMajor) : 'XII RPL';
+                        $legCount     = $legendaryClass->member_count ?? 0;
+                        $legQuery     = http_build_query(array_filter(['graduation_year' => $legYear, 'major' => $legMajor]));
+                    @endphp
+                    <a href="{{ route('alumni.index') }}{{ $legQuery ? '?'.$legQuery : '' }}" class="text-decoration-none d-block h-100">
+                        <div class="bento-card h-100 p-4" style="border-color: #f0f; cursor: pointer;">
+                            <div class="extra-small fw-bold tracking-widest text-neon-pink mb-3" style="font-family:'Fira Code',monospace;">
+                                <i class="bi bi-trophy-fill me-1"></i>MOST LEGENDARY CLASS
+                            </div>
+                            <h3 class="fw-black mt-2 mb-1 text-truncate" style="color:#f0f; text-shadow:0 0 10px #f0f; font-family:'Inter',sans-serif; font-size:clamp(1.1rem,3vw,1.6rem);">
+                                {{ $legLabel }}
+                            </h3>
+                            <p class="text-white-50 small mb-0">The Real Solid!</p>
+                            @if($legCount)
+                            <div class="mt-2">
+                                <span class="badge-neon extra-small" style="color:#f0f;border-color:#f0f;">{{ $legCount }} ANGGOTA</span>
+                            </div>
+                            @endif
+                            <div class="mt-3 text-white-50 extra-small">
+                                <i class="bi bi-arrow-right-circle me-1"></i>Lihat Alumni Angkatan Ini
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- TOP MEMORY -->
+                <div class="col-12 col-md-4">
+                    <a href="{{ route('gallery.index') }}" class="text-decoration-none d-block h-100">
+                        <div class="bento-card h-100 p-4 position-relative overflow-hidden" style="border-color: #ff0; min-height: 160px; cursor: pointer;">
+                            @if(($topMemory ?? null) && $topMemory->file_path)
+                            <img src="{{ asset(ltrim($topMemory->file_path, '/')) }}"
+                                 class="position-absolute top-0 start-0 w-100 h-100"
+                                 style="object-fit:cover; opacity:0.12; pointer-events:none;"
+                                 alt="">
+                            @endif
+                            <div class="position-relative">
+                                <div class="extra-small fw-bold tracking-widest text-gold mb-3" style="font-family:'Fira Code',monospace;">
+                                    <i class="bi bi-camera-fill me-1"></i>TOP MEMORY
+                                </div>
+                                <h5 class="fw-black mt-2 mb-1 text-gold" style="text-shadow:0 0 10px #ff0;">
+                                    {{ $topMemory->title ?? 'Foto Kenangan' }}
+                                </h5>
+                                <p class="text-white-50 small mb-0">Kenangan tak terlupakan</p>
+                                <div class="mt-3 text-white-50 extra-small">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Buka Galeri Kenangan
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+            </div><!-- /row feature cards -->
+        </div>
+    </section>
+    <!-- ===== END STATISTIK WRAPPED ===== -->
+
     <div class="container pb-5">
         <div class="bento-grid-wrapper">
             
             <!-- Alumni Leaderboard & School Pride -->
-            <div class="span-4 gsap-scroll-card">
+            <div class="bento-span-4 gsap-scroll-card">
                 <div class="bento-card leaderboard-panel h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-black text-gold m-0 small tracking-widest text-uppercase"><i class="bi bi-trophy-fill me-2"></i>ALUMNI LEADERBOARD</h5>
@@ -423,7 +579,7 @@
             </div>
 
             <!-- News Spotlight -->
-            <div class="span-8 gsap-scroll-card">
+            <div class="bento-span-8 gsap-scroll-card">
                 <div class="bento-card h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-black text-white m-0">KABAR TERKINI</h4>
@@ -446,7 +602,7 @@
             </div>
 
             <!-- Success Stories -->
-            <div class="span-8 gsap-scroll-card">
+            <div class="bento-span-8 gsap-scroll-card">
                 <div class="bento-card" style="min-height: 400px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(3, 0, 20, 1) 100%);">
                     <div class="row h-100 align-items-center">
                         <div class="col-lg-7">
@@ -477,7 +633,7 @@
             </div>
 
             <!-- Global Map Preview -->
-            <div class="span-4 gsap-scroll-card">
+            <div class="bento-span-4 gsap-scroll-card">
                 <div class="bento-card h-100 d-flex flex-column justify-content-between" style="border-color: rgba(34, 211, 238, 0.2);">
                     <div>
                         <h4 class="fw-black text-white mb-4">ALUMNI MAP</h4>
@@ -491,7 +647,7 @@
             </div>
 
             <!-- Career Section -->
-            <div class="span-8 gsap-scroll-card">
+            <div class="bento-span-8 gsap-scroll-card">
                 <div class="bento-card h-100">
                     <div class="row align-items-center">
                         <div class="col-lg-4">
@@ -521,7 +677,7 @@
             </div>
 
             <!-- Live Feed Card -->
-            <div class="span-4 gsap-scroll-card">
+            <div class="bento-span-4 gsap-scroll-card">
                 <div class="bento-card h-100" style="background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2);">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-black text-white m-0 small tracking-widest text-uppercase"><i class="bi bi-broadcast text-success me-2"></i>LIVE ACTIVITY</h5>
@@ -548,7 +704,7 @@
             </div>
 
             <!-- Podcast / Audio Terminal -->
-            <div class="span-8 gsap-scroll-card">
+            <div class="bento-span-8 gsap-scroll-card">
                 <div class="bento-card h-100" style="background: rgba(0, 255, 255, 0.02);">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
@@ -599,7 +755,7 @@
             </div>
 
             <!-- Nostalgia Gallery -->
-            <div class="span-12 gsap-scroll-card">
+            <div class="bento-span-12 gsap-scroll-card">
                 <div class="bento-card">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
@@ -849,5 +1005,40 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 @include('podcasts.player_script')
+
+<script>
+// Counter-up animation untuk STATISTIK WRAPPED
+(function() {
+    const counters = document.querySelectorAll('.wrapped-counter');
+    if (!counters.length) return;
+
+    const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+    const animateCounter = (el) => {
+        const target = parseInt(el.dataset.target, 10);
+        const duration = 1400;
+        const start = performance.now();
+        const update = (now) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            el.textContent = Math.floor(easeOut(progress) * target);
+            if (progress < 1) requestAnimationFrame(update);
+            else el.textContent = target;
+        };
+        requestAnimationFrame(update);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                animateCounter(e.target);
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    counters.forEach(c => observer.observe(c));
+})();
+</script>
 
 @endsection

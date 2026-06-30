@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\AdminNewUserMail;
+use App\Mail\WelcomeRegisterMail;
 use App\Repositories\Contracts\AuthRepositoryInterface;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
@@ -38,8 +42,30 @@ class AuthService
     public function register(array $data)
     {
         $data['password'] = Hash::make($data['password']);
-        $data['status'] = 'pending'; // Require admin approval
-        return $this->authRepository->create($data);
+        $data['status'] = 'approved';
+        $data['is_active'] = true;
+        $data['auto_approved'] = true;
+        $user = $this->authRepository->create($data);
+
+        try {
+            Mail::to($user->email)->send(new WelcomeRegisterMail($user));
+        } catch (\Throwable $e) {
+            Log::warning('Welcome email gagal dikirim ke ' . $user->email . ': ' . $e->getMessage());
+        }
+
+        try {
+            $adminEmails = \App\Models\User::where('role', 'admin')
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->toArray();
+            if (!empty($adminEmails)) {
+                Mail::to($adminEmails)->send(new AdminNewUserMail($user));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Admin new-user notification gagal: ' . $e->getMessage());
+        }
+
+        return $user;
     }
 
     /**
