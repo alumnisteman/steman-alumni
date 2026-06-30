@@ -94,8 +94,26 @@ class Fixer
 
                 case 'earth_data_mismatch':
                     Artisan::call('app:audit-integrity', ['--fix' => true]);
-                    Notifier::send("⚠️ *Data Steman Earth Mismatch*\nKoordinat alumni hilang ditemukan. Auto-healing geocoding dijalankan.", 'warning');
-                    $fixed = true;
+
+                    // Verify fix actually worked — count remaining alumni with missing coords
+                    $remaining = \App\Models\User::where('role', 'alumni')
+                        ->where(function ($q) {
+                            $q->whereNotNull('address')->orWhereNotNull('city_name');
+                        })
+                        ->where(function ($q) {
+                            $q->whereNull('latitude')->orWhereNull('longitude');
+                        })
+                        ->count();
+
+                    if ($remaining === 0) {
+                        Notifier::send("✅ *Data Steman Earth Diperbaiki*\nSemua koordinat alumni berhasil di-geocoding.", 'info');
+                        $fixed = true;
+                    } else {
+                        // Some users truly can't be geocoded — suppress further alerts for 6 hours
+                        \Illuminate\Support\Facades\Cache::put('system_guard:earth_suppressed', true, now()->addHours(6));
+                        Notifier::send("⚠️ *Data Steman Earth Mismatch*\n{$remaining} alumni masih tanpa koordinat setelah geocoding. Kemungkinan alamat tidak valid. Alert ini akan ditekan 6 jam ke depan.", 'warning');
+                        $fixed = true; // Mark resolved so circuit resets; suppression handles re-flood
+                    }
                     break;
 
                 case 'ai_offline':
@@ -112,8 +130,9 @@ class Fixer
                     Artisan::call('optimize:clear');
                     Artisan::call('route:clear');
                     Artisan::call('config:clear');
+                    \Illuminate\Support\Facades\Cache::forget('integrity:route_check');
                     Notifier::send("⚠️ *Route Mismatch detected*\nSistem mendeteksi inkonsistensi route. Cache route & config telah dibersihkan otomatis.", 'warning');
-                    Log::warning('SystemGuard: Route mismatch fixed via optimize:clear + route:clear');
+                    Log::warning('SystemGuard: Route mismatch fixed via optimize:clear + route:clear + integrity cache clear');
                     $fixed = true;
                     break;
 

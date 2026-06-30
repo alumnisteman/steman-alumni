@@ -289,39 +289,63 @@ class AuditIntegrity extends Command
     }
 
     /**
-     * AI Geocoding for users with addresses but no coordinates
+     * AI Geocoding for users with addresses but no coordinates.
+     * Also attempts to geocode by city_name for alumni who have no address.
      */
     private function geocodeMissingAddresses()
     {
         $this->comment("\n2c. Auditing AI-Geocoding for addresses...");
-        
-        $missingCoords = \App\Models\User::whereNotNull('address')
+
+        // Primary: users with a real address but missing coords
+        $byAddress = \App\Models\User::whereNotNull('address')
             ->where('address', '!=', '')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('latitude')->orWhereNull('longitude');
-            })->count();
+            })->get();
 
-        if ($missingCoords > 0) {
-            $this->warn("Found $missingCoords users with addresses but no coordinates.");
-            if ($this->option('fix')) {
-                $this->info("Attempting AI-Geocoding for $missingCoords users...");
-                
-                $users = \App\Models\User::whereNotNull('address')
-                    ->where('address', '!=', '')
-                    ->where(function($q) {
-                        $q->whereNull('latitude')->orWhereNull('longitude');
-                    })->get();
+        // Secondary: alumni with city_name but no address AND no coords
+        $byCity = \App\Models\User::where('role', 'alumni')
+            ->whereNull('address')
+            ->whereNotNull('city_name')
+            ->where('city_name', '!=', '')
+            ->where(function ($q) {
+                $q->whereNull('latitude')->orWhereNull('longitude');
+            })->get();
 
-                foreach ($users as $user) {
-                    $this->line("  - Geocoding: " . $user->address);
-                    // This triggers the 'saving' observer we just added to the User model
-                    $user->save(); 
-                }
-                $this->info("AI-Geocoding complete.");
-            }
-        } else {
-            $this->info("Geocoding OK: All users with addresses have coordinates.");
+        $total = $byAddress->count() + $byCity->count();
+
+        if ($total === 0) {
+            $this->info("Geocoding OK: All alumni with address/city have coordinates.");
+            return;
         }
+
+        $this->warn("Found {$total} users missing coordinates (address: {$byAddress->count()}, city-only: {$byCity->count()}).");
+
+        if (!$this->option('fix')) {
+            return;
+        }
+
+        $this->info("Attempting geocoding for {$byAddress->count()} users with address...");
+        foreach ($byAddress as $user) {
+            $this->line("  - Geocoding by address: {$user->address}");
+            $user->save(); // triggers model observer
+        }
+
+        $this->info("Attempting geocoding for {$byCity->count()} alumni with city_name only...");
+        foreach ($byCity as $user) {
+            $this->line("  - Geocoding by city: {$user->city_name}");
+            // Temporarily set address to city_name so the observer can geocode it
+            $originalAddress = $user->address;
+            $user->address = $user->city_name;
+            $user->save();
+            // Restore original address value (null) to avoid polluting data
+            if ($originalAddress === null) {
+                $user->address = null;
+                $user->saveQuietly();
+            }
+        }
+
+        $this->info("Geocoding complete.");
     }
 
     /**

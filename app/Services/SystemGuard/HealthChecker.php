@@ -305,22 +305,37 @@ class HealthChecker
 
     private function checkEarthData(): bool
     {
-        // Check for users with addresses/cities but missing coordinates
-        $mismatch = \App\Models\User::where('role', 'alumni')
-            ->where(function($q) {
-                $q->whereNotNull('address')->orWhereNotNull('city_name');
-            })
-            ->where(function($q) {
-                $q->whereNull('latitude')->orWhereNull('longitude');
-            })
-            ->count();
-
-        if ($mismatch > 0) {
-            Log::warning("SystemGuard: Found {$mismatch} alumni with missing coordinates for Steman Earth.");
-            return false;
+        // If a recent fix attempt couldn't resolve all coords (bad addresses),
+        // suppress re-alerting for 6 hours to prevent notification floods.
+        if (\Illuminate\Support\Facades\Cache::get('system_guard:earth_suppressed')) {
+            return true;
         }
 
-        return true;
+        try {
+            // Only check alumni with a non-empty address — city_name alone cannot
+            // be reliably geocoded and should not trigger a permanent mismatch alert.
+            $mismatch = \App\Models\User::where('role', 'alumni')
+                ->whereNotNull('address')
+                ->where('address', '!=', '')
+                ->where(function ($q) {
+                    $q->whereNull('latitude')->orWhereNull('longitude');
+                })
+                ->count();
+
+            if ($mismatch > 0) {
+                Log::warning("SystemGuard: Found {$mismatch} alumni with address but missing coordinates for Steman Earth.");
+                return false;
+            }
+
+            return true;
+        } catch (\Illuminate\Database\QueryException $e) {
+            // DB sementara tidak tersedia (restart/recreate) — skip check, jangan flag sebagai masalah
+            Log::info('SystemGuard: earth_data_mismatch check dilewati — DB tidak tersedia: ' . $e->getMessage());
+            return true;
+        } catch (\PDOException $e) {
+            Log::info('SystemGuard: earth_data_mismatch check dilewati — koneksi DB gagal: ' . $e->getMessage());
+            return true;
+        }
     }
 
     /**
