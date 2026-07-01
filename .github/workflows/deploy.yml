@@ -1,42 +1,29 @@
-name: 🚀 Steman Alumni — CI/CD Auto Deploy
+name: 🚀 Steman Alumni — Auto Deploy Production
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: 🏗️ Build & Deploy ke Server
+    name: 🏗️ Deploy ke Server Production
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: 📥 Checkout kode terbaru
         uses: actions/checkout@v4
 
-      - name: 🐘 Setup PHP
+      - name: 🐘 Validasi sintaks PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: gd, pdo_mysql, mbstring, zip, bcmath, intl, redis
+          extensions: gd, pdo_mysql, mbstring, zip, bcmath, intl
           coverage: none
 
-      - name: 📦 Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction
-
-      - name: 🎨 Setup Node.js & Build Assets
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: 🛠️ Install NPM & Build
-        run: |
-          npm ci
-          npm run build
-
-      - name: 🔍 Validasi sintaks PHP (basic lint)
-        run: find app -name "*.php" | xargs php -l | grep -v "No syntax errors" || true
+      - name: 🔍 PHP Syntax Check
+        run: find app -name "*.php" | xargs -P4 php -l 2>&1 | grep -E "^(Parse|Fatal)" && exit 1 || echo "✅ Semua PHP valid"
 
       - name: 🚀 Deploy ke Server via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -45,60 +32,90 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_SSH_PASSWORD }}
           port: 22
-          timeout: 300s
+          timeout: 600s
           script: |
             set -e
             DEPLOY_DIR="/var/www/steman-alumni"
-            echo "📁 Masuk ke direktori deploy: $DEPLOY_DIR"
+            APP="docker exec steman_app"
+
+            echo "📁 Masuk ke direktori: $DEPLOY_DIR"
             cd "$DEPLOY_DIR"
 
             echo "🔄 Pull kode terbaru dari GitHub..."
-            git fetch origin
-            git reset --hard origin/main || git reset --hard origin/master
+            git fetch origin main
+            git reset --hard origin/main
 
-            echo "📦 Install Composer (production)..."
-            composer install --no-dev --optimize-autoloader --no-interaction
+            echo "🗄️ Jalankan migrasi (jika ada yang pending)..."
+            $APP php artisan migrate --force
 
-            echo "🎨 Build frontend assets..."
-            if command -v npm > /dev/null 2>&1; then
-              npm ci && npm run build
-            fi
+            echo "🧹 Bersihkan semua cache lama..."
+            $APP php artisan optimize:clear
 
-            echo "🔗 Buat symlink storage (FIX foto tidak tampil)..."
-            php artisan storage:link --force
+            echo "⚡ Rebuild cache production di dalam container..."
+            $APP php artisan config:cache
+            $APP php artisan route:cache
+            $APP php artisan view:cache
+            $APP php artisan event:cache
 
-            echo "🗄️ Jalankan migrasi database..."
-            php artisan migrate --force
+            echo "🔗 Pastikan symlink storage masih ada..."
+            $APP php artisan storage:link --force 2>/dev/null || true
 
-            echo "⚡ Optimasi Laravel..."
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan event:cache
+            echo "🔧 Fix permission storage..."
+            $APP chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
+            $APP chmod -R 775 /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 
-            echo "🔧 Perbaiki permission storage..."
-            chmod -R 775 storage bootstrap/cache
-            chown -R www-data:www-data storage bootstrap/cache
+            echo "⚙️ Reset PHP opcache di semua container..."
+            for container in steman_app steman_scheduler steman_queue steman_reverb; do
+              docker exec $container php -r "if(function_exists('opcache_reset')){opcache_reset(); echo \"$container: opcache cleared\n\";}" 2>/dev/null || true
+            done
 
-            echo "🐳 Restart Docker containers..."
-            if [ -f docker-compose.prod.yml ]; then
-              docker compose -f docker-compose.prod.yml up -d --build --scale app=3 --no-recreate 2>/dev/null || \
-              docker compose -f docker-compose.prod.yml up -d --build 2>/dev/null || true
+            echo "🔁 Restart queue workers (graceful)..."
+            $APP php artisan queue:restart
 
-              echo "⏳ Tunggu container siap..."
-              sleep 10
+            echo "🏥 Verifikasi: jalankan System Guard..."
+            $APP php artisan system:guard 2>/dev/null || true
 
-              echo "🔗 Storage link di dalam Docker container..."
-              docker compose -f docker-compose.prod.yml exec -T app php artisan storage:link --force || true
-
-              echo "🗄️ Migrasi di dalam Docker..."
-              docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
-
-              echo "⚡ Optimasi di dalam Docker..."
-              docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache || true
-              docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache || true
-              docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache || true
-            fi
-
+            echo ""
             echo "✅ Deploy selesai! $(date)"
-            echo "🌐 Cek: https://alumni-steman.my.id/museum"
+            echo "🌐 Cek: https://alumni-steman.my.id"
+
+      - name: 🌐 Health Check — Verifikasi Situs Online
+        run: |
+          sleep 5
+          URLS=(
+            "https://alumni-steman.my.id"
+            "https://alumni-steman.my.id/login"
+            "https://alumni-steman.my.id/global-network"
+          )
+          FAIL=0
+          for url in "${URLS[@]}"; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$url" || echo "000")
+            if [[ "$STATUS" == "200" || "$STATUS" == "301" || "$STATUS" == "302" ]]; then
+              echo "✅ $url → HTTP $STATUS"
+            else
+              echo "❌ $url → HTTP $STATUS"
+              FAIL=1
+            fi
+          done
+          if [ $FAIL -eq 1 ]; then
+            echo "⚠️ Ada halaman yang tidak merespons normal setelah deploy!"
+            exit 1
+          fi
+
+      - name: 📣 Notifikasi Deploy Berhasil
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=Markdown" \
+            -d "text=✅ *Deploy Berhasil!*%0A━━━━━━━━━━━━━━━━%0A🌐 https://alumni-steman.my.id%0A📦 Commit: \`${{ github.sha }}\`%0A👤 By: ${{ github.actor }}%0A🕒 $(date '+%d %b %Y %H:%M')" \
+          && echo "Notifikasi Telegram terkirim" || echo "Gagal kirim Telegram (skip)"
+
+      - name: 🚨 Notifikasi Deploy Gagal
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=Markdown" \
+            -d "text=🚨 *Deploy GAGAL!*%0A━━━━━━━━━━━━━━━━%0A📦 Commit: \`${{ github.sha }}\`%0A👤 By: ${{ github.actor }}%0A🔗 Lihat log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          && echo "Notifikasi gagal terkirim" || echo "Gagal kirim Telegram (skip)"
