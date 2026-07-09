@@ -1,0 +1,64 @@
+---
+- name: Update cache apt & upgrade paket (idempotent)
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+    cache_valid_time: 3600
+
+- name: Install paket dasar
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - git
+      - unzip
+      - htop
+      - ufw
+      - fail2ban
+      - software-properties-common
+    state: present
+
+- name: Atur timezone server
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: Pastikan direktori project ada
+  ansible.builtin.file:
+    path: "{{ project_repo_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Aktifkan swap 1G jika RAM kecil (opsional, aman untuk VPS kecil)
+  block:
+    - name: Cek apakah swapfile sudah ada
+      ansible.builtin.stat:
+        path: /swapfile
+      register: swapfile_stat
+
+    - name: Buat swapfile 1G
+      ansible.builtin.command: fallocate -l 1G /swapfile
+      when: not swapfile_stat.stat.exists
+
+    - name: Set permission swapfile
+      ansible.builtin.file:
+        path: /swapfile
+        mode: "0600"
+      when: not swapfile_stat.stat.exists
+
+    - name: Format swapfile
+      ansible.builtin.command: mkswap /swapfile
+      when: not swapfile_stat.stat.exists
+
+    - name: Aktifkan swap
+      ansible.builtin.command: swapon /swapfile
+      when: not swapfile_stat.stat.exists
+
+    - name: Tambahkan swap ke /etc/fstab
+      ansible.builtin.mount:
+        path: none
+        src: /swapfile
+        fstype: swap
+        opts: sw
+        state: present

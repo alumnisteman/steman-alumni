@@ -1,0 +1,87 @@
+---
+- name: Clone atau update repository aplikasi
+  ansible.builtin.git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ project_repo_dir }}"
+    version: "{{ git_branch }}"
+    force: false
+  register: git_result
+  when: git_repo_url != "CHANGE_ME_GIT_REPO_URL"
+
+- name: Peringatan jika git_repo_url belum diisi
+  ansible.builtin.debug:
+    msg: >
+      git_repo_url belum diisi di group_vars/all.yml. Lewati clone otomatis,
+      pastikan source code sudah ada manual di {{ project_repo_dir }}.
+  when: git_repo_url == "CHANGE_ME_GIT_REPO_URL"
+
+- name: Generate file .env production dari template (vault)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ project_repo_dir }}/.env"
+    mode: "0640"
+    owner: root
+    group: root
+
+- name: Pastikan direktori storage & bootstrap/cache writable
+  ansible.builtin.file:
+    path: "{{ project_repo_dir }}/{{ item }}"
+    state: directory
+    recurse: true
+    mode: "0775"
+  loop:
+    - storage
+    - bootstrap/cache
+
+- name: Install dependency Composer & build asset di dalam image (build lokal di server)
+  ansible.builtin.command:
+    cmd: docker run --rm -v "{{ project_repo_dir }}:/var/www" -w /var/www composer:2 install --no-dev --optimize-autoloader
+  args:
+    chdir: "{{ project_repo_dir }}"
+
+- name: Build & jalankan seluruh stack docker compose (production)
+  ansible.builtin.command:
+    cmd: docker compose -f {{ docker_compose_file }} up -d --build
+  args:
+    chdir: "{{ project_repo_dir }}"
+
+- name: Tunggu container app siap (health check sederhana)
+  ansible.builtin.pause:
+    seconds: 15
+
+- name: Jalankan migrasi database
+  ansible.builtin.command:
+    cmd: docker compose -f {{ docker_compose_file }} exec -T app php artisan migrate --force
+  args:
+    chdir: "{{ project_repo_dir }}"
+
+- name: Cache config, route, view Laravel
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ docker_compose_file }} exec -T app php artisan {{ item }}"
+  args:
+    chdir: "{{ project_repo_dir }}"
+  loop:
+    - "config:cache"
+    - "route:cache"
+    - "view:cache"
+    - "storage:link"
+
+- name: Setup SSL Let's Encrypt (jalankan sekali, aman diulang / idempotent)
+  ansible.builtin.command:
+    cmd: >
+      docker compose -f {{ docker_compose_file }} run --rm certbot
+      certonly --webroot -w /var/www/certbot
+      -d {{ project_domain }} -d www.{{ project_domain }}
+      --email {{ letsencrypt_email }} --agree-tos --no-eff-email --non-interactive
+  args:
+    chdir: "{{ project_repo_dir }}"
+  register: certbot_result
+  failed_when: false
+  changed_when: "'Congratulations' in certbot_result.stdout"
+
+- name: Reload nginx setelah SSL disetup
+  ansible.builtin.command:
+    cmd: docker compose -f {{ docker_compose_file }} exec -T webserver nginx -s reload
+  args:
+    chdir: "{{ project_repo_dir }}"
+  failed_when: false

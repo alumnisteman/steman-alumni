@@ -1,0 +1,3 @@
+.vault_pass.txt
+inventories/production/group_vars/vault.yml
+*.retry

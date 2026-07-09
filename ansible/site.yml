@@ -1,0 +1,21 @@
+---
+# Playbook utama: instalasi awal server sampai aplikasi jalan di production.
+# Jalankan dengan:
+#   ansible-playbook site.yml --ask-vault-pass
+#
+# Urutan role:
+#   1. common   -> update sistem, timezone, paket dasar, user deploy
+#   2. firewall -> UFW + fail2ban
+#   3. docker   -> install Docker Engine & Docker Compose plugin
+#   4. app      -> clone repo, siapkan .env, build image, docker compose up, migrate
+
+- name: Provisioning & Deploy Steman Alumni ke Production
+  hosts: production
+  become: true
+  vars_files:
+    - inventories/production/group_vars/vault.yml
+  roles:
+    - common
+    - firewall
+    - docker
+    - app
