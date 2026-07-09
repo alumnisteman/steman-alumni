@@ -101,6 +101,30 @@ ansible-playbook site.yml --ask-pass --ask-become-pass
   (semua task idempotent — aman dijalankan berkali-kali) atau gunakan
   `docker/scripts/deploy-prod.sh` yang sudah ada di repo untuk update cepat tanpa provisioning ulang.
 
+## Kondisi aktual server (hasil pengecekan langsung, 09 Jul 2026)
+
+- Server **bukan kosong** — sudah production dan sehat. Ubuntu 24.04, Docker 29.4.2.
+- Direktori deploy aktif yang benar: **`/var/www/steman-alumni`** (dikonfirmasi lewat label
+  `com.docker.compose.project.working_dir` container `steman_app`). Ini sudah sesuai dengan
+  `project_repo_dir` di `group_vars/all.yml`, tidak perlu diubah.
+- `/var/www/` (root, tanpa subfolder) dan `/var/www/steman-alumni-old/` adalah sisa deployment
+  lama yang **tidak dipakai lagi** — aman dihapus manual kalau mau bersihkan disk (masing-masing
+  ~492M dan ~112M), tapi bukan bagian dari playbook ini karena berisiko dan harus dilakukan
+  sengaja, bukan otomatis lewat playbook provisioning.
+- Container `portainer`, `steman_cadvisor`, `steman_grafana`, `steman_prometheus`,
+  `steman_nginx_exporter`, `svms_nginx`, `root-mysql-1`, `root-redis-1`, `root-meilisearch-1`
+  berjalan di server yang sama tapi **bukan bagian dari stack Alumni STEMAN** (project/monitoring
+  lain) — dibiarkan saja, playbook ini tidak menyentuhnya.
+- Server sudah punya **banyak cron job & script otomatis sendiri** di `/var/www/steman-alumni/scripts/`
+  (health check, autoheal, backup, maintenance, ssl renewal, dll — lihat `crontab -l`). Playbook
+  Ansible ini **tidak menggantikan** automasi tersebut. Untuk update/deploy rutin, tetap pakai
+  script yang sudah ada di server (misal `docker/scripts/deploy-prod.sh`), bukan `ansible-playbook site.yml`.
+
+**Posisi playbook ini:** dokumentasi/skenario *disaster recovery* — kalau server hilang atau
+harus dibangun ulang dari nol, playbook ini yang dipakai untuk provisioning + deploy dari awal.
+Bukan untuk dijalankan rutin ke server yang sudah berjalan seperti sekarang, karena bisa
+bertabrakan dengan automasi cron yang sudah ada.
+
 ## Catatan
 
 - Playbook ini idempotent: aman dijalankan ulang, tidak akan merusak instalasi yang sudah ada.
