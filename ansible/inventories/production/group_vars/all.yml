@@ -8,7 +8,7 @@ project_name: steman-alumni
 project_domain: "alumni-steman.my.id"
 project_repo_dir: /var/www/steman-alumni
 
-git_repo_url: "CHANGE_ME_GIT_REPO_URL"   # contoh: git@github.com:namaanda/steman-alumni.git
+git_repo_url: "https://github.com/alumnisteman/steman-alumni.git"
 git_branch: "main"
 
 docker_compose_file: docker-compose.prod.yml
