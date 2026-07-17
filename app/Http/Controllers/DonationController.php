@@ -84,8 +84,10 @@ class DonationController extends Controller
     // Campaign Detail (with distribution reports)
     public function show(DonationCampaign $campaign)
     {
-        $donations = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
-        return view('donations.show', compact('campaign', 'donations'));
+        $donations       = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
+        $donorCount      = $donations->count();
+        $transactionCount = $campaign->donations()->where('status', 'verified')->count();
+        return view('donations.show', compact('campaign', 'donations', 'donorCount', 'transactionCount'));
     }
 
     // Alumni: Donation Form
