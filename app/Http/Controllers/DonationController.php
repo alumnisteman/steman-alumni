@@ -84,8 +84,13 @@ class DonationController extends Controller
     // Campaign Detail (with distribution reports)
     public function show(DonationCampaign $campaign)
     {
-        $donations       = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
-        $donorCount      = $donations->count();
+        $donations        = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
+        // Distinct donors: non-anonymous by unique user_id, plus anonymous rows counted individually
+        $donorCount       = $campaign->donations()->where('status', 'verified')
+                                ->where('is_anonymous', false)
+                                ->distinct('user_id')->count('user_id')
+                            + $campaign->donations()->where('status', 'verified')
+                                ->where('is_anonymous', true)->count();
         $transactionCount = $campaign->donations()->where('status', 'verified')->count();
         return view('donations.show', compact('campaign', 'donations', 'donorCount', 'transactionCount'));
     }
