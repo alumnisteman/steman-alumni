@@ -9,33 +9,81 @@ class DemoFundSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Dana Reuni Akbar 2026
+        // Palet warna untuk donut chart
+        $reuni2026Colors = [
+            '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6',
+            '#ef4444', '#06b6d4', '#ec4899', '#84cc16',
+            '#f97316', '#14b8a6', '#6366f1',
+        ];
+
+        $reuni2026Dist = [
+            ['label' => 'Penyediaan Konsumsi',                  'percent' => 24, 'amount' =>  54740000],
+            ['label' => 'Sewa Panggung & Audio Visual (2 hari)','percent' => 23, 'amount' =>  53000000],
+            ['label' => 'Cindera Mata Almamater / SMK N 2',     'percent' => 11, 'amount' =>  25400000],
+            ['label' => 'Cetak & Media Publikasi',              'percent' => 11, 'amount' =>  24446400],
+            ['label' => 'Material Dekorasi Venue',              'percent' =>  9, 'amount' =>  20541000],
+            ['label' => 'Sewa & Belanja Lain-lain',             'percent' =>  7, 'amount' =>  15100000],
+            ['label' => 'Bantuan Sembako 100 Paket',            'percent' =>  6, 'amount' =>  12760000],
+            ['label' => 'Sewa Perlengkapan Pendukung Venue',    'percent' =>  5, 'amount' =>  12305000],
+            ['label' => 'ATK & Operasional Kesekretariatan',    'percent' =>  3, 'amount' =>   6105280],
+            ['label' => 'Software & Kelengkapan IT',            'percent' =>  1, 'amount' =>   2614050],
+            ['label' => 'Rapat LPJ & Pembubaran Panitia',       'percent' =>  1, 'amount' =>   3330000],
+        ];
+
+        // Tambahkan warna ke setiap item distribusi
+        foreach ($reuni2026Dist as $i => &$item) {
+            $item['color'] = $reuni2026Colors[$i] ?? '#6366f1';
+        }
+        unset($item);
+
+        // ── 1. Dana Reuni Akbar 2026 — data REAL dari LPJ PDF ──────────────────
         DonationCampaign::updateOrCreate(
             ['slug' => 'dana-reuni-akbar-2026'],
             [
                 'title'         => 'Dana Reuni Akbar 2026',
-                'description'   => 'Program penggalangan dana untuk mendukung penyelenggaraan Reuni Akbar Alumni STEMAN Ternate 2026. Dana digunakan untuk venue, konsumsi, dokumentasi, dan kenang-kenangan seluruh peserta.',
-                'bank_info'     => "Bank: BRI\nNo. Rek: 0123-0456-7890\nAtas Nama: Forum Silaturahmi Alumni Steman Ternate\n\nBank: BNI\nNo. Rek: 0987654321\nAtas Nama: Forum Silaturahmi Alumni Steman Ternate",
-                'goal_amount'   => 50000000,
-                'current_amount'=> 27500000,
+                'description'   => 'Laporan Pertanggungjawaban Panitia Pelaksana Reuni Akbar 2026 Forum Silaturahmi Alumni STEMAN Ternate. Tema: "Menjalin Silaturahmi, Merajut Kisah, dan Membangun Sinergi". Dilaksanakan 20–26 Juni 2026 di SMK Negeri 2 Ternate, Lapangan Ngaralamo, dan Landmark Kota Ternate. Total peserta: 840 orang.',
+                'bank_info'     => 'Laporan ini merupakan dokumen pertanggungjawaban resmi panitia kepada seluruh alumni.',
+                'goal_amount'   => 230000000,
+                'current_amount'=> 230345250,   // Total Pemasukan real dari LPJ hal.10
                 'type'          => 'event',
-                'status'        => 'active',
+                'status'        => 'completed',
                 'is_featured'   => true,
-                'total_expense' => 22000000,
-                'expense_distribution' => [
-                    ['label' => 'Venue & Dekorasi',          'percent' => 35, 'amount' => 7700000],
-                    ['label' => 'Konsumsi & Katering',       'percent' => 30, 'amount' => 6600000],
-                    ['label' => 'Dokumentasi & Publikasi',   'percent' => 15, 'amount' => 3300000],
-                    ['label' => 'Kenang-kenangan',           'percent' => 12, 'amount' => 2640000],
-                    ['label' => 'Operasional Panitia',       'percent' =>  8, 'amount' => 1760000],
-                ],
-                'sponsor_count'    => 12,
-                'show_donor_list'  => true,
-                'report_status'    => 'draft',
+                'total_expense' => 230341930,   // Total Pengeluaran real dari LPJ hal.10
+                'expense_distribution' => $reuni2026Dist,
+                'sponsor_count'     => 11,      // 11 donatur potensial dari LPJ hal.11
+                'show_donor_list'   => true,
+                'report_status'     => 'verified',
+                'report_verified_at'=> '2026-07-18',
             ]
         );
 
-        // 2. Dana Beasiswa Abadi
+        // ── 2. Update campaign "INFORMASI KEUANGAN" — sama, pakai data LPJ ────
+        $inf = DonationCampaign::where('slug', 'like', '%informasi-keuangan%')->first();
+        if ($inf) {
+            $inf->update([
+                'title'         => 'Reuni Akbar 2026 — Laporan Keuangan',
+                'description'   => 'Laporan Pertanggungjawaban resmi Panitia Pelaksana Reuni Akbar 2026. Total 840 peserta, 11 donatur utama, 25 dari 37 angkatan berkontribusi. Pengelolaan keuangan sangat efisien: sisa kas Rp 3.320.',
+                'current_amount'=> 230345250,
+                'goal_amount'   => 230000000,
+                'type'          => 'event',
+                'status'        => 'completed',
+                'total_expense' => 230341930,
+                'expense_distribution' => $reuni2026Dist,
+                'sponsor_count'     => 11,
+                'show_donor_list'   => true,
+                'report_status'     => 'verified',
+                'report_verified_at'=> '2026-07-18',
+            ]);
+        }
+
+        // ── 3. Dana Beasiswa Abadi STEMAN ───────────────────────────────────────
+        $beasiswaDist = [
+            ['label' => 'Beasiswa S1',              'percent' => 55, 'amount' => 10175000, 'color' => '#3b82f6'],
+            ['label' => 'Beasiswa SMA/SMK',         'percent' => 25, 'amount' =>  4625000, 'color' => '#10b981'],
+            ['label' => 'Administrasi Yayasan',     'percent' => 12, 'amount' =>  2220000, 'color' => '#f59e0b'],
+            ['label' => 'Biaya Seleksi & Survey',   'percent' =>  8, 'amount' =>  1480000, 'color' => '#8b5cf6'],
+        ];
+
         DonationCampaign::updateOrCreate(
             ['slug' => 'dana-beasiswa-abadi-steman'],
             [
@@ -48,12 +96,7 @@ class DemoFundSeeder extends Seeder
                 'status'        => 'active',
                 'is_featured'   => true,
                 'total_expense' => 18500000,
-                'expense_distribution' => [
-                    ['label' => 'Beasiswa S1',              'percent' => 55, 'amount' => 10175000],
-                    ['label' => 'Beasiswa SMA/SMK',         'percent' => 25, 'amount' =>  4625000],
-                    ['label' => 'Administrasi Yayasan',     'percent' => 12, 'amount' =>  2220000],
-                    ['label' => 'Biaya Seleksi & Survey',   'percent' =>  8, 'amount' =>  1480000],
-                ],
+                'expense_distribution' => $beasiswaDist,
                 'sponsor_count'     => 28,
                 'show_donor_list'   => true,
                 'report_status'     => 'verified',
@@ -61,25 +104,6 @@ class DemoFundSeeder extends Seeder
             ]
         );
 
-        // 3. Update campaign "INFORMASI KEUANGAN" dengan data laporan
-        $inf = DonationCampaign::where('slug', 'like', '%informasi-keuangan%')->first();
-        if ($inf) {
-            $inf->update([
-                'current_amount'    => 17800000,
-                'goal_amount'       => 30000000,
-                'total_expense'     => 15000000,
-                'expense_distribution' => [
-                    ['label' => 'Konsumsi',     'percent' => 40, 'amount' => 6000000],
-                    ['label' => 'Operasional',  'percent' => 30, 'amount' => 4500000],
-                    ['label' => 'Dokumentasi',  'percent' => 20, 'amount' => 3000000],
-                    ['label' => 'Lain-lain',    'percent' => 10, 'amount' => 1500000],
-                ],
-                'sponsor_count'  => 5,
-                'show_donor_list'=> true,
-                'report_status'  => 'draft',
-            ]);
-        }
-
-        $this->command->info('DemoFundSeeder: 2 fund baru + 1 updated.');
+        $this->command->info('DemoFundSeeder: data real LPJ Reuni Akbar 2026 berhasil dimuat.');
     }
 }
