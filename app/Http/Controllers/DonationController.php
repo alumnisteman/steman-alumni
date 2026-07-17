@@ -317,9 +317,22 @@ class DonationController extends Controller
             'finance_detail_pdf'     => 'nullable|file|mimes:pdf|max:10240',
             'documentation_images.*' => 'nullable|image|max:2048',
             'dist_label'             => 'nullable|array',
+            'dist_label.*'           => 'nullable|string|max:100',
             'dist_percentage'        => 'nullable|array',
+            'dist_percentage.*'      => 'nullable|numeric|min:0|max:100',
             'dist_color'             => 'nullable|array',
+            'dist_color.*'           => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
         ]);
+
+        // Validasi server-side: total distribusi harus 100% (±1% toleransi pembulatan)
+        if ($request->filled('dist_percentage')) {
+            $totalPct = collect($request->dist_percentage)->sum(fn($v) => (float) $v);
+            if ($totalPct > 0 && abs($totalPct - 100) > 1) {
+                return back()->withErrors([
+                    'dist_percentage' => "Total persentase distribusi harus 100% (saat ini {$totalPct}%).",
+                ])->withInput();
+            }
+        }
 
         $data = [
             'total_expense'   => $request->total_expense ?? 0,
