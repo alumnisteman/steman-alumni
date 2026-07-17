@@ -20,17 +20,12 @@ class DonationController extends Controller
         $foundationCampaigns = DonationCampaign::foundation()->where('status', 'active')->latest()->get();
         $eventCampaigns = DonationCampaign::event()->where('status', 'active')->latest()->get();
         
-        $totalFoundation = Donation::where('status', 'verified')
-            ->whereHas('campaign', fn($q) => $q->where('type', 'foundation'))
-            ->sum('amount');
-            
-        $totalEvent = Donation::where('status', 'verified')
-            ->whereHas('campaign', fn($q) => $q->where('type', 'event'))
-            ->sum('amount');
-            
-        $totalDonation = $totalFoundation + $totalEvent;
+        // Gunakan current_amount dari kampanye (sudah include manual update)
+        $totalFoundation = DonationCampaign::foundation()->sum('current_amount');
+        $totalEvent      = DonationCampaign::event()->sum('current_amount');
+        $totalDonation   = $totalFoundation + $totalEvent;
 
-        // Statistik global
+        // Statistik global dari tabel donations
         $totalDonors = Donation::where('status', 'verified')
             ->where('is_anonymous', false)
             ->distinct('user_id')->count('user_id')
