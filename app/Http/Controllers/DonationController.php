@@ -29,20 +29,30 @@ class DonationController extends Controller
             ->sum('amount');
             
         $totalDonation = $totalFoundation + $totalEvent;
+
+        // Statistik global
+        $totalDonors = Donation::where('status', 'verified')
+            ->where('is_anonymous', false)
+            ->distinct('user_id')->count('user_id')
+            + Donation::where('status', 'verified')->where('is_anonymous', true)->count();
+
+        $totalTransactions = Donation::where('status', 'verified')->count();
         
-        // Real-time feed (last 5 verified donations)
+        // Real-time feed (last 6 verified donations)
         $recentDonations = Donation::where('status', 'verified')
             ->with(['user', 'campaign'])
             ->latest()
-            ->take(5)
+            ->take(6)
             ->get();
 
         return view('donations.index', compact(
-            'foundationCampaigns', 
-            'eventCampaigns', 
-            'totalFoundation', 
-            'totalEvent', 
-            'totalDonation', 
+            'foundationCampaigns',
+            'eventCampaigns',
+            'totalFoundation',
+            'totalEvent',
+            'totalDonation',
+            'totalDonors',
+            'totalTransactions',
             'recentDonations'
         ));
     }
