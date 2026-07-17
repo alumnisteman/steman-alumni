@@ -179,6 +179,8 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
             Route::get('/campaigns/{campaign}/edit', [DonationController::class, 'campaignEdit'])->name('admin.campaigns.edit');
             Route::put('/campaigns/{campaign}', [DonationController::class, 'campaignUpdate'])->name('admin.campaigns.update');
             Route::delete('/campaigns/{campaign}', [DonationController::class, 'campaignDestroy'])->name('admin.campaigns.destroy');
+            Route::get('/campaigns/{campaign}/report', [DonationController::class, 'reportEdit'])->name('admin.campaigns.report.edit');
+            Route::put('/campaigns/{campaign}/report', [DonationController::class, 'reportUpdate'])->name('admin.campaigns.report.update');
 
             // AI Job Importer
             Route::post('/jobs/import-ai', [JobController::class, 'importAI'])->name('admin.jobs.import-ai');

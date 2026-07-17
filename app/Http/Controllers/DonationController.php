@@ -292,4 +292,80 @@ class DonationController extends Controller
 
         return redirect()->route('admin.campaigns.index')->with('success', 'Fund berhasil dihapus.');
     }
+
+    // ── Admin: Edit Laporan Keuangan ───────────────────────
+    public function reportEdit(DonationCampaign $campaign)
+    {
+        return view('admin.campaigns.report', compact('campaign'));
+    }
+
+    public function reportUpdate(Request $request, DonationCampaign $campaign)
+    {
+        $request->validate([
+            'total_expense'          => 'nullable|numeric|min:0',
+            'sponsor_count'          => 'nullable|integer|min:0',
+            'report_status'          => 'nullable|string|max:255',
+            'report_verified_at'     => 'nullable|date',
+            'lpj_pdf'                => 'nullable|file|mimes:pdf|max:10240',
+            'finance_detail_pdf'     => 'nullable|file|mimes:pdf|max:10240',
+            'documentation_images.*' => 'nullable|image|max:2048',
+            'dist_label'             => 'nullable|array',
+            'dist_percentage'        => 'nullable|array',
+            'dist_color'             => 'nullable|array',
+        ]);
+
+        $data = [
+            'total_expense'   => $request->total_expense ?? 0,
+            'sponsor_count'   => $request->sponsor_count ?? 0,
+            'report_status'   => $request->report_status,
+            'report_verified_at' => $request->report_verified_at ?: null,
+            'show_donor_list' => $request->boolean('show_donor_list'),
+        ];
+
+        // Distribusi pengeluaran
+        if ($request->filled('dist_label')) {
+            $dist = [];
+            foreach ($request->dist_label as $i => $label) {
+                if (trim($label) === '') continue;
+                $dist[] = [
+                    'label'      => $label,
+                    'percentage' => (float) ($request->dist_percentage[$i] ?? 0),
+                    'color'      => $request->dist_color[$i] ?? '#6366f1',
+                ];
+            }
+            $data['expense_distribution'] = $dist;
+        }
+
+        // Upload PDF LPJ
+        if ($request->hasFile('lpj_pdf')) {
+            if ($campaign->lpj_pdf_path) Storage::disk('public')->delete($campaign->lpj_pdf_path);
+            $data['lpj_pdf_path'] = $request->file('lpj_pdf')->store('campaign-docs', 'public');
+        }
+
+        // Upload PDF Rincian
+        if ($request->hasFile('finance_detail_pdf')) {
+            if ($campaign->finance_detail_pdf_path) Storage::disk('public')->delete($campaign->finance_detail_pdf_path);
+            $data['finance_detail_pdf_path'] = $request->file('finance_detail_pdf')->store('campaign-docs', 'public');
+        }
+
+        // Upload foto dokumentasi
+        if ($request->hasFile('documentation_images')) {
+            // Hapus foto lama
+            if ($campaign->documentation_images) {
+                foreach ($campaign->documentation_images as $old) {
+                    Storage::disk('public')->delete($old);
+                }
+            }
+            $paths = [];
+            foreach ($request->file('documentation_images') as $img) {
+                $paths[] = $img->store('campaign-docs', 'public');
+            }
+            $data['documentation_images'] = $paths;
+        }
+
+        $campaign->update($data);
+
+        return redirect()->route('admin.campaigns.report.edit', $campaign->id)
+            ->with('success', 'Laporan keuangan berhasil diperbarui! ✅');
+    }
 }
