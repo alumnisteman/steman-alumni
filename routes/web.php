@@ -248,6 +248,8 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
     Route::get('/alumni-fund', [DonationController::class, 'mobileFund'])->name('alumni.fund.mobile');
     // Route::get('/donations/audit', [DonationController::class, 'audit'])->name('donations.audit'); // disembunyikan sementara
     Route::get('/donations/campaign/{campaign:slug}', [DonationController::class, 'show'])->name('donations.show');
+    Route::get('/donations/campaign/{campaign:slug}/view-lpj', [DonationController::class, 'viewLpj'])->name('donations.view.lpj');
+    Route::get('/donations/campaign/{campaign:slug}/view-finance', [DonationController::class, 'viewFinance'])->name('donations.view.finance');
     Route::get('/api/donations', function() {
         return \App\Models\Donation::where('status', 'verified')->with('user')->latest()->take(10)->get()->map(function($d) {
             return [

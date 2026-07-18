@@ -387,14 +387,15 @@
                     <div class="d-flex flex-column gap-3">
 
                         @if($campaign->lpj_pdf_path)
-                        <a href="{{ asset('storage/' . $campaign->lpj_pdf_path) }}" target="_blank" class="dl-btn text-dark">
+                        <button type="button" class="dl-btn text-dark border-0 bg-white text-start"
+                                onclick="openPdfViewer('{{ route('donations.view.lpj', $campaign->slug) }}', 'LPJ Lengkap')">
                             <div class="dl-icon" style="background:#fee2e2;color:#dc2626;">📄</div>
                             <div>
                                 <div class="small fw-bold">Lihat LPJ Lengkap</div>
                                 <div style="font-size:.65rem;color:#94a3b8;">Laporan Pertanggungjawaban (PDF)</div>
                             </div>
                             <i class="bi bi-eye ms-auto text-muted"></i>
-                        </a>
+                        </button>
                         @else
                         <div class="dl-btn text-muted" style="cursor:default;opacity:.55;">
                             <div class="dl-icon" style="background:#f1f5f9;color:#94a3b8;">📄</div>
@@ -406,14 +407,15 @@
                         @endif
 
                         @if($campaign->finance_detail_pdf_path)
-                        <a href="{{ asset('storage/' . $campaign->finance_detail_pdf_path) }}" target="_blank" class="dl-btn text-dark">
+                        <button type="button" class="dl-btn text-dark border-0 bg-white text-start"
+                                onclick="openPdfViewer('{{ route('donations.view.finance', $campaign->slug) }}', 'Rincian Keuangan')">
                             <div class="dl-icon" style="background:#dbeafe;color:#2563eb;">📑</div>
                             <div>
                                 <div class="small fw-bold">Lihat Rincian Keuangan</div>
                                 <div style="font-size:.65rem;color:#94a3b8;">Detail pemasukan & pengeluaran (PDF)</div>
                             </div>
                             <i class="bi bi-eye ms-auto text-muted"></i>
-                        </a>
+                        </button>
                         @endif
 
                         {{-- Ringkasan rekapitulasi (Reuni 2026) --}}
@@ -554,6 +556,46 @@
     </div>
 </div>
 
+{{-- ══ PDF VIEWER MODAL ════════════════════════════════════ --}}
+<div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="background:#1e293b;border:none;border-radius:1rem;overflow:hidden;">
+            <div class="modal-header border-0 px-4 py-3" style="background:#0f172a;">
+                <h6 class="modal-title text-white fw-bold mb-0" id="pdfViewerTitle">
+                    <i class="bi bi-file-earmark-text me-2 text-danger"></i> Memuat dokumen…
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" style="background:#334155;">
+                {{-- Loading state --}}
+                <div id="pdfLoading" class="d-flex flex-column align-items-center justify-content-center py-5" style="min-height:60vh;">
+                    <div class="spinner-border text-light mb-3" role="status"></div>
+                    <div class="text-white-50 small">Memuat dokumen, harap tunggu…</div>
+                </div>
+                {{-- Canvas container --}}
+                <div id="pdfCanvasContainer"
+                     style="display:none;overflow-y:auto;max-height:80vh;padding:1rem;
+                            user-select:none;-webkit-user-select:none;-moz-user-select:none;">
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 py-2" style="background:#0f172a;">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <span class="text-white-50 small"><i class="bi bi-shield-lock-fill me-1 text-success"></i> Dokumen hanya untuk dilihat — tidak dapat diunduh</span>
+                    <div class="ms-auto d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3" id="pdfPrevPage">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <span class="text-white small align-self-center" id="pdfPageInfo" style="min-width:70px;text-align:center;">—</span>
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3" id="pdfNextPage">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -593,5 +635,104 @@ drawDonut('donutExpense', @json($dist), 90, 90, 78, 50);
 @if($isReuni2026)
 drawDonut('donutIncome', @json($incomeSources), 70, 70, 62, 40);
 @endif
+</script>
+
+{{-- PDF.js viewer --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
+<script>
+// Point PDF.js worker
+if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+let _pdfDoc = null;
+let _currentPage = 1;
+let _totalPages = 0;
+let _pdfUrl = '';
+let _renderingPage = false;
+
+async function openPdfViewer(url, title) {
+    _pdfUrl = url;
+    _currentPage = 1;
+    _pdfDoc = null;
+
+    // Reset UI
+    document.getElementById('pdfViewerTitle').innerHTML =
+        '<i class="bi bi-file-earmark-text me-2 text-danger"></i>' + title;
+    document.getElementById('pdfLoading').style.display = 'flex';
+    document.getElementById('pdfCanvasContainer').style.display = 'none';
+    document.getElementById('pdfCanvasContainer').innerHTML = '';
+    document.getElementById('pdfPageInfo').textContent = '—';
+
+    const modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
+    modal.show();
+
+    try {
+        const loadingTask = pdfjsLib.getDocument({ url, withCredentials: true });
+        _pdfDoc = await loadingTask.promise;
+        _totalPages = _pdfDoc.numPages;
+        document.getElementById('pdfLoading').style.display = 'none';
+        document.getElementById('pdfCanvasContainer').style.display = 'block';
+        await renderPage(_currentPage);
+    } catch(e) {
+        document.getElementById('pdfLoading').innerHTML =
+            '<i class="bi bi-exclamation-triangle text-warning fs-2 mb-2"></i>' +
+            '<div class="text-white-50 small">Gagal memuat dokumen. Coba muat ulang halaman.</div>';
+    }
+}
+
+async function renderPage(num) {
+    if (!_pdfDoc || _renderingPage) return;
+    _renderingPage = true;
+
+    const container = document.getElementById('pdfCanvasContainer');
+    container.innerHTML = '';
+
+    const page = await _pdfDoc.getPage(num);
+    const viewport = page.getViewport({ scale: Math.min(1.6, container.clientWidth / page.getViewport({scale:1}).width) });
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = viewport.width;
+    canvas.height = viewport.height;
+    canvas.style.cssText = 'display:block;margin:0 auto;border-radius:.5rem;box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:100%;';
+
+    // Block right-click on canvas
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    container.appendChild(canvas);
+    container.scrollTop = 0;
+
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+    document.getElementById('pdfPageInfo').textContent = num + ' / ' + _totalPages;
+    _currentPage = num;
+    _renderingPage = false;
+}
+
+document.getElementById('pdfPrevPage').addEventListener('click', () => {
+    if (_currentPage > 1) renderPage(_currentPage - 1);
+});
+document.getElementById('pdfNextPage').addEventListener('click', () => {
+    if (_currentPage < _totalPages) renderPage(_currentPage + 1);
+});
+
+// Block keyboard shortcuts: Ctrl/Cmd + S, P, Shift+I
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('pdfViewerModal');
+    if (!modal.classList.contains('show')) return;
+    const key = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'u'].includes(key)) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    // F12 / DevTools shortcut — soft block
+    if (e.key === 'F12') {
+        e.preventDefault();
+    }
+});
+
+// Block drag-to-save on canvas container
+document.getElementById('pdfCanvasContainer').addEventListener('dragstart', e => e.preventDefault());
 </script>
 @endpush

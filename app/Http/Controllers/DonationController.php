@@ -78,6 +78,35 @@ class DonationController extends Controller
         return view('fund.mobile', compact('yayasan', 'reuni', 'stories', 'donations', 'funds'));
     }
 
+    // Secure PDF viewer — inline only, hides storage path
+    public function viewLpj(DonationCampaign $campaign)
+    {
+        abort_unless($campaign->lpj_pdf_path, 404);
+        $path = storage_path('app/public/' . $campaign->lpj_pdf_path);
+        abort_unless(file_exists($path), 404);
+        return response()->file($path, [
+            'Content-Type'              => 'application/pdf',
+            'Content-Disposition'       => 'inline; filename="lpj.pdf"',
+            'Cache-Control'             => 'no-store, no-cache, must-revalidate',
+            'X-Content-Type-Options'    => 'nosniff',
+            'X-Frame-Options'           => 'SAMEORIGIN',
+        ]);
+    }
+
+    public function viewFinance(DonationCampaign $campaign)
+    {
+        abort_unless($campaign->finance_detail_pdf_path, 404);
+        $path = storage_path('app/public/' . $campaign->finance_detail_pdf_path);
+        abort_unless(file_exists($path), 404);
+        return response()->file($path, [
+            'Content-Type'              => 'application/pdf',
+            'Content-Disposition'       => 'inline; filename="rincian-keuangan.pdf"',
+            'Cache-Control'             => 'no-store, no-cache, must-revalidate',
+            'X-Content-Type-Options'    => 'nosniff',
+            'X-Frame-Options'           => 'SAMEORIGIN',
+        ]);
+    }
+
     // Public Audit Page
     public function audit()
     {
