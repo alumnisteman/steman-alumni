@@ -107,7 +107,7 @@ class DonationController extends Controller
         return response()->file($path, [
             'Content-Type'              => 'application/pdf',
             'Content-Disposition'       => 'inline; filename="lpj.pdf"',
-            'Cache-Control'             => 'no-store, no-cache, must-revalidate',
+            'Cache-Control'             => 'private, max-age=300',
             'X-Content-Type-Options'    => 'nosniff',
             'X-Frame-Options'           => 'SAMEORIGIN',
         ]);
@@ -121,7 +121,7 @@ class DonationController extends Controller
         return response()->file($path, [
             'Content-Type'              => 'application/pdf',
             'Content-Disposition'       => 'inline; filename="rincian-keuangan.pdf"',
-            'Cache-Control'             => 'no-store, no-cache, must-revalidate',
+            'Cache-Control'             => 'private, max-age=300',
             'X-Content-Type-Options'    => 'nosniff',
             'X-Frame-Options'           => 'SAMEORIGIN',
         ]);

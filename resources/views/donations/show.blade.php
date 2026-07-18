@@ -557,40 +557,107 @@
 </div>
 
 {{-- ══ PDF VIEWER MODAL ════════════════════════════════════ --}}
+<style>
+/* Mobile-first PDF modal */
+#pdfViewerModal .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100%;
+}
+@media (min-width: 768px) {
+    #pdfViewerModal .modal-dialog {
+        margin: 1.5rem auto;
+        max-width: 900px;
+        height: auto;
+    }
+}
+#pdfViewerModal .modal-content {
+    background: #1e293b;
+    border: none;
+    border-radius: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+@media (min-width: 768px) {
+    #pdfViewerModal .modal-content {
+        border-radius: 1rem;
+        height: auto;
+    }
+}
+#pdfCanvasContainer {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: .75rem;
+    background: #334155;
+    -webkit-overflow-scrolling: touch;
+    user-select: none;
+    -webkit-user-select: none;
+}
+#pdfCanvasContainer canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: .5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    max-width: 100%;
+    touch-action: pan-y;
+}
+.pdf-nav-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.3);
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background .15s;
+    -webkit-tap-highlight-color: transparent;
+}
+.pdf-nav-btn:active { background: rgba(255,255,255,.2); }
+.pdf-nav-btn:disabled { opacity: .3; cursor: default; }
+#pdfProgressBar {
+    height: 3px;
+    background: #3b82f6;
+    width: 0%;
+    transition: width .2s;
+}
+</style>
+
 <div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="background:#1e293b;border:none;border-radius:1rem;overflow:hidden;">
-            <div class="modal-header border-0 px-4 py-3" style="background:#0f172a;">
-                <h6 class="modal-title text-white fw-bold mb-0" id="pdfViewerTitle">
-                    <i class="bi bi-file-earmark-text me-2 text-danger"></i> Memuat dokumen…
-                </h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            {{-- Header --}}
+            <div class="flex-shrink-0 px-4 py-3 d-flex align-items-center gap-3" style="background:#0f172a;">
+                <i class="bi bi-file-earmark-text text-danger flex-shrink-0"></i>
+                <span class="text-white fw-bold small flex-grow-1 text-truncate" id="pdfViewerTitle">Dokumen</span>
+                <button type="button" class="btn-close btn-close-white flex-shrink-0" data-bs-dismiss="modal" style="font-size:.75rem;"></button>
             </div>
-            <div class="modal-body p-0" style="background:#334155;">
-                {{-- Loading state --}}
-                <div id="pdfLoading" class="d-flex flex-column align-items-center justify-content-center py-5" style="min-height:60vh;">
-                    <div class="spinner-border text-light mb-3" role="status"></div>
-                    <div class="text-white-50 small">Memuat dokumen, harap tunggu…</div>
-                </div>
-                {{-- Canvas container --}}
-                <div id="pdfCanvasContainer"
-                     style="display:none;overflow-y:auto;max-height:80vh;padding:1rem;
-                            user-select:none;-webkit-user-select:none;-moz-user-select:none;">
-                </div>
+            {{-- Progress bar --}}
+            <div style="background:#0f172a;padding:0 0 2px;"><div id="pdfProgressBar"></div></div>
+
+            {{-- Loading overlay --}}
+            <div id="pdfLoading" class="d-flex flex-column align-items-center justify-content-center gap-2 py-5"
+                 style="background:#334155;min-height:50vh;">
+                <div class="spinner-border text-primary" style="width:2rem;height:2rem;" role="status"></div>
+                <div class="text-white-50 small" id="pdfLoadingText">Menyiapkan halaman 1…</div>
             </div>
-            <div class="modal-footer border-0 px-4 py-2" style="background:#0f172a;">
-                <div class="d-flex align-items-center gap-3 w-100">
-                    <span class="text-white-50 small"><i class="bi bi-shield-lock-fill me-1 text-success"></i> Dokumen hanya untuk dilihat — tidak dapat diunduh</span>
-                    <div class="ms-auto d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3" id="pdfPrevPage">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                        <span class="text-white small align-self-center" id="pdfPageInfo" style="min-width:70px;text-align:center;">—</span>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3" id="pdfNextPage">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
+
+            {{-- Canvas --}}
+            <div id="pdfCanvasContainer" style="display:none;min-height:50vh;"></div>
+
+            {{-- Footer nav --}}
+            <div class="flex-shrink-0 px-4 py-2 d-flex align-items-center gap-2" style="background:#0f172a;">
+                <i class="bi bi-shield-lock-fill text-success me-1" style="font-size:.7rem;"></i>
+                <span class="text-white-50 flex-grow-1" style="font-size:.65rem;">Hanya untuk dilihat</span>
+                <button class="pdf-nav-btn" id="pdfPrevPage" disabled>
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="text-white fw-bold" id="pdfPageInfo" style="font-size:.8rem;min-width:56px;text-align:center;">—</span>
+                <button class="pdf-nav-btn" id="pdfNextPage" disabled>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -637,102 +704,242 @@ drawDonut('donutIncome', @json($incomeSources), 70, 70, 62, 40);
 @endif
 </script>
 
-{{-- PDF.js viewer --}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
+{{-- PDF.js: load async, tidak block render halaman --}}
 <script>
-// Point PDF.js worker
-if (typeof pdfjsLib !== 'undefined') {
+(function(){
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.crossOrigin = 'anonymous';
+    document.head.appendChild(s);
+})();
+</script>
+<script>
+/* ── PDF Viewer ───────────────────────────────────────────── */
+let _pdf       = null;   // pdfDocument
+let _page      = 1;
+let _total     = 0;
+let _rendering = false;
+const _cache   = new Map(); // pageNum → ImageBitmap (fast repaint)
+
+// Elemen UI (cached setelah DOM ready)
+let elModal, elTitle, elLoading, elLoadText, elProgress,
+    elContainer, elInfo, elPrev, elNext;
+
+document.addEventListener('DOMContentLoaded', () => {
+    elModal     = document.getElementById('pdfViewerModal');
+    elTitle     = document.getElementById('pdfViewerTitle');
+    elLoading   = document.getElementById('pdfLoading');
+    elLoadText  = document.getElementById('pdfLoadingText');
+    elProgress  = document.getElementById('pdfProgressBar');
+    elContainer = document.getElementById('pdfCanvasContainer');
+    elInfo      = document.getElementById('pdfPageInfo');
+    elPrev      = document.getElementById('pdfPrevPage');
+    elNext      = document.getElementById('pdfNextPage');
+
+    elPrev.addEventListener('click', () => goPage(_page - 1));
+    elNext.addEventListener('click', () => goPage(_page + 1));
+
+    // Swipe kiri/kanan untuk navigasi halaman di mobile
+    let _tx = 0;
+    elContainer.addEventListener('touchstart', e => { _tx = e.touches[0].clientX; }, { passive: true });
+    elContainer.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].clientX - _tx;
+        if (Math.abs(dx) > 50) dx < 0 ? goPage(_page + 1) : goPage(_page - 1);
+    }, { passive: true });
+
+    // Block klik kanan & drag
+    elContainer.addEventListener('contextmenu', e => e.preventDefault());
+    elContainer.addEventListener('dragstart',   e => e.preventDefault());
+
+    // Block shortcut keyboard saat modal terbuka
+    document.addEventListener('keydown', e => {
+        if (!elModal?.classList.contains('show')) return;
+        if ((e.ctrlKey || e.metaKey) && ['s','p','u'].includes(e.key.toLowerCase())) {
+            e.preventDefault(); e.stopPropagation();
+        }
+        if (e.key === 'F12') e.preventDefault();
+        if (e.key === 'ArrowRight') goPage(_page + 1);
+        if (e.key === 'ArrowLeft')  goPage(_page - 1);
+    });
+
+    // Reset saat modal ditutup
+    elModal?.addEventListener('hidden.bs.modal', () => {
+        _pdf = null; _page = 1; _total = 0; _cache.clear();
+        elContainer.innerHTML = '';
+        elContainer.style.display = 'none';
+        elProgress.style.width = '0%';
+    });
+});
+
+/* Buka viewer ------------------------------------------------ */
+async function openPdfViewer(url, title) {
+    if (typeof pdfjsLib === 'undefined') {
+        // PDF.js belum selesai load, tunggu sebentar
+        await new Promise(r => setTimeout(r, 800));
+    }
+    if (typeof pdfjsLib === 'undefined') {
+        alert('PDF.js gagal dimuat, coba refresh halaman.');
+        return;
+    }
+
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
 
-let _pdfDoc = null;
-let _currentPage = 1;
-let _totalPages = 0;
-let _pdfUrl = '';
-let _renderingPage = false;
+    // Reset state
+    _pdf = null; _page = 1; _total = 0; _rendering = false; _cache.clear();
 
-async function openPdfViewer(url, title) {
-    _pdfUrl = url;
-    _currentPage = 1;
-    _pdfDoc = null;
+    elTitle.textContent   = title;
+    elLoading.style.display  = 'flex';
+    elContainer.style.display = 'none';
+    elContainer.innerHTML = '';
+    elInfo.textContent    = '—';
+    elPrev.disabled = elNext.disabled = true;
+    elProgress.style.width = '0%';
 
-    // Reset UI
-    document.getElementById('pdfViewerTitle').innerHTML =
-        '<i class="bi bi-file-earmark-text me-2 text-danger"></i>' + title;
-    document.getElementById('pdfLoading').style.display = 'flex';
-    document.getElementById('pdfCanvasContainer').style.display = 'none';
-    document.getElementById('pdfCanvasContainer').innerHTML = '';
-    document.getElementById('pdfPageInfo').textContent = '—';
-
-    const modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
-    modal.show();
+    new bootstrap.Modal(elModal, { backdrop: true }).show();
 
     try {
-        const loadingTask = pdfjsLib.getDocument({ url, withCredentials: true });
-        _pdfDoc = await loadingTask.promise;
-        _totalPages = _pdfDoc.numPages;
-        document.getElementById('pdfLoading').style.display = 'none';
-        document.getElementById('pdfCanvasContainer').style.display = 'block';
-        await renderPage(_currentPage);
-    } catch(e) {
-        document.getElementById('pdfLoading').innerHTML =
-            '<i class="bi bi-exclamation-triangle text-warning fs-2 mb-2"></i>' +
-            '<div class="text-white-50 small">Gagal memuat dokumen. Coba muat ulang halaman.</div>';
+        const task = pdfjsLib.getDocument({
+            url,
+            withCredentials: true,
+            rangeChunkSize: 32768,  // 32 KB chunks — render hal.1 segera
+            disableStream: false,
+            disableAutoFetch: false,
+        });
+
+        // Progress bar saat download
+        task.onProgress = ({ loaded, total }) => {
+            if (total > 0) elProgress.style.width = Math.round(loaded / total * 80) + '%';
+        };
+
+        _pdf   = await task.promise;
+        _total = _pdf.numPages;
+
+        elProgress.style.width = '90%';
+        elLoadText.textContent  = 'Merender halaman 1…';
+
+        await renderPage(1);
+
+        elProgress.style.width = '100%';
+        setTimeout(() => { elProgress.style.width = '0%'; }, 400);
+
+        // Pre-render hal.2 di background supaya navigasi instan
+        if (_total > 1) prerenderPage(2);
+
+    } catch (err) {
+        console.error('PDF load error:', err);
+        elLoading.innerHTML =
+            '<i class="bi bi-exclamation-triangle text-warning fs-3 mb-2"></i>' +
+            '<div class="text-white-50 small">Gagal memuat dokumen.</div>';
     }
 }
 
+/* Render satu halaman ---------------------------------------- */
 async function renderPage(num) {
-    if (!_pdfDoc || _renderingPage) return;
-    _renderingPage = true;
+    if (!_pdf || _rendering || num < 1 || num > _total) return;
+    _rendering = true;
+    elPrev.disabled = elNext.disabled = true;
+    elInfo.textContent = num + ' / ' + _total;
 
-    const container = document.getElementById('pdfCanvasContainer');
-    container.innerHTML = '';
+    try {
+        // Tampilkan dari cache jika ada
+        if (_cache.has(num)) {
+            showBitmap(num, _cache.get(num));
+            elLoading.style.display  = 'none';
+            elContainer.style.display = 'block';
+            elContainer.scrollTop    = 0;
+            _page = num;
+            updateNav();
+            _rendering = false;
+            // Pre-render tetangga
+            if (num + 1 <= _total && !_cache.has(num + 1)) prerenderPage(num + 1);
+            if (num - 1 >= 1    && !_cache.has(num - 1)) prerenderPage(num - 1);
+            return;
+        }
 
-    const page = await _pdfDoc.getPage(num);
-    const viewport = page.getViewport({ scale: Math.min(1.6, container.clientWidth / page.getViewport({scale:1}).width) });
+        const pdfPage = await _pdf.getPage(num);
+        const dpr     = Math.min(window.devicePixelRatio || 1, 2); // max 2x retina
+        const containerW = elContainer.clientWidth || window.innerWidth;
+        const baseVp     = pdfPage.getViewport({ scale: 1 });
+        const scale      = Math.min(containerW / baseVp.width, 1.8) * dpr;
+        const viewport   = pdfPage.getViewport({ scale });
 
-    const canvas = document.createElement('canvas');
-    canvas.width  = viewport.width;
-    canvas.height = viewport.height;
-    canvas.style.cssText = 'display:block;margin:0 auto;border-radius:.5rem;box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:100%;';
+        const canvas    = document.createElement('canvas');
+        canvas.width    = viewport.width;
+        canvas.height   = viewport.height;
+        canvas.style.width  = (viewport.width  / dpr) + 'px';
+        canvas.style.height = (viewport.height / dpr) + 'px';
+        canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-    // Block right-click on canvas
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
+        await pdfPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
 
-    container.appendChild(canvas);
-    container.scrollTop = 0;
+        // Simpan ke cache sebagai ImageBitmap (efisien memori)
+        if (typeof createImageBitmap !== 'undefined') {
+            createImageBitmap(canvas).then(bmp => _cache.set(num, bmp)).catch(() => {});
+        }
 
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        elContainer.innerHTML = '';
+        elContainer.appendChild(canvas);
+        elContainer.scrollTop    = 0;
+        elLoading.style.display  = 'none';
+        elContainer.style.display = 'block';
+        _page = num;
+        updateNav();
 
-    document.getElementById('pdfPageInfo').textContent = num + ' / ' + _totalPages;
-    _currentPage = num;
-    _renderingPage = false;
+        // Pre-render halaman berikutnya di background
+        if (num + 1 <= _total && !_cache.has(num + 1)) prerenderPage(num + 1);
+
+    } catch (err) {
+        console.error('Render error:', err);
+    } finally {
+        _rendering = false;
+    }
 }
 
-document.getElementById('pdfPrevPage').addEventListener('click', () => {
-    if (_currentPage > 1) renderPage(_currentPage - 1);
-});
-document.getElementById('pdfNextPage').addEventListener('click', () => {
-    if (_currentPage < _totalPages) renderPage(_currentPage + 1);
-});
+/* Pre-render halaman ke cache (background, tidak tampil) ----- */
+async function prerenderPage(num) {
+    if (!_pdf || _cache.has(num) || num < 1 || num > _total) return;
+    try {
+        const pdfPage   = await _pdf.getPage(num);
+        const dpr       = Math.min(window.devicePixelRatio || 1, 2);
+        const containerW = elContainer.clientWidth || window.innerWidth;
+        const baseVp    = pdfPage.getViewport({ scale: 1 });
+        const scale     = Math.min(containerW / baseVp.width, 1.8) * dpr;
+        const viewport  = pdfPage.getViewport({ scale });
+        const offscreen = document.createElement('canvas');
+        offscreen.width  = viewport.width;
+        offscreen.height = viewport.height;
+        await pdfPage.render({ canvasContext: offscreen.getContext('2d'), viewport }).promise;
+        if (typeof createImageBitmap !== 'undefined') {
+            const bmp = await createImageBitmap(offscreen);
+            _cache.set(num, bmp);
+        }
+    } catch (_) {}
+}
 
-// Block keyboard shortcuts: Ctrl/Cmd + S, P, Shift+I
-document.addEventListener('keydown', function(e) {
-    const modal = document.getElementById('pdfViewerModal');
-    if (!modal.classList.contains('show')) return;
-    const key = e.key.toLowerCase();
-    if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'u'].includes(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    // F12 / DevTools shortcut — soft block
-    if (e.key === 'F12') {
-        e.preventDefault();
-    }
-});
+/* Tampilkan ImageBitmap yang sudah di-cache ke canvas -------- */
+function showBitmap(num, bmp) {
+    const dpr       = Math.min(window.devicePixelRatio || 1, 2);
+    const canvas    = document.createElement('canvas');
+    canvas.width    = bmp.width;
+    canvas.height   = bmp.height;
+    canvas.style.width  = (bmp.width  / dpr) + 'px';
+    canvas.style.height = (bmp.height / dpr) + 'px';
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    canvas.getContext('2d').drawImage(bmp, 0, 0);
+    elContainer.innerHTML = '';
+    elContainer.appendChild(canvas);
+}
 
-// Block drag-to-save on canvas container
-document.getElementById('pdfCanvasContainer').addEventListener('dragstart', e => e.preventDefault());
+/* Navigasi --------------------------------------------------- */
+function goPage(num) {
+    if (num < 1 || num > _total || _rendering) return;
+    renderPage(num);
+}
+
+function updateNav() {
+    elPrev.disabled = (_page <= 1);
+    elNext.disabled = (_page >= _total);
+}
 </script>
 @endpush
