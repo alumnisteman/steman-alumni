@@ -17,12 +17,20 @@ class DonationController extends Controller
     // Alumni: List campaigns
     public function index()
     {
-        $foundationCampaigns = DonationCampaign::foundation()->where('status', 'active')->latest()->get();
-        $eventCampaigns = DonationCampaign::event()->where('status', 'active')->latest()->get();
-        
-        // Gunakan current_amount dari kampanye (sudah include manual update)
-        $totalFoundation = DonationCampaign::foundation()->sum('current_amount');
-        $totalEvent      = DonationCampaign::event()->sum('current_amount');
+        // Tampilkan active + completed (kecuali id=1 yg display-only & cancelled)
+        $foundationCampaigns = DonationCampaign::foundation()
+            ->whereIn('status', ['active', 'completed'])
+            ->where('id', '!=', 1)
+            ->latest()->get();
+        $eventCampaigns = DonationCampaign::event()
+            ->whereIn('status', ['active', 'completed'])
+            ->where('id', '!=', 1)
+            ->latest()->get();
+
+        // id=1 (INFORMASI KEUANGAN) adalah record display-only, dikecualikan dari total publik
+        // agar tidak double-count dengan campaign Dana Reuni Akbar (id=2)
+        $totalFoundation = DonationCampaign::foundation()->where('id', '!=', 1)->sum('current_amount');
+        $totalEvent      = DonationCampaign::event()->where('id', '!=', 1)->sum('current_amount');
         $totalDonation   = $totalFoundation + $totalEvent;
 
         // Statistik global dari tabel donations
@@ -32,6 +40,18 @@ class DonationController extends Controller
             + Donation::where('status', 'verified')->where('is_anonymous', true)->count();
 
         $totalTransactions = Donation::where('status', 'verified')->count();
+
+        // Fallback ke manual counts jika tabel donations kosong
+        if ($totalDonors === 0) {
+            $totalDonors = (int) DonationCampaign::where('id', '!=', 1)
+                ->whereNotNull('manual_donor_count')
+                ->max('manual_donor_count'); // max, bukan sum — donor sama antar kampanye
+        }
+        if ($totalTransactions === 0) {
+            $totalTransactions = (int) DonationCampaign::where('id', '!=', 1)
+                ->whereNotNull('manual_transaction_count')
+                ->max('manual_transaction_count');
+        }
         
         // Real-time feed (last 6 verified donations)
         $recentDonations = Donation::where('status', 'verified')
@@ -126,6 +146,15 @@ class DonationController extends Controller
                             + $campaign->donations()->where('status', 'verified')
                                 ->where('is_anonymous', true)->count();
         $transactionCount = $campaign->donations()->where('status', 'verified')->count();
+
+        // Fall back to manually recorded counts when no online donations exist yet
+        if ($donorCount === 0 && ($campaign->manual_donor_count ?? 0) > 0) {
+            $donorCount = $campaign->manual_donor_count;
+        }
+        if ($transactionCount === 0 && ($campaign->manual_transaction_count ?? 0) > 0) {
+            $transactionCount = $campaign->manual_transaction_count;
+        }
+
         return view('donations.show', compact('campaign', 'donations', 'donorCount', 'transactionCount'));
     }
 

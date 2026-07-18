@@ -13,18 +13,21 @@ class DonationCampaign extends Model
         'title', 'slug', 'description', 'bank_info', 'goal_amount', 'current_amount', 'image', 'type', 'status', 'is_featured', 'end_date',
         'total_expense', 'expense_distribution', 'sponsor_count', 'show_donor_list',
         'report_status', 'report_verified_at', 'lpj_pdf_path', 'finance_detail_pdf_path', 'documentation_images',
+        'manual_donor_count', 'manual_transaction_count',
     ];
 
     protected $casts = [
-        'end_date'              => 'date',
-        'report_verified_at'    => 'date',
-        'goal_amount'           => 'decimal:2',
-        'current_amount'        => 'decimal:2',
-        'total_expense'         => 'decimal:2',
-        'is_featured'           => 'boolean',
-        'show_donor_list'       => 'boolean',
-        'expense_distribution'  => 'array',
-        'documentation_images'  => 'array',
+        'end_date'                  => 'date',
+        'report_verified_at'        => 'date',
+        'goal_amount'               => 'decimal:2',
+        'current_amount'            => 'decimal:2',
+        'total_expense'             => 'decimal:2',
+        'is_featured'               => 'boolean',
+        'show_donor_list'           => 'boolean',
+        'expense_distribution'      => 'array',
+        'documentation_images'      => 'array',
+        'manual_donor_count'        => 'integer',
+        'manual_transaction_count'  => 'integer',
     ];
 
     public function scopeFoundation($query)
