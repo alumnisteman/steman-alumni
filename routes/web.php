@@ -154,6 +154,17 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
             Route::post('/museum/{museumItem}/approve', [\App\Http\Controllers\MuseumController::class, 'approve'])->name('admin.museum.approve');
             Route::post('/museum/{museumItem}/reject', [\App\Http\Controllers\MuseumController::class, 'reject'])->name('admin.museum.reject');
             Route::delete('/museum/{museumItem}', [\App\Http\Controllers\MuseumController::class, 'destroy'])->name('admin.museum.destroy');
+            // Merchandise — Produk STEMAN
+            Route::get('/merchandise', [\App\Http\Controllers\Admin\MerchandiseController::class, 'index'])->name('admin.merchandise.index');
+            Route::get('/merchandise/create', [\App\Http\Controllers\Admin\MerchandiseController::class, 'create'])->name('admin.merchandise.create');
+            Route::post('/merchandise', [\App\Http\Controllers\Admin\MerchandiseController::class, 'store'])->name('admin.merchandise.store');
+            Route::get('/merchandise/{merchandise}/edit', [\App\Http\Controllers\Admin\MerchandiseController::class, 'edit'])->name('admin.merchandise.edit');
+            Route::put('/merchandise/{merchandise}', [\App\Http\Controllers\Admin\MerchandiseController::class, 'update'])->name('admin.merchandise.update');
+            Route::delete('/merchandise/{merchandise}', [\App\Http\Controllers\Admin\MerchandiseController::class, 'destroy'])->name('admin.merchandise.destroy');
+            Route::delete('/merchandise/{merchandise}/gallery', [\App\Http\Controllers\Admin\MerchandiseController::class, 'deleteGalleryPhoto'])->name('admin.merchandise.gallery.delete');
+            Route::post('/merchandise/{merchandise}/gallery/main', [\App\Http\Controllers\Admin\MerchandiseController::class, 'setMainImage'])->name('admin.merchandise.gallery.main');
+            Route::get('/merchandise/orders', [\App\Http\Controllers\Admin\MerchandiseController::class, 'orders'])->name('admin.merchandise.orders');
+            Route::post('/merchandise/orders/{order}/status', [\App\Http\Controllers\Admin\MerchandiseController::class, 'updateOrderStatus'])->name('admin.merchandise.orders.update');
 
             Route::get('/system/logs', [\App\Http\Controllers\Admin\SystemController::class, 'logs'])->name('admin.system.logs');
             Route::post('/system/logs/clear', [\App\Http\Controllers\Admin\SystemController::class, 'clearLogs'])->name('admin.system.logs.clear');
@@ -235,7 +246,7 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
     // Donations Public Transparency
     Route::get('/donations', [DonationController::class, 'index'])->name('donations.index');
     Route::get('/alumni-fund', [DonationController::class, 'mobileFund'])->name('alumni.fund.mobile');
-    Route::get('/donations/audit', [DonationController::class, 'audit'])->name('donations.audit');
+    // Route::get('/donations/audit', [DonationController::class, 'audit'])->name('donations.audit'); // disembunyikan sementara
     Route::get('/donations/campaign/{campaign:slug}', [DonationController::class, 'show'])->name('donations.show');
     Route::get('/api/donations', function() {
         return \App\Models\Donation::where('status', 'verified')->with('user')->latest()->take(10)->get()->map(function($d) {
@@ -467,6 +478,13 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     Route::post('/gacha/connect', [\App\Http\Controllers\GachaController::class, 'connect'])->name('gacha.connect');
     Route::get('/gacha/my-connections', [\App\Http\Controllers\GachaController::class, 'myConnections'])->name('gacha.connections');
     Route::post('/gacha/icebreaker/{user}', [\App\Http\Controllers\GachaController::class, 'generateIcebreakers'])->name('gacha.icebreaker');
+    // =====================================================
+    // MERCHANDISE — Produk & Oleh-oleh STEMAN
+    // =====================================================
+    Route::get('/merchandise', [\App\Http\Controllers\MerchandiseController::class, 'index'])->name('merchandise.index');
+    Route::get('/merchandise/{slug}', [\App\Http\Controllers\MerchandiseController::class, 'show'])->name('merchandise.show');
+    Route::post('/merchandise/{slug}/order', [\App\Http\Controllers\MerchandiseController::class, 'order'])->name('merchandise.order');
+    Route::get('/merchandise/order/{code}/success', [\App\Http\Controllers\MerchandiseController::class, 'orderSuccess'])->name('merchandise.order.success');
 
     // --- Legacy / Compatibility: Redirect old admin paths to subdomain ---
     Route::get('/admin/{any?}', function($any = null) {
