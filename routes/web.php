@@ -246,7 +246,7 @@ Route::get('/logout', function (\Illuminate\Http\Request $request) {
     // Donations Public Transparency
     Route::get('/donations', [DonationController::class, 'index'])->name('donations.index');
     Route::get('/alumni-fund', [DonationController::class, 'mobileFund'])->name('alumni.fund.mobile');
-    // Route::get('/donations/audit', [DonationController::class, 'audit'])->name('donations.audit'); // disembunyikan sementara
+    Route::get('/donations/audit', [DonationController::class, 'audit'])->name('donations.audit');
     Route::get('/donations/campaign/{campaign:slug}', [DonationController::class, 'show'])->name('donations.show');
     Route::get('/donations/campaign/{campaign:slug}/view-lpj', [DonationController::class, 'viewLpj'])->name('donations.view.lpj');
     Route::get('/donations/campaign/{campaign:slug}/view-finance', [DonationController::class, 'viewFinance'])->name('donations.view.finance');
