@@ -383,18 +383,18 @@
             {{-- Dokumen & Status --}}
             <div class="{{ $isReuni2026 ? 'col-lg-4' : 'col-lg-6' }}">
                 <div class="info-card h-100">
-                    <h6>📥 Dokumen & Unduhan</h6>
+                    <h6>📋 Dokumen LPJ</h6>
                     <div class="d-flex flex-column gap-3">
 
                         @if($campaign->lpj_pdf_path)
-                        <a href="{{ asset('storage/' . $campaign->lpj_pdf_path) }}" target="_blank" class="dl-btn text-dark">
+                        <div class="dl-btn text-dark" style="cursor:default;">
                             <div class="dl-icon" style="background:#fee2e2;color:#dc2626;">📄</div>
                             <div>
-                                <div class="small fw-bold">Unduh LPJ Lengkap</div>
+                                <div class="small fw-bold">LPJ Lengkap</div>
                                 <div style="font-size:.65rem;color:#94a3b8;">Laporan Pertanggungjawaban (PDF)</div>
                             </div>
-                            <i class="bi bi-download ms-auto text-muted"></i>
-                        </a>
+                            <i class="bi bi-check-circle-fill ms-auto text-success"></i>
+                        </div>
                         @else
                         <div class="dl-btn text-muted" style="cursor:default;opacity:.55;">
                             <div class="dl-icon" style="background:#f1f5f9;color:#94a3b8;">📄</div>
@@ -406,14 +406,14 @@
                         @endif
 
                         @if($campaign->finance_detail_pdf_path)
-                        <a href="{{ asset('storage/' . $campaign->finance_detail_pdf_path) }}" target="_blank" class="dl-btn text-dark">
+                        <div class="dl-btn text-dark" style="cursor:default;">
                             <div class="dl-icon" style="background:#dbeafe;color:#2563eb;">📑</div>
                             <div>
                                 <div class="small fw-bold">Rincian Keuangan</div>
                                 <div style="font-size:.65rem;color:#94a3b8;">Detail pemasukan & pengeluaran (PDF)</div>
                             </div>
-                            <i class="bi bi-download ms-auto text-muted"></i>
-                        </a>
+                            <i class="bi bi-check-circle-fill ms-auto text-success"></i>
+                        </div>
                         @endif
 
                         {{-- Ringkasan rekapitulasi (Reuni 2026) --}}
