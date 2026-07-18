@@ -94,9 +94,10 @@
                     Sistem penggalangan dana transparan — setiap rupiah tercatat,
                     terverifikasi, dan dapat diaudit seluruh alumni.
                 </p>
-                <a href="{{ route('donations.audit') }}" class="audit-btn">
+                {{-- Tombol audit disembunyikan sementara --}}
+                {{-- <a href="{{ route('donations.audit') }}" class="audit-btn">
                     <i class="bi bi-shield-lock"></i> Lihat Audit Publik
-                </a>
+                </a> --}}
             </div>
         </div>
 
@@ -173,6 +174,18 @@
                 @foreach($foundationCampaigns as $campaign)
                     @include('donations.partials.card', ['campaign' => $campaign, 'color' => 'primary'])
                 @endforeach
+            </div>
+        </div>
+        @else
+        <div class="mb-5">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <h2 class="section-label mb-0">💰 Dana Yayasan</h2>
+                <span class="section-chip">Sosial & Beasiswa</span>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background:#f8fafc;">
+                <i class="bi bi-bank display-4 text-primary opacity-25 d-block mb-3"></i>
+                <p class="text-muted mb-1 fw-semibold">Dana Yayasan sedang dalam persiapan</p>
+                <p class="text-muted small mb-0">Program beasiswa dan sosial akan segera dibuka. Pantau terus!</p>
             </div>
         </div>
         @endif
