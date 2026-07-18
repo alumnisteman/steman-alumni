@@ -4,51 +4,68 @@
 <style>
 /* ── KPI Strip ─────────────────────────────────── */
 .kpi-strip {
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 2.2rem 0 1.5rem;
+    position: relative;
+    background: url('/images/donations-hero.jpg') center center / cover no-repeat;
+    border-bottom: none;
+    padding: 3rem 0 2.2rem;
+    overflow: hidden;
 }
+.kpi-strip::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(10,15,30,0.62) 0%, rgba(20,40,90,0.55) 100%);
+    backdrop-filter: blur(1px);
+    z-index: 0;
+}
+.kpi-strip .container { position: relative; z-index: 1; }
+
 .fund-title {
     font-size: clamp(1.6rem, 3.5vw, 2.4rem);
     font-weight: 900;
-    color: #0f172a;
+    color: #ffffff;
     letter-spacing: -0.02em;
     text-transform: uppercase;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
-.fund-sub { color: #64748b; font-size: 0.88rem; max-width: 460px; }
+.fund-sub { color: rgba(255,255,255,0.72); font-size: 0.88rem; max-width: 460px; }
 .audit-btn {
     display: inline-flex; align-items: center; gap: 0.45rem;
-    background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;
+    background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.3);
     border-radius: 50px; padding: 0.4rem 1.1rem; font-size: 0.75rem;
     font-weight: 700; text-decoration: none; transition: background .15s;
 }
-.audit-btn:hover { background: #e2e8f0; color: #0f172a; }
+.audit-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+/* KPI badge label di atas strip */
+.kpi-strip .text-primary { color: #93c5fd !important; }
 
 /* KPI cards */
 .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-top: 1.8rem; }
 @media(max-width:768px){ .kpi-grid { grid-template-columns: repeat(2,1fr); } }
 
 .kpi-card {
-    background: #ffffff;
-    border: 1.5px solid #e2e8f0;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.22);
     border-top: 4px solid #3b82f6;
     border-radius: 0.85rem;
     padding: 1.1rem 1.3rem;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     transition: box-shadow .2s, transform .2s;
 }
-.kpi-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
-.kpi-card.blue  { border-top-color: #3b82f6; }
-.kpi-card.amber { border-top-color: #f59e0b; }
-.kpi-card.green { border-top-color: #10b981; }
-.kpi-card.sky   { border-top-color: #0ea5e9; }
+.kpi-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.35); transform: translateY(-2px); }
+.kpi-card.blue  { border-top-color: #60a5fa; }
+.kpi-card.amber { border-top-color: #fbbf24; }
+.kpi-card.green { border-top-color: #34d399; }
+.kpi-card.sky   { border-top-color: #38bdf8; }
 
 .kpi-lbl {
     font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: #94a3b8; margin-bottom: 0.3rem;
+    text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.3rem;
 }
-.kpi-val { font-size: 1.35rem; font-weight: 900; color: #0f172a; line-height: 1.1; }
-.kpi-sub { font-size: 0.65rem; color: #94a3b8; margin-top: 0.15rem; }
+.kpi-val { font-size: 1.35rem; font-weight: 900; color: #ffffff; line-height: 1.1; text-shadow: 0 1px 6px rgba(0,0,0,0.3); }
+.kpi-sub { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 0.15rem; }
 
 /* ── Body ─────────────────────────────────────── */
 .page-body { background: #f8fafc; padding: 2rem 0 4rem; }
@@ -94,10 +111,6 @@
                     Sistem penggalangan dana transparan — setiap rupiah tercatat,
                     terverifikasi, dan dapat diaudit seluruh alumni.
                 </p>
-                {{-- Tombol audit disembunyikan sementara --}}
-                {{-- <a href="{{ route('donations.audit') }}" class="audit-btn">
-                    <i class="bi bi-shield-lock"></i> Lihat Audit Publik
-                </a> --}}
             </div>
         </div>
 
