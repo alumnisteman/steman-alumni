@@ -71,6 +71,10 @@ class AIService
             }
 
             if ($provider === 'gateway') {
+                if (empty($this->gatewayUrl)) {
+                    Log::debug('AIService: Gateway URL not configured, skipping.');
+                    continue;
+                }
                 Log::info('AIService: Attempting AI Gateway...');
                 $result = $this->tryGateway($prompt);
                 if ($result) {
