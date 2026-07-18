@@ -387,14 +387,14 @@
                     <div class="d-flex flex-column gap-3">
 
                         @if($campaign->lpj_pdf_path)
-                        <div class="dl-btn text-dark" style="cursor:default;">
+                        <a href="{{ asset('storage/' . $campaign->lpj_pdf_path) }}" target="_blank" class="dl-btn text-dark">
                             <div class="dl-icon" style="background:#fee2e2;color:#dc2626;">📄</div>
                             <div>
-                                <div class="small fw-bold">LPJ Lengkap</div>
+                                <div class="small fw-bold">Lihat LPJ Lengkap</div>
                                 <div style="font-size:.65rem;color:#94a3b8;">Laporan Pertanggungjawaban (PDF)</div>
                             </div>
-                            <i class="bi bi-check-circle-fill ms-auto text-success"></i>
-                        </div>
+                            <i class="bi bi-eye ms-auto text-muted"></i>
+                        </a>
                         @else
                         <div class="dl-btn text-muted" style="cursor:default;opacity:.55;">
                             <div class="dl-icon" style="background:#f1f5f9;color:#94a3b8;">📄</div>
@@ -406,14 +406,14 @@
                         @endif
 
                         @if($campaign->finance_detail_pdf_path)
-                        <div class="dl-btn text-dark" style="cursor:default;">
+                        <a href="{{ asset('storage/' . $campaign->finance_detail_pdf_path) }}" target="_blank" class="dl-btn text-dark">
                             <div class="dl-icon" style="background:#dbeafe;color:#2563eb;">📑</div>
                             <div>
-                                <div class="small fw-bold">Rincian Keuangan</div>
+                                <div class="small fw-bold">Lihat Rincian Keuangan</div>
                                 <div style="font-size:.65rem;color:#94a3b8;">Detail pemasukan & pengeluaran (PDF)</div>
                             </div>
-                            <i class="bi bi-check-circle-fill ms-auto text-success"></i>
-                        </div>
+                            <i class="bi bi-eye ms-auto text-muted"></i>
+                        </a>
                         @endif
 
                         {{-- Ringkasan rekapitulasi (Reuni 2026) --}}
