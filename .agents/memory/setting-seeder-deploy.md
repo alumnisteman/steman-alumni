@@ -1,22 +1,31 @@
 ---
-name: SettingSeeder deploy reset fix
-description: Mengapa SettingSeeder harus pakai firstOrCreate, dan script deploy mana yang memanggilnya
+name: SettingSeeder & DemoFundSeeder deploy reset fix
+description: Mengapa seeder harus pakai firstOrCreate, dan di mana saja db:seed harus dihapus dari deploy scripts
 ---
 
 ## Aturan
-`database/seeders/SettingSeeder.php` harus menggunakan `Setting::firstOrCreate(['key' => ...], $setting)`, **bukan** `updateOrCreate`.
+`database/seeders/SettingSeeder.php` dan `database/seeders/DemoFundSeeder.php` harus menggunakan `firstOrCreate`, **bukan** `updateOrCreate`.
 
-**Why:** Script deploy (`scripts/deploy.ps1`, `scripts/deploy/deploy.ps1`, `scripts/server_management/deploy_updates.py`) memanggil `php artisan db:seed --class=SettingSeeder --force` setiap deploy. Kalau pakai `updateOrCreate`, semua nilai admin (hero_background, hero_title, chairman_photo, dsb) akan di-reset ke nilai default setiap kali deploy — merusak konten yang sudah diubah via admin panel.
+Selain itu, panggilan `db:seed` harus **dihapus** dari semua script deploy berikut:
+- `scripts/deploy.ps1`
+- `scripts/deploy/deploy.ps1`
+- `scripts/server_management/deploy_updates.py`
 
-**How to apply:** Setiap kali ada perubahan pada SettingSeeder, pastikan tetap pakai `firstOrCreate`. Jika ada setting baru yang perlu ditambahkan, cukup tambahkan ke array `$settings` — `firstOrCreate` akan otomatis membuat record baru jika belum ada, tanpa menyentuh yang sudah ada.
+**Why:** Script deploy memangil `php artisan db:seed --class=SettingSeeder --force` setiap deploy. `updateOrCreate` menimpa semua nilai admin (hero_background, hero_title, data kampanye donasi, foto ketua umum, dsb) ke nilai default seeder — merusak konten yang sudah diubah via admin panel. `DemoFundSeeder` juga memakai `updateOrCreate` yang menimpa `current_amount` dan data LPJ kampanye donasi.
 
-## Script deploy yang memanggil SettingSeeder
-- `scripts/deploy.ps1` (V5) — baris: `db:seed --class=SettingSeeder`
-- `scripts/deploy/deploy.ps1` (V6) — baris: `db:seed --class=SettingSeeder --force`
-- `scripts/server_management/deploy_updates.py` — baris: `db:seed --class=SettingSeeder --force`
+**How to apply:**
+- Setiap kali ada perubahan pada seeder, pastikan tetap pakai `firstOrCreate`.
+- Jangan tambahkan kembali `db:seed` ke deploy scripts.
+- Jika ada seeder baru yang perlu dipaksa berjalan ulang (sekali saja), jalankan manual via SSH, bukan lewat deploy.
+
+## Deploy scripts yang sudah dibersihkan dari db:seed
+- `scripts/deploy.ps1` (V5) — baris lama: `db:seed --class=SettingSeeder` → diganti `migrate --force`
+- `scripts/deploy/deploy.ps1` (V6) — baris lama: `db:seed --class=SettingSeeder --force; db:seed --class=MapDataSeeder --force` → diganti `migrate --force`
+- `scripts/server_management/deploy_updates.py` — baris lama: `db:seed --class=SettingSeeder --force` → diganti `migrate --force`
 
 ## Server produksi
 - IP: `103.175.219.57`
 - Path: `/var/www/steman-alumni`
 - URL: https://alumni-steman.my.id
-- Deploy script: `scripts/deploy.sh` (git pull + docker build + migrate)
+- Fix sudah dicopy ke server dan ke dalam container (`steman_app`)
+- Fix belum di-push ke GitHub — perlu user push dari Windows agar permanen di repo

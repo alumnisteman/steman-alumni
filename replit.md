@@ -14,22 +14,40 @@ Aplikasi web Laravel 12 (PHP) untuk manajemen alumni SMKN 2 Ternate. Fitur utama
 - **Server Produksi**: `103.175.219.57` → https://alumni-steman.my.id
 
 ## Cara Deploy ke Server Produksi
-Deploy dilakukan dari lokal menggunakan PowerShell:
+Deploy dari Windows dengan PowerShell:
 ```powershell
-.\scripts\deploy\deploy.ps1  # Deploy V6 (ZIP + push ke server)
+.\scripts\deploy\deploy.ps1   # V6 — recommended
+.\scripts\deploy.ps1          # V5 — alternatif
 ```
-**Atau** dari Replit via SSH:
+
+## ⚠️ PROTEKSI FITUR STABIL — BACA INI SEBELUM EDIT
+
+### Masalah yang sudah diperbaiki (jangan dibalik)
+Sebelumnya setiap deploy me-reset hero background, judul halaman depan, data donasi, dan laporan LPJ. Penyebabnya adalah:
+
+1. **Deploy scripts memanggil `db:seed`** — sudah dihapus dari semua script deploy
+2. **Seeder memakai `updateOrCreate`** — sudah diganti ke `firstOrCreate`
+
+### File yang TIDAK BOLEH diubah balik
+| File | Yang harus ada |
+|------|----------------|
+| `database/seeders/SettingSeeder.php` | `Setting::firstOrCreate(...)` — BUKAN `updateOrCreate` |
+| `database/seeders/DemoFundSeeder.php` | `DonationCampaign::firstOrCreate(...)` — BUKAN `updateOrCreate` |
+| `scripts/deploy.ps1` | TIDAK ada `db:seed` |
+| `scripts/deploy/deploy.ps1` | TIDAK ada `db:seed` |
+| `scripts/server_management/deploy_updates.py` | TIDAK ada `db:seed` |
+
+### Aturan seeder
+- `firstOrCreate` = hanya buat jika belum ada → **AMAN untuk deploy**
+- `updateOrCreate` = buat atau timpa → **BERBAHAYA, menghapus perubahan admin**
+
+### Push ke GitHub
+Fix sudah ada di Replit dan di server. Agar permanen di repo GitHub, lakukan dari Windows:
 ```bash
-sshpass -p 'PASSWORD' ssh root@103.175.219.57 "cd /var/www/steman-alumni && bash scripts/deploy.sh"
+git add database/seeders/SettingSeeder.php database/seeders/DemoFundSeeder.php scripts/deploy.ps1 scripts/deploy/deploy.ps1 scripts/server_management/deploy_updates.py
+git commit -m "fix: firstOrCreate di seeder + hapus db:seed dari deploy scripts"
+git push origin main
 ```
-
-## Proteksi Fitur Stabil (PENTING)
-`SettingSeeder` menggunakan `firstOrCreate` (bukan `updateOrCreate`) agar nilai yang diubah admin **tidak pernah di-reset** saat deploy. Ini melindungi:
-- Hero background & judul halaman depan
-- Data ketua umum, sambutan, foto
-- Semua pengaturan yang bisa diubah via admin panel
-
-**Jangan ubah kembali ke `updateOrCreate` di `database/seeders/SettingSeeder.php`.**
 
 ## Variabel Lingkungan yang Diperlukan
 Lihat `.env.example` untuk daftar lengkap. Kunci utama:
@@ -45,3 +63,4 @@ Lihat `.env.example` untuk daftar lengkap. Kunci utama:
 ## User Preferences
 - Jangan ubah fitur yang sudah stabil (donasi, hero background) saat deploy
 - Gunakan `firstOrCreate` di semua seeder untuk setting yang bisa diubah admin
+- Jangan tambahkan `db:seed` ke script deploy manapun
