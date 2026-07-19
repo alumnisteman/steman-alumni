@@ -334,8 +334,8 @@
         <div class="container hero-content">
             <div>
                 <h6 class="text-violet fw-bold text-uppercase tracking-widest mb-3">STEMAN Connect</h6>
-                <h1 class="hero-title fw-black tracking-tighter text-white mb-2 glitch-text" data-text="WELCOME BACK, ALUMNI!">
-                    WELCOME <span class="text-gradient-neon">BACK, ALUMNI!</span><br>CONNECT, GROW & REUNITE
+                <h1 class="hero-title fw-black tracking-tighter text-white mb-2 glitch-text" data-text="{{ $settings['hero_title'] ?? 'WELCOME BACK, ALUMNI!' }}">
+                    {{ $settings['hero_title'] ?? 'WELCOME BACK, ALUMNI! CONNECT, GROW & REUNITE' }}
                 </h1>
                 
                 <div class="my-4 text-white-50">

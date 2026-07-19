@@ -75,7 +75,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Cache settings globally
-        /*
         View::composer(['layouts.app', 'welcome'], function ($view) {
             try {
                 $settings = \Illuminate\Support\Facades\Cache::remember('site_settings', 3600, function () {
@@ -87,7 +86,6 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('settings', []);
             }
         });
-        */
 
         // Use dedicated Composer class for ads
         // View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);
