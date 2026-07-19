@@ -57,7 +57,9 @@ ssh "${REMOTE_USER}@${REMOTE_HOST}" $REMOTE_CMD
 # 6. Post-Deploy & Health Check
 Write-Host "[6/8] Post-Deploy: Health Check, Cache & Settings..." -ForegroundColor Yellow
 Start-Sleep -Seconds 5
-ssh "${REMOTE_USER}@${REMOTE_HOST}" "docker exec steman_app php artisan config:clear; docker exec steman_app php artisan cache:clear; docker exec steman_app php artisan db:seed --class=SettingSeeder"
+# CATATAN: db:seed DIHAPUS dari sini. SettingSeeder memakai firstOrCreate
+# sehingga tidak perlu dijalankan saat deploy — nilai admin tidak akan tertimpa.
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "docker exec steman_app php artisan config:clear; docker exec steman_app php artisan cache:clear; docker exec steman_app php artisan migrate --force"
 
 Write-Host "  -> Verifikasi Website http://$REMOTE_HOST:8000 ..." -ForegroundColor Cyan
 try {

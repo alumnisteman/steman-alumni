@@ -38,8 +38,28 @@ class AppServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
+        // Suppress benign production-only PHP warnings that must not surface as 500 errors:
+        //  1. rename() "No such file or directory" — Blade view compile race condition:
+        //     multiple requests compile the same view simultaneously; the loser finds its
+        //     temp file already renamed by the winner. The view is already compiled — safe.
+        //  2. filemtime() "stat failed" — a versioned asset file (e.g. admin.css) is
+        //     referenced in a template but not yet present on disk. Non-fatal; skip it.
+        $originalHandler = set_error_handler(null);
+        set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($originalHandler): bool {
+            if (str_contains($errstr, 'rename(') && str_contains($errstr, 'No such file or directory')) {
+                return true; // race-condition on view compile — already resolved by another worker
+            }
+            if (str_contains($errstr, 'filemtime()') && str_contains($errstr, 'stat failed')) {
+                return true; // asset file missing — non-fatal, skip cache-busting query string
+            }
+            if ($originalHandler) {
+                return (bool) call_user_func($originalHandler, $errno, $errstr, $errfile, $errline);
+            }
+            return false;
+        });
+
         // Activate Laravel's Strict Mode (Fail-Fast) in non-production environments
-        // This catches: Lazy Loading (N+1), Missing Attributes (image vs image_desktop), and Silent Mass Assignment errors.
+        // This catches: Lazy Loading (N+1), Missing Attributes (image vs image_Desktop), and Silent Mass Assignment errors.
         \Illuminate\Database\Eloquent\Model::shouldBeStrict(!app()->isProduction());
 
         if (config('app.env') === 'production') {
@@ -83,7 +103,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Cache settings globally
-        /*
         View::composer(['layouts.app', 'welcome'], function ($view) {
             try {
                 $settings = \Illuminate\Support\Facades\Cache::remember('site_settings', 3600, function () {
@@ -95,7 +114,6 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('settings', []);
             }
         });
-        */
 
         // Use dedicated Composer class for ads
         // View::composer('*', \App\Http\ViewComposers\AdViewComposer::class);

@@ -1,0 +1,27 @@
+---
+- name: Izinkan port yang diperlukan di UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: "{{ firewall_allowed_tcp_ports }}"
+
+- name: Set default policy UFW - deny incoming
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: Set default policy UFW - allow outgoing
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Aktifkan UFW
+  community.general.ufw:
+    state: enabled
+
+- name: Pastikan fail2ban jalan & enabled
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true

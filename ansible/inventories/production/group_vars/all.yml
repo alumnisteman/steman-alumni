@@ -1,0 +1,25 @@
+---
+# Variabel non-sensitif untuk environment production.
+# Nilai sensitif (password DB, APP_KEY, kredensial mail/OAuth, dll.)
+# HARUS ditaruh di vault.yml (dienkripsi ansible-vault), JANGAN pernah
+# ditulis di file ini atau dicommit dalam bentuk plaintext.
+
+project_name: steman-alumni
+project_domain: "alumni-steman.my.id"
+project_repo_dir: /var/www/steman-alumni
+
+git_repo_url: "https://github.com/alumnisteman/steman-alumni.git"
+git_branch: "main"
+
+docker_compose_file: docker-compose.prod.yml
+
+# Port yang dibuka di firewall (UFW)
+firewall_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+
+timezone: "Asia/Jakarta"
+
+# Email untuk Let's Encrypt / certbot
+letsencrypt_email: "CHANGE_ME_EMAIL@example.com"

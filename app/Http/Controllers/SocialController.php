@@ -59,18 +59,29 @@ class SocialController extends Controller
                     'social_type' => $provider,
                     'password' => null,
                     'role' => 'alumni',
-                    'status' => 'pending', // Require admin approval for new social registrations
+                    'status' => 'approved', // Auto-approve: alumni langsung bisa login
+                    'auto_approved' => true,
                     'email_verified_at' => now(),
                 ]);
 
-                // Notify Admin via Telegram
+                // Auto-follow batch mates for community engagement
+                \App\Jobs\AutoFollowBatchMates::dispatch($user->id);
+
+                // Kirim email selamat datang
+                try {
+                    \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\WelcomeMail($user));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning('Welcome email failed for ' . $user->email . ': ' . $e->getMessage());
+                }
+
+                // Notify Admin via Telegram (info only, no approval needed)
                 try {
                     \App\Services\SystemGuard\Notifier::send(
-                        "👤 *Registrasi Alumni Baru ({$provider})*\n\n" .
+                        "👤 *Alumni Baru via {$provider}*\n\n" .
                         "Nama: {$user->name}\n" .
                         "Email: {$user->email}\n\n" .
-                        "Status: *Menunggu Persetujuan Admin*", 
-                        'warning'
+                        "✅ Status: *Langsung Aktif (Auto-Approved)*",
+                        'info'
                     );
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error('Social Login Notifier Error: ' . $e->getMessage());

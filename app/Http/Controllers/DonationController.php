@@ -29,6 +29,14 @@ class DonationController extends Controller
             ->sum('amount');
             
         $totalDonation = $totalFoundation + $totalEvent;
+
+        // Jumlah donatur unik terverifikasi
+        $totalDonors = Donation::where('status', 'verified')
+            ->distinct('user_id')
+            ->count('user_id');
+
+        // Total transaksi donasi terverifikasi
+        $totalTransactions = Donation::where('status', 'verified')->count();
         
         // Real-time feed (last 5 verified donations)
         $recentDonations = Donation::where('status', 'verified')
@@ -42,7 +50,9 @@ class DonationController extends Controller
             'eventCampaigns', 
             'totalFoundation', 
             'totalEvent', 
-            'totalDonation', 
+            'totalDonation',
+            'totalDonors',
+            'totalTransactions',
             'recentDonations'
         ));
     }
@@ -84,8 +94,10 @@ class DonationController extends Controller
     // Campaign Detail (with distribution reports)
     public function show(DonationCampaign $campaign)
     {
-        $donations = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
-        return view('donations.show', compact('campaign', 'donations'));
+        $donations    = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
+        $donorCount   = $campaign->donations()->where('status', 'verified')->distinct('user_id')->count('user_id');
+        $transactionCount = $campaign->donations()->where('status', 'verified')->count();
+        return view('donations.show', compact('campaign', 'donations', 'donorCount', 'transactionCount'));
     }
 
     // Alumni: Donation Form
@@ -291,5 +303,59 @@ class DonationController extends Controller
         $campaign->delete();
 
         return redirect()->route('admin.campaigns.index')->with('success', 'Fund berhasil dihapus.');
+    }
+
+    /**
+     * Show the campaign financial report edit form.
+     */
+    public function campaignReportEdit(DonationCampaign $campaign)
+    {
+        return view('admin.campaigns.report', compact('campaign'));
+    }
+
+    /**
+     * Update the campaign financial report.
+     */
+    public function campaignReportUpdate(Request $request, DonationCampaign $campaign)
+    {
+        $data = $request->validate([
+            'total_expense'      => 'nullable|numeric|min:0',
+            'sponsor_count'      => 'nullable|integer|min:0',
+            'report_status'      => 'nullable|string|max:50',
+            'report_verified_at' => 'nullable|date',
+            'show_donor_list'    => 'nullable|boolean',
+            'dist_label'         => 'nullable|array',
+            'dist_label.*'       => 'nullable|string|max:100',
+            'dist_percent'       => 'nullable|array',
+            'dist_percent.*'     => 'nullable|numeric|min:0|max:100',
+            'dist_color'         => 'nullable|array',
+            'dist_color.*'       => 'nullable|string|max:20',
+        ]);
+
+        // Build distribution data
+        $distribution = [];
+        if (!empty($request->dist_label)) {
+            foreach ($request->dist_label as $i => $label) {
+                if (!empty($label)) {
+                    $distribution[] = [
+                        'label'   => $label,
+                        'percent' => $request->dist_percent[$i] ?? 0,
+                        'color'   => $request->dist_color[$i] ?? '#6366f1',
+                    ];
+                }
+            }
+        }
+
+        $campaign->update([
+            'total_expense'      => $data['total_expense'] ?? null,
+            'sponsor_count'      => $data['sponsor_count'] ?? null,
+            'report_status'      => $data['report_status'] ?? null,
+            'report_verified_at' => $data['report_verified_at'] ?? null,
+            'show_donor_list'    => $request->boolean('show_donor_list'),
+            'distribution'       => !empty($distribution) ? $distribution : null,
+        ]);
+
+        return redirect()->route('admin.campaigns.report.edit', $campaign->id)
+            ->with('success', 'Laporan keuangan berhasil diperbarui.');
     }
 }

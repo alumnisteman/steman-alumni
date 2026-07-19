@@ -56,6 +56,7 @@ services:
     container_name: steman_queue
     image: steman-alumni-app:latest
     restart: always
+    container_name: steman_queue
     env_file: .env
     command: php artisan queue:work redis --tries=3 --sleep=3 --timeout=60 --max-jobs=500 --max-time=3600
     deploy:

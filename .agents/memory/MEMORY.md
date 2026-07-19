@@ -1,0 +1,1 @@
+- [SettingSeeder deploy reset fix](setting-seeder-deploy.md) — gunakan firstOrCreate bukan updateOrCreate agar nilai admin tidak tertimpa saat deploy

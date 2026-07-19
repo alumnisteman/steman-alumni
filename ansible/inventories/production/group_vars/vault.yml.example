@@ -1,0 +1,21 @@
+---
+# CONTOH FILE — salin ke vault.yml lalu enkripsi dengan:
+#   ansible-vault encrypt inventories/production/group_vars/vault.yml
+# JANGAN PERNAH mengisi file .example ini dengan nilai asli,
+# dan JANGAN commit vault.yml versi plaintext ke git.
+
+vault_app_key: "base64:GANTI_DENGAN_APP_KEY_BARU"      # generate baru: php artisan key:generate --show
+vault_db_root_password: "GANTI_PASSWORD_ROOT_DB"
+vault_db_password: "GANTI_PASSWORD_DB_APP_USER"
+
+vault_reverb_app_secret: "GANTI_REVERB_SECRET"
+
+vault_mail_username: "email_anda@gmail.com"
+vault_mail_password: "GANTI_APP_PASSWORD_GMAIL"
+
+vault_google_client_id: ""
+vault_google_client_secret: ""
+vault_linkedin_client_id: ""
+vault_linkedin_client_secret: ""
+
+vault_meilisearch_key: "GANTI_MEILI_MASTER_KEY"

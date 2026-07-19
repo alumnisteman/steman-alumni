@@ -8,7 +8,6 @@
 !.env.example
 .env.remote
 .env.production.remote
-.ssh/
 .phpunit.result.cache
 docker-compose.override.yml
 docker-compose.yml.bak
@@ -38,11 +37,10 @@ fix_*.sh
 *_dump.html
 homepage.html
 scratch/
-debug/
-*.gz
+certs/
+docker/nginx/ssl/*.pem
+docker/nginx/ssl/*.pem.bak*
+backups/
+logs/
 *.bak
 *.bak_*
-certs/
-docker/nginx/ssl/
-db_backup*
-reset_password*
