@@ -194,7 +194,10 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            Setting::updateOrCreate(['key' => $setting['key']], $setting);
+            // firstOrCreate: hanya buat jika BELUM ada.
+            // Jika sudah ada (termasuk yang diubah admin), biarkan nilai tetap.
+            // Ini mencegah override hero_background, hero_title, dsb saat deploy.
+            Setting::firstOrCreate(['key' => $setting['key']], $setting);
         }
     }
 }
