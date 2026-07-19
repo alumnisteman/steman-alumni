@@ -38,15 +38,19 @@ class AppServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
-        // Suppress benign Blade view compile race-condition errors.
-        // When multiple requests hit an un-cached view simultaneously, PHP's
-        // rename() can fail with "No such file or directory" because another
-        // process already renamed the temp file first. The view is already
-        // compiled at that point, so this error is harmless — but noisy.
+        // Suppress benign production-only PHP warnings that must not surface as 500 errors:
+        //  1. rename() "No such file or directory" — Blade view compile race condition:
+        //     multiple requests compile the same view simultaneously; the loser finds its
+        //     temp file already renamed by the winner. The view is already compiled — safe.
+        //  2. filemtime() "stat failed" — a versioned asset file (e.g. admin.css) is
+        //     referenced in a template but not yet present on disk. Non-fatal; skip it.
         $originalHandler = set_error_handler(null);
         set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($originalHandler): bool {
             if (str_contains($errstr, 'rename(') && str_contains($errstr, 'No such file or directory')) {
-                return true; // suppress, the competing process already wrote the file
+                return true; // race-condition on view compile — already resolved by another worker
+            }
+            if (str_contains($errstr, 'filemtime()') && str_contains($errstr, 'stat failed')) {
+                return true; // asset file missing — non-fatal, skip cache-busting query string
             }
             if ($originalHandler) {
                 return (bool) call_user_func($originalHandler, $errno, $errstr, $errfile, $errline);
