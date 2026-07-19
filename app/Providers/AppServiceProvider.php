@@ -38,8 +38,24 @@ class AppServiceProvider extends ServiceProvider
     
     public function boot(): void
     {
+        // Suppress benign Blade view compile race-condition errors.
+        // When multiple requests hit an un-cached view simultaneously, PHP's
+        // rename() can fail with "No such file or directory" because another
+        // process already renamed the temp file first. The view is already
+        // compiled at that point, so this error is harmless — but noisy.
+        $originalHandler = set_error_handler(null);
+        set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($originalHandler): bool {
+            if (str_contains($errstr, 'rename(') && str_contains($errstr, 'No such file or directory')) {
+                return true; // suppress, the competing process already wrote the file
+            }
+            if ($originalHandler) {
+                return (bool) call_user_func($originalHandler, $errno, $errstr, $errfile, $errline);
+            }
+            return false;
+        });
+
         // Activate Laravel's Strict Mode (Fail-Fast) in non-production environments
-        // This catches: Lazy Loading (N+1), Missing Attributes (image vs image_desktop), and Silent Mass Assignment errors.
+        // This catches: Lazy Loading (N+1), Missing Attributes (image vs image_Desktop), and Silent Mass Assignment errors.
         \Illuminate\Database\Eloquent\Model::shouldBeStrict(!app()->isProduction());
 
         if (config('app.env') === 'production') {
