@@ -40,6 +40,7 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <link rel="preload" as="style" href="{{ asset('assets/css/modern-v5.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/modern-v5.css') }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ asset('themes/' . (request()->query('preview_theme') ?? ($activeTheme ?? 'default')) . '.css') }}">
 @stack('styles')
     <style>
         @font-face {

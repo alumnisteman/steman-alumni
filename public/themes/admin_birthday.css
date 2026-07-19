@@ -1,0 +1,93 @@
+/* admin_birthday.css – tema premium untuk ulang tahun admin (11 Okt) */
+
+/*--------------------------------------------------------------
+  Variabel warna (gradient utama)
+--------------------------------------------------------------*/
+:root {
+    --primary-hue: 260;
+    --primary-sat: 70%;
+    --primary-light: 55%;
+    --accent-hue: 340;
+    --accent-sat: 80%;
+    --accent-light: 65%;
+}
+
+/*--------------------------------------------------------------
+  Background – gradient + subtle particles
+--------------------------------------------------------------*/
+body {
+    background: radial-gradient(circle at 20% 30%,
+        hsl(var(--primary-hue), var(--primary-sat), 80%),
+        hsl(var(--primary-hue), var(--primary-sat), 60%));
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Confetti particles (pseudo‑elements) */
+body::before,
+body::after {
+    content: "";
+    position: absolute;
+    top: -10vh;
+    width: 200vw;
+    height: 120vh;
+    background: repeating-linear-gradient(
+        45deg,
+        hsla(var(--accent-hue), var(--accent-sat), var(--accent-light), .15) 0,
+        transparent 10px,
+        transparent 20px,
+        hsla(var(--accent-hue), var(--accent-sat), var(--accent-light), .15) 30px
+    );
+    animation: confetti 12s linear infinite;
+    pointer-events: none;
+}
+body::after {
+    top: -20vh;
+    animation-delay: -6s;
+}
+
+/*--------------------------------------------------------------
+  Banner khusus (gunakan file banner admin_birthday.jpg)
+--------------------------------------------------------------*/
+header .event-banner {
+    background-image: url('../themes/admin_birthday.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,.6);
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+/*--------------------------------------------------------------
+  Animasi laminar – subtle floating cards
+--------------------------------------------------------------*/
+.card.event-card {
+    background: rgba(255,255,255,.85);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    backdrop-filter: blur(6px);
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+.card.event-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,.2);
+}
+
+/*--------------------------------------------------------------
+  Utility: text color based on theme
+--------------------------------------------------------------*/
+.text-primary { color: hsl(var(--primary-hue), var(--primary-sat), var(--primary-light)); }
+.text-accent  { color: hsl(var(--accent-hue), var(--accent-sat), var(--accent-light)); }
+
+/*--------------------------------------------------------------
+  Keyframes – confetti floating
+--------------------------------------------------------------*/
+@keyframes confetti {
+    0%   { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(120vh) rotate(360deg); }
+}

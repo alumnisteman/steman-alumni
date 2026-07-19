@@ -42,7 +42,7 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
-        // Package Service Providers...
+        App\Providers\ThemeServiceProvider::class,
         Laravel\Sanctum\SanctumServiceProvider::class,
         // Nunomaduro\Collision is intentionally omitted (dev only).
     ],

@@ -14,6 +14,7 @@ class Kernel extends HttpKernel
     protected $middleware = [
         // Trust proxies (Cloudflare / Docker)
         \App\Http\Middleware\TrustProxies::class,
+        \App\Http\Middleware\HandleNullIp::class,
 
         // Handles maintenance mode
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,

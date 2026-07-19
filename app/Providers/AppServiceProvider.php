@@ -61,6 +61,14 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(15)->by($request->ip());
         });
 
+        // -------------------------------------------------
+        // Theme Event Composer – inject active theme name
+        // -------------------------------------------------
+        \Illuminate\Support\Facades\View::composer('*', function ($view) {
+            $activeTheme = \App\Services\ThemeResolver::getActiveTheme();
+            $view->with('activeTheme', $activeTheme);
+        });
+
 
         View::composer(['auth.register', 'alumni.profile', 'admin.users'], function ($view) {
             try {
