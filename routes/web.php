@@ -44,6 +44,10 @@ Route::get('/img-opt/{path}', [\App\Http\Controllers\ImageOptimizerController::c
     ->where('path', '.*')
     ->name('image.optimize');
 
+// Secure inline PDF viewer — digunakan oleh halaman /donations (tombol "Lihat PDF LPJ")
+// JANGAN hapus route ini! Menghapusnya akan menyebabkan seluruh halaman /donations crash (500).
+Route::get('/pdf/view', [\App\Http\Controllers\PdfController::class, 'view'])->name('pdf.view');
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');

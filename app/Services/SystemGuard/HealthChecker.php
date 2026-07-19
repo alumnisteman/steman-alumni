@@ -231,7 +231,7 @@ class HealthChecker
     private function runSmokeTests(): bool
     {
         $baseUrl = config('app.url', 'http://127.0.0.1');
-        $pages = ['/', '/login', '/alumni', '/global-network', '/jejak-sukses'];
+        $pages = ['/', '/login', '/alumni', '/global-network', '/jejak-sukses', '/donations', '/museum'];
         
         $failCount = 0;
         foreach ($pages as $page) {

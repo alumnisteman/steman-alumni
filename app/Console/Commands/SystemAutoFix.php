@@ -61,7 +61,10 @@ class SystemAutoFix extends Command
         // 2. Fix Database Issues (Migrations & Cache)
         $this->performAction("Optimizing Database & Cache", function() {
             Artisan::call('config:clear');
-            Artisan::call('route:clear');
+            // CATATAN: route:clear DIHAPUS dari sini karena menyebabkan window downtime
+            // di mana route yang valid (misal 'pdf.view') tidak ditemukan antara route:clear
+            // dan optimize (step 7). Biarkan `optimize` di step 7 meregenerasi route cache
+            // secara atomik — ia menimpa cache lama tanpa menghapusnya terlebih dahulu.
             Artisan::call('view:clear');
             $this->info("  [FIXED] Application caches cleared.");
             
