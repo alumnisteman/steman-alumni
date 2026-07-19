@@ -37,7 +37,9 @@ class DemoFundSeeder extends Seeder
         unset($item);
 
         // ── 1. Dana Reuni Akbar 2026 — data REAL dari LPJ PDF ──────────────────
-        DonationCampaign::updateOrCreate(
+        // firstOrCreate: hanya buat jika BELUM ada. Data LPJ real tidak akan
+        // tertimpa oleh proses deploy atau seeder yang dijalankan ulang.
+        DonationCampaign::firstOrCreate(
             ['slug' => 'dana-reuni-akbar-2026'],
             [
                 'title'         => 'Dana Reuni Akbar 2026',
@@ -84,7 +86,7 @@ class DemoFundSeeder extends Seeder
             ['label' => 'Biaya Seleksi & Survey',   'percent' =>  8, 'amount' =>  1480000, 'color' => '#8b5cf6'],
         ];
 
-        DonationCampaign::updateOrCreate(
+        DonationCampaign::firstOrCreate(
             ['slug' => 'dana-beasiswa-abadi-steman'],
             [
                 'title'         => 'Dana Beasiswa Abadi STEMAN',

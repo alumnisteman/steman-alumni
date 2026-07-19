@@ -19,7 +19,8 @@ try:
         "docker exec steman_app php artisan config:cache",
         "docker exec steman_app php artisan route:cache",
         "docker exec steman_app php artisan view:cache",
-        "docker exec steman_app php artisan db:seed --class=SettingSeeder --force"
+        # CATATAN: db:seed DIHAPUS. SettingSeeder memakai firstOrCreate — tidak perlu dijalankan saat deploy.
+        "docker exec steman_app php artisan migrate --force"
     ]
     
     for cmd in commands:
