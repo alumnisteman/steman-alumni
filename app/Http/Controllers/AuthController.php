@@ -187,8 +187,15 @@ class AuthController extends Controller
                 $request->header('User-Agent')
             );
 
-            // GROWTH HACK: Auto-follow batch mates
+            // Auto-follow batch mates for community engagement
             \App\Jobs\AutoFollowBatchMates::dispatch($user->id);
+
+            // Kirim email selamat datang
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\WelcomeMail($user));
+            } catch (\Exception $e) {
+                Log::warning('Welcome email failed for ' . $user->email . ': ' . $e->getMessage());
+            }
 
             Auth::login($user);
             return redirect()->intended($user->dashboardUrl());

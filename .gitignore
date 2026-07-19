@@ -37,3 +37,10 @@ fix_*.sh
 *_dump.html
 homepage.html
 scratch/
+certs/
+docker/nginx/ssl/*.pem
+docker/nginx/ssl/*.pem.bak*
+backups/
+logs/
+*.bak
+*.bak_*

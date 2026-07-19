@@ -17,54 +17,39 @@ class DonationController extends Controller
     // Alumni: List campaigns
     public function index()
     {
-        // Tampilkan active + completed (kecuali id=1 yg display-only & cancelled)
-        $foundationCampaigns = DonationCampaign::foundation()
-            ->whereIn('status', ['active', 'completed'])
-            ->where('id', '!=', 1)
-            ->latest()->get();
-        $eventCampaigns = DonationCampaign::event()
-            ->whereIn('status', ['active', 'completed'])
-            ->where('id', '!=', 1)
-            ->latest()->get();
-
-        // id=1 (INFORMASI KEUANGAN) adalah record display-only, dikecualikan dari total publik
-        // agar tidak double-count dengan campaign Dana Reuni Akbar (id=2)
-        $totalFoundation = DonationCampaign::foundation()->where('id', '!=', 1)->sum('current_amount');
-        $totalEvent      = DonationCampaign::event()->where('id', '!=', 1)->sum('current_amount');
-        $totalDonation   = $totalFoundation + $totalEvent;
-
-        // Statistik global dari tabel donations
-        $totalDonors = Donation::where('status', 'verified')
-            ->where('is_anonymous', false)
-            ->distinct('user_id')->count('user_id')
-            + Donation::where('status', 'verified')->where('is_anonymous', true)->count();
-
-        $totalTransactions = Donation::where('status', 'verified')->count();
-
-        // Fallback ke manual counts jika tabel donations kosong
-        if ($totalDonors === 0) {
-            $totalDonors = (int) DonationCampaign::where('id', '!=', 1)
-                ->whereNotNull('manual_donor_count')
-                ->max('manual_donor_count'); // max, bukan sum — donor sama antar kampanye
-        }
-        if ($totalTransactions === 0) {
-            $totalTransactions = (int) DonationCampaign::where('id', '!=', 1)
-                ->whereNotNull('manual_transaction_count')
-                ->max('manual_transaction_count');
-        }
+        $foundationCampaigns = DonationCampaign::foundation()->where('status', 'active')->latest()->get();
+        $eventCampaigns = DonationCampaign::event()->where('status', 'active')->latest()->get();
         
-        // Real-time feed (last 6 verified donations)
+        $totalFoundation = Donation::where('status', 'verified')
+            ->whereHas('campaign', fn($q) => $q->where('type', 'foundation'))
+            ->sum('amount');
+            
+        $totalEvent = Donation::where('status', 'verified')
+            ->whereHas('campaign', fn($q) => $q->where('type', 'event'))
+            ->sum('amount');
+            
+        $totalDonation = $totalFoundation + $totalEvent;
+
+        // Jumlah donatur unik terverifikasi
+        $totalDonors = Donation::where('status', 'verified')
+            ->distinct('user_id')
+            ->count('user_id');
+
+        // Total transaksi donasi terverifikasi
+        $totalTransactions = Donation::where('status', 'verified')->count();
+        
+        // Real-time feed (last 5 verified donations)
         $recentDonations = Donation::where('status', 'verified')
             ->with(['user', 'campaign'])
             ->latest()
-            ->take(6)
+            ->take(5)
             ->get();
 
         return view('donations.index', compact(
-            'foundationCampaigns',
-            'eventCampaigns',
-            'totalFoundation',
-            'totalEvent',
+            'foundationCampaigns', 
+            'eventCampaigns', 
+            'totalFoundation', 
+            'totalEvent', 
             'totalDonation',
             'totalDonors',
             'totalTransactions',
@@ -98,35 +83,6 @@ class DonationController extends Controller
         return view('fund.mobile', compact('yayasan', 'reuni', 'stories', 'donations', 'funds'));
     }
 
-    // Secure PDF viewer — inline only, hides storage path
-    public function viewLpj(DonationCampaign $campaign)
-    {
-        abort_unless($campaign->lpj_pdf_path, 404);
-        $path = storage_path('app/public/' . $campaign->lpj_pdf_path);
-        abort_unless(file_exists($path), 404);
-        return response()->file($path, [
-            'Content-Type'              => 'application/pdf',
-            'Content-Disposition'       => 'inline; filename="lpj.pdf"',
-            'Cache-Control'             => 'private, max-age=300',
-            'X-Content-Type-Options'    => 'nosniff',
-            'X-Frame-Options'           => 'SAMEORIGIN',
-        ]);
-    }
-
-    public function viewFinance(DonationCampaign $campaign)
-    {
-        abort_unless($campaign->finance_detail_pdf_path, 404);
-        $path = storage_path('app/public/' . $campaign->finance_detail_pdf_path);
-        abort_unless(file_exists($path), 404);
-        return response()->file($path, [
-            'Content-Type'              => 'application/pdf',
-            'Content-Disposition'       => 'inline; filename="rincian-keuangan.pdf"',
-            'Cache-Control'             => 'private, max-age=300',
-            'X-Content-Type-Options'    => 'nosniff',
-            'X-Frame-Options'           => 'SAMEORIGIN',
-        ]);
-    }
-
     // Public Audit Page
     public function audit()
     {
@@ -138,23 +94,9 @@ class DonationController extends Controller
     // Campaign Detail (with distribution reports)
     public function show(DonationCampaign $campaign)
     {
-        $donations        = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
-        // Distinct donors: non-anonymous by unique user_id, plus anonymous rows counted individually
-        $donorCount       = $campaign->donations()->where('status', 'verified')
-                                ->where('is_anonymous', false)
-                                ->distinct('user_id')->count('user_id')
-                            + $campaign->donations()->where('status', 'verified')
-                                ->where('is_anonymous', true)->count();
+        $donations    = $campaign->donations()->where('status', 'verified')->with('user')->latest()->get();
+        $donorCount   = $campaign->donations()->where('status', 'verified')->distinct('user_id')->count('user_id');
         $transactionCount = $campaign->donations()->where('status', 'verified')->count();
-
-        // Fall back to manually recorded counts when no online donations exist yet
-        if ($donorCount === 0 && ($campaign->manual_donor_count ?? 0) > 0) {
-            $donorCount = $campaign->manual_donor_count;
-        }
-        if ($transactionCount === 0 && ($campaign->manual_transaction_count ?? 0) > 0) {
-            $transactionCount = $campaign->manual_transaction_count;
-        }
-
         return view('donations.show', compact('campaign', 'donations', 'donorCount', 'transactionCount'));
     }
 
@@ -363,92 +305,57 @@ class DonationController extends Controller
         return redirect()->route('admin.campaigns.index')->with('success', 'Fund berhasil dihapus.');
     }
 
-    // ── Admin: Edit Laporan Keuangan ───────────────────────
-    public function reportEdit(DonationCampaign $campaign)
+    /**
+     * Show the campaign financial report edit form.
+     */
+    public function campaignReportEdit(DonationCampaign $campaign)
     {
         return view('admin.campaigns.report', compact('campaign'));
     }
 
-    public function reportUpdate(Request $request, DonationCampaign $campaign)
+    /**
+     * Update the campaign financial report.
+     */
+    public function campaignReportUpdate(Request $request, DonationCampaign $campaign)
     {
-        $request->validate([
-            'total_expense'          => 'nullable|numeric|min:0',
-            'sponsor_count'          => 'nullable|integer|min:0',
-            'report_status'          => 'nullable|string|max:255',
-            'report_verified_at'     => 'nullable|date',
-            'lpj_pdf'                => 'nullable|file|mimes:pdf|max:10240',
-            'finance_detail_pdf'     => 'nullable|file|mimes:pdf|max:10240',
-            'documentation_images.*' => 'nullable|image|max:2048',
-            'dist_label'             => 'nullable|array',
-            'dist_label.*'           => 'nullable|string|max:100',
-            'dist_percentage'        => 'nullable|array',
-            'dist_percentage.*'      => 'nullable|numeric|min:0|max:100',
-            'dist_color'             => 'nullable|array',
-            'dist_color.*'           => 'nullable|string|regex:/^#[0-9a-fA-F]{6}$/',
+        $data = $request->validate([
+            'total_expense'      => 'nullable|numeric|min:0',
+            'sponsor_count'      => 'nullable|integer|min:0',
+            'report_status'      => 'nullable|string|max:50',
+            'report_verified_at' => 'nullable|date',
+            'show_donor_list'    => 'nullable|boolean',
+            'dist_label'         => 'nullable|array',
+            'dist_label.*'       => 'nullable|string|max:100',
+            'dist_percent'       => 'nullable|array',
+            'dist_percent.*'     => 'nullable|numeric|min:0|max:100',
+            'dist_color'         => 'nullable|array',
+            'dist_color.*'       => 'nullable|string|max:20',
         ]);
 
-        // Validasi server-side: total distribusi harus 100% (±1% toleransi pembulatan)
-        if ($request->filled('dist_percentage')) {
-            $totalPct = collect($request->dist_percentage)->sum(fn($v) => (float) $v);
-            if ($totalPct > 0 && abs($totalPct - 100) > 1) {
-                return back()->withErrors([
-                    'dist_percentage' => "Total persentase distribusi harus 100% (saat ini {$totalPct}%).",
-                ])->withInput();
-            }
-        }
-
-        $data = [
-            'total_expense'   => $request->total_expense ?? 0,
-            'sponsor_count'   => $request->sponsor_count ?? 0,
-            'report_status'   => $request->report_status,
-            'report_verified_at' => $request->report_verified_at ?: null,
-            'show_donor_list' => $request->boolean('show_donor_list'),
-        ];
-
-        // Distribusi pengeluaran
-        if ($request->filled('dist_label')) {
-            $dist = [];
+        // Build distribution data
+        $distribution = [];
+        if (!empty($request->dist_label)) {
             foreach ($request->dist_label as $i => $label) {
-                if (trim($label) === '') continue;
-                $dist[] = [
-                    'label'      => $label,
-                    'percentage' => (float) ($request->dist_percentage[$i] ?? 0),
-                    'color'      => $request->dist_color[$i] ?? '#6366f1',
-                ];
-            }
-            $data['expense_distribution'] = $dist;
-        }
-
-        // Upload PDF LPJ
-        if ($request->hasFile('lpj_pdf')) {
-            if ($campaign->lpj_pdf_path) Storage::disk('public')->delete($campaign->lpj_pdf_path);
-            $data['lpj_pdf_path'] = $request->file('lpj_pdf')->store('campaign-docs', 'public');
-        }
-
-        // Upload PDF Rincian
-        if ($request->hasFile('finance_detail_pdf')) {
-            if ($campaign->finance_detail_pdf_path) Storage::disk('public')->delete($campaign->finance_detail_pdf_path);
-            $data['finance_detail_pdf_path'] = $request->file('finance_detail_pdf')->store('campaign-docs', 'public');
-        }
-
-        // Upload foto dokumentasi
-        if ($request->hasFile('documentation_images')) {
-            // Hapus foto lama
-            if ($campaign->documentation_images) {
-                foreach ($campaign->documentation_images as $old) {
-                    Storage::disk('public')->delete($old);
+                if (!empty($label)) {
+                    $distribution[] = [
+                        'label'   => $label,
+                        'percent' => $request->dist_percent[$i] ?? 0,
+                        'color'   => $request->dist_color[$i] ?? '#6366f1',
+                    ];
                 }
             }
-            $paths = [];
-            foreach ($request->file('documentation_images') as $img) {
-                $paths[] = $img->store('campaign-docs', 'public');
-            }
-            $data['documentation_images'] = $paths;
         }
 
-        $campaign->update($data);
+        $campaign->update([
+            'total_expense'      => $data['total_expense'] ?? null,
+            'sponsor_count'      => $data['sponsor_count'] ?? null,
+            'report_status'      => $data['report_status'] ?? null,
+            'report_verified_at' => $data['report_verified_at'] ?? null,
+            'show_donor_list'    => $request->boolean('show_donor_list'),
+            'distribution'       => !empty($distribution) ? $distribution : null,
+        ]);
 
         return redirect()->route('admin.campaigns.report.edit', $campaign->id)
-            ->with('success', 'Laporan keuangan berhasil diperbarui! ✅');
+            ->with('success', 'Laporan keuangan berhasil diperbarui.');
     }
 }

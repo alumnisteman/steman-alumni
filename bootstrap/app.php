@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'verified_alumni' => \App\Http\Middleware\EnsureUserIsVerified::class,
             'cache_response' => \App\Http\Middleware\CacheResponse::class,
+            'admin.domain' => \App\Http\Middleware\AdminDomainGuard::class,
         ]);
         // Exempt /logout from CSRF: forcing a logout is not a harmful CSRF attack
         $middleware->validateCsrfTokens(except: ['/logout']);
