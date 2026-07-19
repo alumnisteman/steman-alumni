@@ -39,6 +39,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'cache_response' => \App\Http\Middleware\CacheResponse::class,
             'admin.domain' => \App\Http\Middleware\AdminDomainGuard::class,
         ]);
+        // HandleNullIp: dipindahkan dari Kernel.php (Laravel 11 tidak pakai Kernel.php)
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\HandleNullIp::class,
+        ]);
         // Exempt /logout from CSRF: forcing a logout is not a harmful CSRF attack
         $middleware->validateCsrfTokens(except: ['/logout']);
         $middleware->appendToGroup('web', [
