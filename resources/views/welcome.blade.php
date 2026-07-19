@@ -60,6 +60,9 @@
         display: flex; align-items: center; justify-content: center;
         overflow: hidden; text-align: center;
         background: #000;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
     }
 
     .hero-title {
@@ -327,7 +330,8 @@
     <div class="custom-cursor-trail"></div>
 
     <!-- Hero Section -->
-    <section class="hero-bento">
+    @php $heroBg = $settings['hero_background'] ?? ''; @endphp
+    <section class="hero-bento" @if($heroBg) style="background-image: url('{{ $heroBg }}'); background-color: #000;" @endif>
         <canvas id="particleCanvas"></canvas>
         <div class="hero-overlay" style="background: radial-gradient(circle at center, transparent 0%, #030014 100%);"></div>
         
