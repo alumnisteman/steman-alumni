@@ -16,6 +16,8 @@ docker-compose.yml.bak
 Thumbs.db
 /bootstrap/cache/*
 /storage/app/public/*
+!/storage/app/public/campaign-docs/
+!/storage/app/public/campaign-docs/*.pdf
 /storage/framework/cache/data/*
 /storage/framework/sessions/*
 /storage/framework/testing/*
