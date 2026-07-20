@@ -31,13 +31,35 @@ class MuseumController extends Controller
             ->orderBy('era_year')
             ->pluck('era_year');
 
-        $stats = Cache::remember('museum_stats', 600, fn () => [
-            'total'       => MuseumItem::approved()->count(),
-            'categories'  => MuseumItem::approved()->selectRaw('category, count(*) as cnt')->groupBy('category')->pluck('cnt', 'category'),
-            'total_likes' => MuseumItemLike::count(),
-        ]);
+        $stats = Cache::remember('museum_stats', 600, function() {
+            // Fetch verified LPJ campaigns
+            $lpjCampaigns = \App\Models\DonationCampaign::whereNotNull('lpj_pdf_path')
+                ->where('report_status', 'verified')
+                ->get();
 
-        return view('museum.index', compact('items', 'categories', 'eras', 'stats', 'category', 'era'));
+            return [
+                'total'       => MuseumItem::approved()->count(),
+                'categories'  => MuseumItem::approved()->selectRaw('category, count(*) as cnt')->groupBy('category')->pluck('cnt', 'category'),
+                'total_likes' => MuseumItemLike::count(),
+                
+                // LPJ Integrated Data
+                'lpj_count'   => $lpjCampaigns->count(),
+                'lpj_expense' => $lpjCampaigns->sum('total_expense'),
+                'lpj_list'    => $lpjCampaigns->map(function ($c) {
+                    return [
+                        'title' => $c->title,
+                        'slug' => $c->slug,
+                        'total_expense' => $c->total_expense,
+                        'verified_at' => $c->report_verified_at ? $c->report_verified_at->format('Y') : null,
+                        'pdf_url' => $c->lpj_pdf_path ? \Illuminate\Support\Facades\Storage::url($c->lpj_pdf_path) : null,
+                    ];
+                })->toArray(),
+            ];
+        });
+
+        $principals = \App\Models\Principal::orderBy('sort_order')->orderBy('period')->get();
+
+        return view('museum.index', compact('items', 'categories', 'eras', 'stats', 'category', 'era', 'principals'));
     }
 
     public function show(MuseumItem $museumItem)
@@ -165,5 +187,74 @@ class MuseumController extends Controller
         $museumItem->delete();
         Cache::forget('museum_stats');
         return back()->with('success', 'Arsip dihapus.');
+    }
+
+    public function storePrincipal(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'period' => 'required|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'status' => 'required|in:active,former',
+            'sort_order' => 'required|integer',
+        ]);
+
+        $photoUrl = null;
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('principals', 'public');
+            $photoUrl = Storage::url($path);
+        }
+
+        \App\Models\Principal::create([
+            'name' => $request->name,
+            'period' => $request->period,
+            'photo_path' => $photoUrl,
+            'status' => $request->status,
+            'sort_order' => $request->sort_order,
+        ]);
+
+        return back()->with('success', 'Foto kepala sekolah berhasil ditambahkan!');
+    }
+
+    public function updatePrincipal(Request $request, \App\Models\Principal $principal)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'period' => 'required|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'status' => 'required|in:active,former',
+            'sort_order' => 'required|integer',
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'period' => $request->period,
+            'status' => $request->status,
+            'sort_order' => $request->sort_order,
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($principal->photo_path) {
+                $oldPath = str_replace('/storage/', '', $principal->photo_path);
+                Storage::disk('public')->delete($oldPath);
+            }
+            $path = $request->file('photo')->store('principals', 'public');
+            $data['photo_path'] = Storage::url($path);
+        }
+
+        $principal->update($data);
+
+        return back()->with('success', 'Foto kepala sekolah berhasil diperbarui!');
+    }
+
+    public function destroyPrincipal(\App\Models\Principal $principal)
+    {
+        if ($principal->photo_path) {
+            $oldPath = str_replace('/storage/', '', $principal->photo_path);
+            Storage::disk('public')->delete($oldPath);
+        }
+        $principal->delete();
+
+        return back()->with('success', 'Foto kepala sekolah berhasil dihapus!');
     }
 }

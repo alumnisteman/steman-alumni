@@ -257,6 +257,62 @@
                             </div>
                         </div>
 
+                        {{-- KEPALA SEKOLAH GALLERY --}}
+                        <div class="mt-5 border-top pt-4">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="fw-bold mb-0" style="color: var(--museum-dark);"><i class="bi bi-person-badge-fill me-2" style="color: var(--museum-gold);"></i> Kepala Sekolah dari Masa ke Masa</h5>
+                                @auth
+                                    @if(auth()->user()->role === 'admin' || auth()->user()->role === 'editor')
+                                        <button class="btn btn-sm btn-warning rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addPrincipalModal">
+                                            <i class="bi bi-plus-lg me-1"></i>Tambah
+                                        </button>
+                                    @endif
+                                @endauth
+                            </div>
+
+                            @if($principals->isEmpty())
+                                <div class="text-center py-4 bg-light rounded-4 border border-dashed">
+                                    <div class="fs-2">👤</div>
+                                    <p class="text-muted mb-0 small">Belum ada foto kepala sekolah yang diunggah. Bantu kami melengkapi arsip ini!</p>
+                                </div>
+                            @else
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach($principals as $p)
+                                        <div class="text-center position-relative principal-card" style="width: 110px;">
+                                            @auth
+                                                @if(auth()->user()->role === 'admin' || auth()->user()->role === 'editor')
+                                                    <div class="position-absolute top-0 end-0 d-flex gap-1" style="z-index: 2; transform: translate(4px, -4px);">
+                                                        <button class="btn btn-sm btn-light border rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center" style="width:24px;height:24px;"
+                                                                data-bs-toggle="modal" data-bs-target="#editPrincipalModal{{ $p->id }}" title="Edit">
+                                                            <i class="bi bi-pencil-fill" style="font-size: 0.6rem;"></i>
+                                                        </button>
+                                                        <form action="{{ route('museum.principals.destroy', $p) }}" method="POST" onsubmit="return confirm('Yakin hapus?')">
+                                                            @csrf @method('DELETE')
+                                                            <button class="btn btn-sm btn-danger rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center" style="width:24px;height:24px;" title="Hapus">
+                                                                <i class="bi bi-trash-fill" style="font-size: 0.6rem;"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                @endif
+                                            @endauth
+                                            <div class="rounded-4 overflow-hidden border mx-auto mb-2" style="width: 90px; height: 110px; background: #f5f0e8;">
+                                                @if($p->photo_path)
+                                                    <img src="{{ $p->photo_path }}" alt="{{ $p->name }}" style="width:100%;height:100%;object-fit:cover;">
+                                                @else
+                                                    <div class="d-flex align-items-center justify-content-center h-100" style="font-size:2.5rem; color:#8b7355;">👤</div>
+                                                @endif
+                                            </div>
+                                            <p class="mb-0 fw-bold" style="font-size: 0.72rem; line-height: 1.2; color: var(--museum-dark);">{{ $p->name }}</p>
+                                            <p class="mb-0 text-muted" style="font-size: 0.65rem;">{{ $p->period }}</p>
+                                            @if($p->status === 'active')
+                                                <span class="badge bg-success rounded-pill mt-1" style="font-size: 0.55rem;">Aktif</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+
                         {{-- DYNAMIC LPJ COLLABORATION DATA --}}
                         <div class="mt-5 border-top pt-4">
                             <h5 class="fw-bold mb-3" style="color: var(--museum-dark);"><i class="bi bi-gift-fill me-2 text-danger"></i> Legacy & Kolaborasi Nyata (Data LPJ)</h5>
@@ -538,6 +594,113 @@
         </div>
     </div>
 </div>
+@endauth
+
+{{-- ADD PRINCIPAL MODAL --}}
+@auth
+@if(auth()->user()->role === 'admin' || auth()->user()->role === 'editor')
+<div class="modal fade" id="addPrincipalModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">👤 Tambah Kepala Sekolah</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('museum.principals.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control rounded-3" placeholder="Contoh: Mustafa Muhammad, S.Pd., MM." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Periode Jabatan <span class="text-danger">*</span></label>
+                            <input type="text" name="period" class="form-control rounded-3" placeholder="Contoh: 2018 - Sekarang" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select rounded-3" required>
+                                <option value="former">Terdahulu</option>
+                                <option value="active">Aktif (Saat Ini)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Foto</label>
+                            <input type="file" name="photo" class="form-control rounded-3" accept="image/*">
+                            <div class="form-text">JPG/PNG, maks 2MB.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Urutan Tampil <span class="text-danger">*</span></label>
+                            <input type="number" name="sort_order" class="form-control rounded-3" value="0" min="0" required>
+                            <div class="form-text">Semakin kecil = tampil lebih dulu.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning fw-bold rounded-pill px-4">
+                        <i class="bi bi-save me-2"></i>Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- EDIT PRINCIPAL MODALS (one per principal) --}}
+@foreach($principals as $p)
+<div class="modal fade" id="editPrincipalModal{{ $p->id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">✏️ Edit Kepala Sekolah</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('museum.principals.update', $p) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control rounded-3" value="{{ $p->name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Periode Jabatan <span class="text-danger">*</span></label>
+                            <input type="text" name="period" class="form-control rounded-3" value="{{ $p->period }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select rounded-3" required>
+                                <option value="former" {{ $p->status === 'former' ? 'selected' : '' }}>Terdahulu</option>
+                                <option value="active" {{ $p->status === 'active' ? 'selected' : '' }}>Aktif (Saat Ini)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ganti Foto</label>
+                            <input type="file" name="photo" class="form-control rounded-3" accept="image/*">
+                            @if($p->photo_path)
+                                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Foto saat ini sudah ada. Kosongkan jika tidak ingin mengganti.</div>
+                            @endif
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Urutan Tampil <span class="text-danger">*</span></label>
+                            <input type="number" name="sort_order" class="form-control rounded-3" value="{{ $p->sort_order }}" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning fw-bold rounded-pill px-4">
+                        <i class="bi bi-save me-2"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+@endif
 @endauth
 
 @push('scripts')

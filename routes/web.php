@@ -487,7 +487,9 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
 
     // Admin & Editor Panel (Legacy Middleware check)
     Route::middleware(['role:admin,editor'])->group(function () {
-        // Keep some routes here if they must be on main domain, but we move them to subdomain above
+        Route::post('/museum/principals', [MuseumController::class, 'storePrincipal'])->name('museum.principals.store');
+        Route::post('/museum/principals/{principal}', [MuseumController::class, 'updatePrincipal'])->name('museum.principals.update');
+        Route::delete('/museum/principals/{principal}', [MuseumController::class, 'destroyPrincipal'])->name('museum.principals.destroy');
     });
 });
 
