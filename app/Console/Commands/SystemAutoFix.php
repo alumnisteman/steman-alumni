@@ -201,6 +201,29 @@ class SystemAutoFix extends Command
             if ($ok) $this->info("  [OK] Permissions check complete.");
         });
 
+        // 6.5. Ensure Storage Symlink (Critical for LPJ & Backgrounds)
+        $this->performAction("Ensuring Storage Symlink", function() {
+            $publicStorage = public_path('storage');
+            
+            // If it exists but is not a link (e.g. accidentally created directory), remove it
+            if (file_exists($publicStorage) && !is_link($publicStorage)) {
+                $this->warn("  [WARN] public/storage exists but is a directory. Removing to recreate symlink...");
+                File::deleteDirectory($publicStorage);
+            }
+            
+            // If it's a broken link, remove it
+            if (is_link($publicStorage) && !file_exists(readlink($publicStorage))) {
+                @unlink($publicStorage);
+            }
+
+            if (!file_exists($publicStorage)) {
+                Artisan::call('storage:link');
+                $this->info("  [FIXED] Storage symlink recreated.");
+            } else {
+                $this->info("  [OK] Storage symlink is valid.");
+            }
+        });
+
         // 7. Optimize application
         $this->performAction("Optimizing Application", function() {
             Artisan::call('optimize');

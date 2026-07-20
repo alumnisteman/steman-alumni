@@ -82,6 +82,38 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // -------------------------------------------------
+        // GUARDIAN SYSTEM: Smart Cache Protection
+        // -------------------------------------------------
+        // Automatically rebuild critical caches whenever a full `cache:clear` is triggered.
+        // This prevents short downtimes where background images, settings, and welcome data are lost.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Cache\Events\CacheCleared::class, function () {
+            try {
+                \Illuminate\Support\Facades\Log::info('Cache cleared. Auto-rebuilding critical caches...');
+                
+                // 1. Rebuild Site Settings
+                \Illuminate\Support\Facades\Cache::remember('site_settings', 3600, function () {
+                    return \App\Models\Setting::pluck('value', 'key')->toArray();
+                });
+                
+                // 2. Rebuild Active Theme
+                \App\Services\ThemeResolver::getActiveTheme();
+                
+                // 3. Rebuild Active Ads
+                $ads = \App\Models\Ad::active()->get()->groupBy(function ($item) {
+                    return strtolower(trim($item->position));
+                });
+                \Illuminate\Support\Facades\Cache::put('active_ads', $ads, 3600);
+                
+                // 4. Force recreation of Storage Link if missing
+                if (!file_exists(public_path('storage'))) {
+                    \Illuminate\Support\Facades\Artisan::call('storage:link');
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Smart Cache Protection Failed to Rebuild: ' . $e->getMessage());
+            }
+        });
+
+        // -------------------------------------------------
         // Theme Event Composer – inject active theme name
         // -------------------------------------------------
         \Illuminate\Support\Facades\View::composer('*', function ($view) {
