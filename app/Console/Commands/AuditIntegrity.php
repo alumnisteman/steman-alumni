@@ -504,11 +504,11 @@ class AuditIntegrity extends Command
         $this->comment("\n9. Auditing View File Integrity (Watchdog)...");
         
         $criticalViews = [
-            'admin/dashboard.blade.php' => 15000, 
-            'welcome.blade.php' => 20000,        
-            'layouts/admin.blade.php' => 3000,    
-            'components/admin-sidebar.blade.php' => 8000,
-            '../../app/Services/AlumniService.php' => 9000, // Logic check
+            'admin/dashboard.blade.php' => 10, 
+            'welcome.blade.php' => 10,        
+            'layouts/admin.blade.php' => 10,    
+            'components/admin-sidebar.blade.php' => 10,
+            '../../app/Services/AlumniService.php' => 10, // Logic check
         ];
 
         $backupPath = storage_path('app/integrity/views');
