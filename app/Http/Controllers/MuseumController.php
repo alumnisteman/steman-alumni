@@ -43,10 +43,18 @@ class MuseumController extends Controller
                 'total_likes' => MuseumItemLike::count(),
                 
                 // LPJ Integrated Data
-                'lpj_count'   => $lpjCampaigns->count(),
-                'lpj_expense' => $lpjCampaigns->sum('total_expense'),
-                'lpj_funds_raised' => \App\Models\DonationCampaign::sum('current_amount'),
-                'lpj_list'    => $lpjCampaigns->map(function ($c) {
+                'lpj_count'   => $lpjCampaigns->count() + 1,
+                'lpj_expense' => $lpjCampaigns->sum('total_expense') + 230341930,
+                'lpj_funds_raised' => \App\Models\Donation::where('status', 'verified')->sum('amount'),
+                'lpj_list'    => array_merge([
+                    [
+                        'title' => 'Reuni Akbar Ke-4 Tahun 2026',
+                        'slug' => 'reuni-akbar-ke-4-2026',
+                        'total_expense' => 230341930,
+                        'verified_at' => '2026',
+                        'pdf_url' => route('pdf.view', ['f' => 'campaign-docs/LPJ_Reuni2026.pdf']),
+                    ]
+                ], $lpjCampaigns->map(function ($c) {
                     return [
                         'title' => $c->title,
                         'slug' => $c->slug,
@@ -54,7 +62,7 @@ class MuseumController extends Controller
                         'verified_at' => $c->report_verified_at ? $c->report_verified_at->format('Y') : null,
                         'pdf_url' => $c->lpj_pdf_path ? \Illuminate\Support\Facades\Storage::url($c->lpj_pdf_path) : null,
                     ];
-                })->toArray(),
+                })->toArray()),
             ];
         });
 
