@@ -451,9 +451,8 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // =====================================================
     // DIGITAL MUSEUM — Arsip Sejarah STEMAN
     // =====================================================
-    Route::get('/museum', [MuseumController::class, 'index'])->name('museum.index');
-    Route::get('/museum/create', [MuseumController::class, 'create'])->name('museum.create'); // HARUS sebelum {museumItem}
-    Route::get('/museum/{museumItem}', [MuseumController::class, 'show'])->name('museum.show');
+    // The public routes have been moved out of this auth group to the bottom of the file
+    Route::get('/museum/create', [MuseumController::class, 'create'])->name('museum.create');
     Route::post('/museum', [MuseumController::class, 'store'])->name('museum.store');
     Route::post('/museum/{museumItem}/like', [MuseumController::class, 'toggleLike'])->name('museum.like');
 
@@ -492,7 +491,13 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     });
 });
 
-    Route::get('/polls', [PollController::class, 'index'])->name('polls.index');
+// =====================================================
+// DIGITAL MUSEUM — Arsip Sejarah STEMAN (Public Access)
+// =====================================================
+Route::get('/museum', [MuseumController::class, 'index'])->name('museum.index');
+Route::get('/museum/{museumItem}', [MuseumController::class, 'show'])->name('museum.show');
+
+Route::get('/polls', [PollController::class, 'index'])->name('polls.index');
 // Media Proxy (Fix for Nginx Volume Sync)
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
