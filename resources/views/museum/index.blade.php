@@ -204,6 +204,117 @@
     </div>
 </section>
 
+{{-- TIMELINE & SEJARAH (STEMAN HISTORY) --}}
+<section class="py-5" style="background-color: #fcf9f5;">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <span class="badge rounded-pill mb-2 px-3 py-2" style="background: rgba(212,160,23,0.1); color: #b8860b; border: 1px solid rgba(212,160,23,0.3); font-weight: bold; letter-spacing: 2px;">JEJAK LANGKAH</span>
+                <h2 class="fw-bold" style="color: var(--museum-dark);">Sejarah & Warisan STEMAN</h2>
+                <p class="text-muted">Merajut kembali benang merah perjalanan sekolah dari masa ke masa.</p>
+            </div>
+        </div>
+
+        <div class="row g-5">
+            {{-- Kiri: Arsip Inti --}}
+            <div class="col-lg-6">
+                <div class="card border-0 rounded-4 shadow-sm h-100" style="background: white;">
+                    <div class="card-body p-4 p-md-5">
+                        <h4 class="fw-bold mb-4 border-bottom pb-3" style="color: var(--museum-dark);"><i class="bi bi-journal-bookmark-fill me-2" style="color: var(--museum-gold);"></i> Data & Fakta Sejarah</h4>
+                        
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-uppercase" style="color: var(--museum-sepia); font-size: 0.85rem;"><i class="bi bi-building me-2"></i>1. Tahun Berdiri</h6>
+                            <p class="mb-0 fs-6"><strong>1965</strong> – Berdiri sebagai <strong>STM Nasional Ternate</strong> (Swasta).</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-uppercase" style="color: var(--museum-sepia); font-size: 0.85rem;"><i class="bi bi-person-badge me-2"></i>2. Kepala Sekolah dari Masa ke Masa</h6>
+                            <ul class="mb-0 fs-6 list-unstyled ps-3" style="border-left: 2px solid #f0e6d2;">
+                                <li class="mb-1"><strong>Saat Ini:</strong> Mustafa Muhammad, S.Pd., MM.</li>
+                                <li class="text-muted fst-italic"><strong>Terdahulu:</strong> Belum ada data lengkap (Sedang dalam pencarian arsip alumni).</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-uppercase" style="color: var(--museum-sepia); font-size: 0.85rem;"><i class="bi bi-tools me-2"></i>3. Jurusan Saat Ini</h6>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <span class="badge bg-light text-dark border">Teknik Konstruksi & Perumahan</span>
+                                <span class="badge bg-light text-dark border">Desain Pemodelan & Info Bangunan</span>
+                                <span class="badge bg-light text-dark border">Teknik Mesin</span>
+                                <span class="badge bg-light text-dark border">Teknik Otomotif</span>
+                                <span class="badge bg-light text-dark border">Teknik Pengelasan & Fabrikasi Logam</span>
+                                <span class="badge bg-light text-dark border">Teknik Elektronika</span>
+                                <span class="badge bg-light text-dark border">Teknik Ketenagalistrikan</span>
+                                <span class="badge bg-light text-dark border">Teknik Geospasial</span>
+                                <span class="badge bg-light text-dark border">Teknik Jaringan Komputer & Telekomunikasi</span>
+                            </div>
+                        </div>
+
+                        <div class="alert mt-4 border-0 rounded-3" style="background: rgba(212,160,23,0.05); color: #8b7355; font-size: 0.9rem;">
+                            <strong><i class="bi bi-search me-2"></i>Misi Pencarian Arsip:</strong><br>
+                            Kami masih membutuhkan bantuan Alumni untuk melengkapi <em>(4) Foto gedung setiap dekade</em>, <em>(5) Prestasi sekolah terdahulu</em>, dan <em>(6) Dokumentasi reuni lawas</em>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Kanan: Timeline Museum --}}
+            <div class="col-lg-6">
+                <div class="card border-0 rounded-4 shadow-sm h-100" style="background: var(--museum-dark); color: white;">
+                    <div class="card-body p-4 p-md-5">
+                        <h4 class="fw-bold mb-5 border-bottom pb-3 border-secondary" style="color: var(--museum-gold);"><i class="bi bi-signpost-split-fill me-2"></i> Timeline Museum Digital</h4>
+                        
+                        <div class="timeline-container position-relative ps-4" style="border-left: 2px dashed rgba(212,160,23,0.3);">
+                            
+                            <div class="timeline-item mb-4 position-relative">
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold); box-shadow: 0 0 10px rgba(212,160,23,0.5);"></div>
+                                <h5 class="fw-bold text-white mb-1">1965</h5>
+                                <p class="text-white-50 small mb-0">Lahirnya STM Nasional Ternate</p>
+                            </div>
+
+                            <div class="timeline-item mb-4 position-relative">
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
+                                <h5 class="fw-bold text-white mb-1">1980-an</h5>
+                                <p class="text-white-50 small mb-0">Pembangunan kampus legendaris Dufa-Dufa (Dikenal dengan STM 80)</p>
+                            </div>
+
+                            <div class="timeline-item mb-4 position-relative">
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
+                                <h5 class="fw-bold text-white mb-1">1997</h5>
+                                <p class="text-white-50 small mb-0">Berganti nama secara resmi menjadi <strong>SMKN 2 Ternate</strong></p>
+                            </div>
+
+                            <div class="timeline-item mb-4 position-relative">
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
+                                <h5 class="fw-bold text-white mb-1">2000-an</h5>
+                                <p class="text-white-50 small mb-0">Penambahan program keahlian baru mengikuti perkembangan industri</p>
+                            </div>
+
+                            <div class="timeline-item position-relative">
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #28a745; box-shadow: 0 0 15px rgba(40,167,69,0.8);"></div>
+                                <h5 class="fw-bold text-white mb-1" style="color: #28a745 !important;">2026</h5>
+                                <p class="text-white-50 small mb-2">Reuni Akbar Alumni STEMAN dengan panggung profesional dan videotron LED megah. Peluncuran portal <em>alumni-steman.my.id</em> dan berbagai program alumni inovatif.</p>
+                                
+                                <div class="p-3 mt-3 rounded border border-secondary" style="background: rgba(255,255,255,0.05);">
+                                    <p class="mb-2 fs-6 fw-bold" style="color: var(--museum-gold);"><i class="bi bi-lightbulb-fill me-1"></i> Mari Lengkapi Timeline Ini Bersama!</p>
+                                    <ul class="text-white-50 small mb-0 ps-3">
+                                        <li>Foto Kepala Sekolah setiap periode</li>
+                                        <li>Daftar Ketua OSIS angkatan Anda</li>
+                                        <li>Kisah & Daftar Guru Legendaris</li>
+                                        <li>Dokumentasi Reuni Akbar sebelumnya</li>
+                                        <li><em>Legacy</em> (Cendera mata, sumbangan fasilitas, dll)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 {{-- FILTER & GRID --}}
 <section id="museum-grid" class="py-5">
     <div class="container">
