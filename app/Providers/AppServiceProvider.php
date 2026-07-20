@@ -103,6 +103,30 @@ class AppServiceProvider extends ServiceProvider
                     return strtolower(trim($item->position));
                 });
                 \Illuminate\Support\Facades\Cache::put('active_ads', $ads, 3600);
+
+                // 3.5. Rebuild Museum Stats with LPJ Collaboration
+                \Illuminate\Support\Facades\Cache::remember('museum_stats', 600, function() {
+                    $lpjCampaigns = \App\Models\DonationCampaign::whereNotNull('lpj_pdf_path')
+                        ->where('report_status', 'verified')
+                        ->get();
+
+                    return [
+                        'total'       => \App\Models\MuseumItem::approved()->count(),
+                        'categories'  => \App\Models\MuseumItem::approved()->selectRaw('category, count(*) as cnt')->groupBy('category')->pluck('cnt', 'category'),
+                        'total_likes' => \App\Models\MuseumItemLike::count(),
+                        'lpj_count'   => $lpjCampaigns->count(),
+                        'lpj_expense' => $lpjCampaigns->sum('total_expense'),
+                        'lpj_list'    => $lpjCampaigns->map(function ($c) {
+                            return [
+                                'title' => $c->title,
+                                'slug' => $c->slug,
+                                'total_expense' => $c->total_expense,
+                                'verified_at' => $c->report_verified_at ? $c->report_verified_at->format('Y') : null,
+                                'pdf_url' => $c->lpj_pdf_path ? \Illuminate\Support\Facades\Storage::url($c->lpj_pdf_path) : null,
+                            ];
+                        })->toArray(),
+                    ];
+                });
                 
                 // 4. Force recreation of Storage Link if missing
                 if (!file_exists(public_path('storage'))) {

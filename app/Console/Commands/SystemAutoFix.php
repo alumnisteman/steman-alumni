@@ -205,10 +205,11 @@ class SystemAutoFix extends Command
         $this->performAction("Ensuring Storage Symlink", function() {
             $publicStorage = public_path('storage');
             
-            // If it exists but is not a link (e.g. accidentally created directory), remove it
+            // If it exists but is not a link (e.g. accidentally created directory), rename it to a backup path to prevent data loss
             if (file_exists($publicStorage) && !is_link($publicStorage)) {
-                $this->warn("  [WARN] public/storage exists but is a directory. Removing to recreate symlink...");
-                File::deleteDirectory($publicStorage);
+                $backupPath = $publicStorage . '_backup_' . time();
+                $this->warn("  [WARN] public/storage exists but is a directory. Renaming to $backupPath to prevent data loss...");
+                @rename($publicStorage, $backupPath);
             }
             
             // If it's a broken link, remove it

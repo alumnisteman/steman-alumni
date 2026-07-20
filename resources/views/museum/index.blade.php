@@ -205,104 +205,158 @@
 </section>
 
 {{-- TIMELINE & SEJARAH (STEMAN HISTORY) --}}
-<section class="py-5" style="background-color: #fcf9f5;">
+<section class="py-5" style="background: linear-gradient(180deg, #fcf9f5 0%, #f3ece0 100%);">
     <div class="container">
         <div class="row mb-5">
             <div class="col-12 text-center">
                 <span class="badge rounded-pill mb-2 px-3 py-2" style="background: rgba(212,160,23,0.1); color: #b8860b; border: 1px solid rgba(212,160,23,0.3); font-weight: bold; letter-spacing: 2px;">JEJAK LANGKAH</span>
-                <h2 class="fw-bold" style="color: var(--museum-dark);">Sejarah & Warisan STEMAN</h2>
-                <p class="text-muted">Merajut kembali benang merah perjalanan sekolah dari masa ke masa.</p>
+                <h2 class="fw-black display-6" style="color: var(--museum-dark); font-weight: 800;">Sejarah & Warisan Kolaboratif STEMAN</h2>
+                <p class="text-muted max-w-2xl mx-auto">Merajut kembali benang merah perjalanan sekolah dan kontribusi nyata antar angkatan secara transparan.</p>
             </div>
         </div>
 
-        <div class="row g-5">
-            {{-- Kiri: Arsip Inti --}}
-            <div class="col-lg-6">
-                <div class="card border-0 rounded-4 shadow-sm h-100" style="background: white;">
+        <div class="row g-4">
+            {{-- Kiri: Arsip Inti & Kolaborasi LPJ --}}
+            <div class="col-lg-7">
+                <div class="card border-0 rounded-4 shadow-sm h-100" style="background: white; border: 1px solid rgba(212,160,23,0.1) !important;">
                     <div class="card-body p-4 p-md-5">
-                        <h4 class="fw-bold mb-4 border-bottom pb-3" style="color: var(--museum-dark);"><i class="bi bi-journal-bookmark-fill me-2" style="color: var(--museum-gold);"></i> Data & Fakta Sejarah</h4>
-                        
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-uppercase" style="color: var(--museum-sepia); font-size: 0.85rem;"><i class="bi bi-building me-2"></i>1. Tahun Berdiri</h6>
-                            <p class="mb-0 fs-6"><strong>1965</strong> – Berdiri sebagai <strong>STM Nasional Ternate</strong> (Swasta).</p>
+                        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                            <div class="rounded-3 p-2 me-3" style="background: rgba(212,160,23,0.1); color: var(--museum-gold);">
+                                <i class="bi bi-journal-bookmark-fill fs-4"></i>
+                            </div>
+                            <h4 class="fw-bold mb-0" style="color: var(--museum-dark);">Data & Fakta Sejarah</h4>
                         </div>
                         
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-uppercase" style="color: var(--museum-sepia); font-size: 0.85rem;"><i class="bi bi-person-badge me-2"></i>2. Kepala Sekolah dari Masa ke Masa</h6>
-                            <ul class="mb-0 fs-6 list-unstyled ps-3" style="border-left: 2px solid #f0e6d2;">
-                                <li class="mb-1"><strong>Saat Ini:</strong> Mustafa Muhammad, S.Pd., MM.</li>
-                                <li class="text-muted fst-italic"><strong>Terdahulu:</strong> Belum ada data lengkap (Sedang dalam pencarian arsip alumni).</li>
-                            </ul>
-                        </div>
-
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-uppercase" style="color: var(--museum-sepia); font-size: 0.85rem;"><i class="bi bi-tools me-2"></i>3. Jurusan Saat Ini</h6>
-                            <div class="d-flex flex-wrap gap-2 mt-2">
-                                <span class="badge bg-light text-dark border">Teknik Konstruksi & Perumahan</span>
-                                <span class="badge bg-light text-dark border">Desain Pemodelan & Info Bangunan</span>
-                                <span class="badge bg-light text-dark border">Teknik Mesin</span>
-                                <span class="badge bg-light text-dark border">Teknik Otomotif</span>
-                                <span class="badge bg-light text-dark border">Teknik Pengelasan & Fabrikasi Logam</span>
-                                <span class="badge bg-light text-dark border">Teknik Elektronika</span>
-                                <span class="badge bg-light text-dark border">Teknik Ketenagalistrikan</span>
-                                <span class="badge bg-light text-dark border">Teknik Geospasial</span>
-                                <span class="badge bg-light text-dark border">Teknik Jaringan Komputer & Telekomunikasi</span>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-4" style="background: #faf6f0; border-left: 4px solid var(--museum-gold);">
+                                    <h6 class="fw-bold text-uppercase mb-2 text-muted" style="font-size: 0.75rem;"><i class="bi bi-building me-2"></i>1. Tahun Berdiri</h6>
+                                    <p class="mb-0 fs-6"><strong>1965</strong> – Berdiri sebagai <strong>STM Nasional Ternate</strong> (Swasta).</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-4" style="background: #faf6f0; border-left: 4px solid var(--museum-gold);">
+                                    <h6 class="fw-bold text-uppercase mb-2 text-muted" style="font-size: 0.75rem;"><i class="bi bi-person-badge me-2"></i>2. Kepala Sekolah</h6>
+                                    <p class="mb-0 fs-6"><strong>Mustafa Muhammad, S.Pd., MM.</strong> <span class="badge bg-success rounded-pill" style="font-size: 0.65rem;">Aktif</span></p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="alert mt-4 border-0 rounded-3" style="background: rgba(212,160,23,0.05); color: #8b7355; font-size: 0.9rem;">
-                            <strong><i class="bi bi-search me-2"></i>Misi Pencarian Arsip:</strong><br>
-                            Kami masih membutuhkan bantuan Alumni untuk melengkapi <em>(4) Foto gedung setiap dekade</em>, <em>(5) Prestasi sekolah terdahulu</em>, dan <em>(6) Dokumentasi reuni lawas</em>.
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-uppercase text-muted mb-2" style="font-size: 0.75rem;"><i class="bi bi-tools me-2"></i>3. Bidang Keahlian Saat Ini</h6>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Konstruksi & Perumahan</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Desain Pemodelan & Info Bangunan</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Mesin</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Otomotif</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Pengelasan & Fabrikasi Logam</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Elektronika</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Ketenagalistrikan</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Geospasial</span>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">Teknik Jaringan Komputer & Telekomunikasi</span>
+                            </div>
+                        </div>
+
+                        {{-- DYNAMIC LPJ COLLABORATION DATA --}}
+                        <div class="mt-5 border-top pt-4">
+                            <h5 class="fw-bold mb-3" style="color: var(--museum-dark);"><i class="bi bi-gift-fill me-2 text-danger"></i> Legacy & Kolaborasi Nyata (Data LPJ)</h5>
+                            <p class="text-muted small">Program kerja bakti sosial, renovasi sarana, dan legacy alumni yang terverifikasi secara transparan.</p>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <div class="p-3 rounded-4 text-center border" style="background: rgba(25, 135, 84, 0.03); border-color: rgba(25, 135, 84, 0.1) !important;">
+                                        <span class="d-block text-muted small mb-1">Legacy Terlaksana</span>
+                                        <strong class="fs-4 text-success">{{ $stats['lpj_count'] ?? 0 }} Program</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded-4 text-center border" style="background: rgba(212,160,23,0.03); border-color: rgba(212,160,23,0.1) !important;">
+                                        <span class="d-block text-muted small mb-1">Total Nilai Kontribusi</span>
+                                        <strong class="fs-4 text-dark">Rp {{ number_format($stats['lpj_expense'] ?? 0, 0, ',', '.') }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if(!empty($stats['lpj_list']))
+                                <div class="list-group rounded-4 border-0">
+                                    @foreach($stats['lpj_list'] as $lpj)
+                                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 mb-2 rounded-3 border bg-light">
+                                            <div>
+                                                <h6 class="fw-bold mb-1" style="font-size: 0.9rem; color: var(--museum-dark);">{{ $lpj['title'] }}</h6>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar-event me-1"></i>Tahun {{ $lpj['verified_at'] ?? '-' }} 
+                                                    <span class="mx-2">•</span> 
+                                                    <i class="bi bi-wallet2 me-1"></i>Rp {{ number_format($lpj['total_expense'], 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                            @if($lpj['pdf_url'])
+                                                <a href="{{ $lpj['pdf_url'] }}" target="_blank" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold">
+                                                    <i class="bi bi-file-pdf me-1"></i>LPJ
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-4 bg-light rounded-4 border border-dashed">
+                                    <div class="fs-2">📋</div>
+                                    <p class="text-muted mb-0 small">Belum ada dokumen LPJ yang diunggah atau diverifikasi.</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
 
             {{-- Kanan: Timeline Museum --}}
-            <div class="col-lg-6">
-                <div class="card border-0 rounded-4 shadow-sm h-100" style="background: var(--museum-dark); color: white;">
+            <div class="col-lg-5">
+                <div class="card border-0 rounded-4 shadow-sm h-100" style="background: linear-gradient(135deg, #1a0f00 0%, #2d1a00 100%); color: white;">
                     <div class="card-body p-4 p-md-5">
-                        <h4 class="fw-bold mb-5 border-bottom pb-3 border-secondary" style="color: var(--museum-gold);"><i class="bi bi-signpost-split-fill me-2"></i> Timeline Museum Digital</h4>
+                        <div class="d-flex align-items-center mb-5 border-bottom pb-3 border-secondary">
+                            <div class="rounded-3 p-2 me-3" style="background: rgba(212,160,23,0.1); color: var(--museum-gold);">
+                                <i class="bi bi-signpost-split-fill fs-4"></i>
+                            </div>
+                            <h4 class="fw-bold mb-0" style="color: var(--museum-gold);">Timeline STEMAN</h4>
+                        </div>
                         
                         <div class="timeline-container position-relative ps-4" style="border-left: 2px dashed rgba(212,160,23,0.3);">
                             
                             <div class="timeline-item mb-4 position-relative">
-                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold); box-shadow: 0 0 10px rgba(212,160,23,0.5);"></div>
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold); box-shadow: 0 0 10px rgba(212,160,23,0.5);"></div>
                                 <h5 class="fw-bold text-white mb-1">1965</h5>
-                                <p class="text-white-50 small mb-0">Lahirnya STM Nasional Ternate</p>
+                                <p class="text-white-50 small mb-0">Lahirnya STM Nasional Ternate (Swasta)</p>
                             </div>
 
                             <div class="timeline-item mb-4 position-relative">
-                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
                                 <h5 class="fw-bold text-white mb-1">1980-an</h5>
-                                <p class="text-white-50 small mb-0">Pembangunan kampus legendaris Dufa-Dufa (Dikenal dengan STM 80)</p>
+                                <p class="text-white-50 small mb-0">Pembangunan kampus legendaris Dufa-Dufa (STM 80)</p>
                             </div>
 
                             <div class="timeline-item mb-4 position-relative">
-                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
                                 <h5 class="fw-bold text-white mb-1">1997</h5>
-                                <p class="text-white-50 small mb-0">Berganti nama secara resmi menjadi <strong>SMKN 2 Ternate</strong></p>
+                                <p class="text-white-50 small mb-0">Berganti nama resmi menjadi <strong>SMKN 2 Ternate</strong></p>
                             </div>
 
                             <div class="timeline-item mb-4 position-relative">
-                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--museum-gold);"></div>
                                 <h5 class="fw-bold text-white mb-1">2000-an</h5>
-                                <p class="text-white-50 small mb-0">Penambahan program keahlian baru mengikuti perkembangan industri</p>
+                                <p class="text-white-50 small mb-0">Penambahan program keahlian baru menyesuaikan perkembangan zaman</p>
                             </div>
 
                             <div class="timeline-item position-relative">
-                                <div class="timeline-dot position-absolute" style="left: -29px; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #28a745; box-shadow: 0 0 15px rgba(40,167,69,0.8);"></div>
-                                <h5 class="fw-bold text-white mb-1" style="color: #28a745 !important;">2026</h5>
-                                <p class="text-white-50 small mb-2">Reuni Akbar Alumni STEMAN dengan panggung profesional dan videotron LED megah. Peluncuran portal <em>alumni-steman.my.id</em> dan berbagai program alumni inovatif.</p>
+                                <div class="timeline-dot position-absolute" style="left: -29px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #198754; box-shadow: 0 0 15px rgba(25,135,84,0.8);"></div>
+                                <h5 class="fw-bold text-white mb-1" style="color: #198754 !important;">2026</h5>
+                                <p class="text-white-50 small mb-2">Reuni Akbar STEMAN dengan panggung megah, videotron LED, serta peluncuran website alumni-steman.my.id.</p>
                                 
-                                <div class="p-3 mt-3 rounded border border-secondary" style="background: rgba(255,255,255,0.05);">
-                                    <p class="mb-2 fs-6 fw-bold" style="color: var(--museum-gold);"><i class="bi bi-lightbulb-fill me-1"></i> Mari Lengkapi Timeline Ini Bersama!</p>
+                                <div class="p-3 mt-4 rounded-3 border border-secondary" style="background: rgba(255,255,255,0.03);">
+                                    <p class="mb-2 fs-6 fw-bold" style="color: var(--museum-gold);"><i class="bi bi-lightbulb-fill me-1"></i> Lengkapi Galeri Sejarah Kita!</p>
                                     <ul class="text-white-50 small mb-0 ps-3">
-                                        <li>Foto Kepala Sekolah setiap periode</li>
-                                        <li>Daftar Ketua OSIS angkatan Anda</li>
-                                        <li>Kisah & Daftar Guru Legendaris</li>
-                                        <li>Dokumentasi Reuni Akbar sebelumnya</li>
-                                        <li><em>Legacy</em> (Cendera mata, sumbangan fasilitas, dll)</li>
+                                        <li>Foto Kepala Sekolah & Guru legendaris</li>
+                                        <li>Daftar pengurus OSIS lintas angkatan</li>
+                                        <li>Foto bangunan sekolah tiap dekade</li>
+                                        <li>Dokumentasi Reuni Akbar terdahulu</li>
                                     </ul>
                                 </div>
                             </div>
