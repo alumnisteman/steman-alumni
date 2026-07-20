@@ -454,6 +454,7 @@ Route::middleware(['auth', 'verified_alumni', 'throttle:global'])->group(functio
     // The public routes have been moved out of this auth group to the bottom of the file
     Route::get('/museum/create', [MuseumController::class, 'create'])->name('museum.create');
     Route::post('/museum', [MuseumController::class, 'store'])->name('museum.store');
+    Route::post('/museum/{museumItem}/update', [MuseumController::class, 'update'])->name('museum.update');
     Route::post('/museum/{museumItem}/like', [MuseumController::class, 'toggleLike'])->name('museum.like');
 
     // =====================================================

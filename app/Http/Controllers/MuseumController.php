@@ -45,6 +45,7 @@ class MuseumController extends Controller
                 // LPJ Integrated Data
                 'lpj_count'   => $lpjCampaigns->count(),
                 'lpj_expense' => $lpjCampaigns->sum('total_expense'),
+                'lpj_funds_raised' => \App\Models\DonationCampaign::sum('current_amount'),
                 'lpj_list'    => $lpjCampaigns->map(function ($c) {
                     return [
                         'title' => $c->title,
@@ -164,6 +165,51 @@ class MuseumController extends Controller
             ->paginate(20);
         $categories = MuseumItem::$categoryLabels;
         return view('admin.museum.index', compact('items', 'categories'));
+    }
+
+    public function update(Request $request, MuseumItem $museumItem)
+    {
+        abort_if(auth()->id() !== $museumItem->uploaded_by && !in_array(auth()->user()->role, ['admin', 'editor']), 403, 'Unauthorized');
+
+        $request->validate([
+            'title'       => 'required|string|max:200',
+            'description' => 'nullable|string|max:2000',
+            'category'    => 'required|in:' . implode(',', array_keys(MuseumItem::$categoryLabels)),
+            'era_year'    => 'nullable|integer|min:1965|max:' . date('Y'),
+            'image'       => 'nullable|image|max:2048',
+            'video_url'   => 'nullable|url|max:255',
+            'donated_by'  => 'nullable|string|max:100',
+        ]);
+
+        $data = $request->only(['title', 'description', 'category', 'era_year', 'video_url', 'donated_by']);
+
+        if ($request->hasFile('image')) {
+            if ($museumItem->image_url && !str_starts_with($museumItem->image_url, 'http')) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $museumItem->image_url));
+            }
+
+            $image = $request->file('image');
+            $imgRes = imagecreatefromstring(file_get_contents($image->getRealPath()));
+            ob_start();
+            if (function_exists('imagewebp')) {
+                imagewebp($imgRes, null, 80);
+                $ext = 'webp';
+            } else {
+                imagejpeg($imgRes, null, 80);
+                $ext = 'jpg';
+            }
+            $imgData = ob_get_clean();
+            imagedestroy($imgRes);
+
+            $filename = 'museum/' . uniqid() . '.' . $ext;
+            Storage::disk('public')->put($filename, $imgData);
+            $data['image_url'] = '/storage/' . $filename;
+        }
+
+        $museumItem->update($data);
+        Cache::forget('museum_stats');
+
+        return back()->with('success', 'Arsip museum berhasil diperbarui!');
     }
 
     public function approve(MuseumItem $museumItem)

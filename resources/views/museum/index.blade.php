@@ -378,16 +378,22 @@
                             <p class="text-muted small">Program kerja bakti sosial, renovasi sarana, dan legacy alumni yang terverifikasi secara transparan.</p>
                             
                             <div class="row g-3 mb-4">
-                                <div class="col-6">
-                                    <div class="p-3 rounded-4 text-center border" style="background: rgba(25, 135, 84, 0.03); border-color: rgba(25, 135, 84, 0.1) !important;">
-                                        <span class="d-block text-muted small mb-1">Legacy Terlaksana</span>
-                                        <strong class="fs-4 text-success">{{ $stats['lpj_count'] ?? 0 }} Program</strong>
+                                <div class="col-4">
+                                    <div class="p-3 rounded-4 text-center border h-100" style="background: rgba(25, 135, 84, 0.03); border-color: rgba(25, 135, 84, 0.1) !important;">
+                                        <span class="d-block text-muted small mb-1" style="font-size: 0.65rem;">Legacy Terlaksana</span>
+                                        <strong class="fs-5 text-success">{{ $stats['lpj_count'] ?? 0 }} Prog</strong>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="p-3 rounded-4 text-center border" style="background: rgba(212,160,23,0.03); border-color: rgba(212,160,23,0.1) !important;">
-                                        <span class="d-block text-muted small mb-1">Total Nilai Kontribusi</span>
-                                        <strong class="fs-4 text-dark">Rp {{ number_format($stats['lpj_expense'] ?? 0, 0, ',', '.') }}</strong>
+                                <div class="col-4">
+                                    <div class="p-3 rounded-4 text-center border h-100" style="background: rgba(13, 110, 253, 0.03); border-color: rgba(13, 110, 253, 0.1) !important;">
+                                        <span class="d-block text-muted small mb-1" style="font-size: 0.65rem;">Total Donasi</span>
+                                        <strong class="fs-5 text-primary" style="font-size: 1rem !important;">Rp {{ number_format($stats['lpj_funds_raised'] ?? 0, 0, ',', '.') }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 rounded-4 text-center border h-100" style="background: rgba(212,160,23,0.03); border-color: rgba(212,160,23,0.1) !important;">
+                                        <span class="d-block text-muted small mb-1" style="font-size: 0.65rem;">Nilai Kontribusi</span>
+                                        <strong class="fs-5 text-dark" style="font-size: 1rem !important;">Rp {{ number_format($stats['lpj_expense'] ?? 0, 0, ',', '.') }}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -559,9 +565,18 @@
                         </div>
                         @endif
                         <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
-                            <span class="text-muted" style="font-size: 0.75rem;">
-                                <i class="bi bi-eye me-1"></i>{{ number_format($item->views) }}
-                            </span>
+                            <div>
+                                <span class="text-muted" style="font-size: 0.75rem;">
+                                    <i class="bi bi-eye me-1"></i>{{ number_format($item->views) }}
+                                </span>
+                                @auth
+                                    @if(auth()->id() === $item->uploaded_by || in_array(auth()->user()->role, ['admin', 'editor']))
+                                    <button class="btn btn-link btn-sm text-warning p-0 ms-2" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#editItemModal{{ $item->id }}" title="Edit Arsip">
+                                        <i class="bi bi-pencil-square" style="font-size: 0.75rem;"></i>
+                                    </button>
+                                    @endif
+                                @endauth
+                            </div>
                             @auth
                             <button class="like-btn {{ auth()->user() && $item->isLikedBy(auth()->user()) ? 'liked' : '' }}"
                                     onclick="event.stopPropagation(); toggleLike({{ $item->id }}, this)"
@@ -577,6 +592,66 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- EDIT ITEM MODAL --}}
+                @auth
+                @if(auth()->id() === $item->uploaded_by || in_array(auth()->user()->role, ['admin', 'editor']))
+                <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content rounded-4 border-0 shadow-lg">
+                            <div class="modal-header border-0 pb-0">
+                                <h5 class="modal-title fw-bold">✏️ Edit Arsip Museum</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="{{ route('museum.update', $item) }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Judul Arsip <span class="text-danger">*</span></label>
+                                            <input type="text" name="title" class="form-control rounded-3" value="{{ $item->title }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Kategori <span class="text-danger">*</span></label>
+                                            <select name="category" class="form-select rounded-3" required>
+                                                @foreach ($categories as $key => $cat)
+                                                <option value="{{ $key }}" {{ $item->category === $key ? 'selected' : '' }}>{{ $cat['icon'] }} {{ $cat['label'] }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Era / Tahun</label>
+                                            <input type="number" name="era_year" class="form-control rounded-3" value="{{ $item->era_year }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Nama Penyumbang</label>
+                                            <input type="text" name="donated_by" class="form-control rounded-3" value="{{ $item->donated_by }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Foto / Scan Baru</label>
+                                            <input type="file" name="image" class="form-control rounded-3" accept="image/*">
+                                            <div class="form-text">Biarkan kosong jika tidak ingin mengubah foto.</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Link Video YouTube</label>
+                                            <input type="url" name="video_url" class="form-control rounded-3" value="{{ $item->video_url }}">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Deskripsi</label>
+                                            <textarea name="description" class="form-control rounded-3" rows="3">{{ $item->description }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-warning fw-bold rounded-pill px-4"><i class="bi bi-save me-1"></i>Simpan Perubahan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                @endauth
             </div>
             @endforeach
         </div>
